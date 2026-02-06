@@ -87,10 +87,10 @@ module.exports = app;
 
 const PORT = process.env.PORT || 5000;
 
-// Only listen if not in production/Vercel environment
-if (process.env.NODE_ENV !== 'production') {
+// Only listen if not in production/Vercel environment, or if on Render
+if (process.env.NODE_ENV !== 'production' || process.env.RENDER) {
     app.listen(PORT, () => {
         console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-        console.log(`API Base URL: http://localhost:${PORT}`);
+        console.log(`API Base URL: ${process.env.RENDER ? 'Render' : 'http://localhost:' + PORT}`);
     });
 }

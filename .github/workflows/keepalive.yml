@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Hit Render backend
         run: |
-          curl -I https://dange-associate-and-developers.onrender.com
+          curl -I -s -L "https://dange-associate-and-developers.onrender.com"
