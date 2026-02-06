@@ -11,4 +11,4 @@ jobs:
     steps:
       - name: Hit Render backend
         run: |
-          curl -I -s -L "https://dange-associate-and-developers.onrender.com"
+          curl -f -s --connect-timeout 30 --max-time 60 "https://dange-associate-and-developers.onrender.com" || echo "Backend is waking up or temporarily unavailable"
