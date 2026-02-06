@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { customerAPI, projectAPI, userAPI, reportAPI } from '../api/services';
 import Layout from '../components/Layout';
+import logo from '../assets/logo.png';
 
 const PartyLedger = () => {
     const [customers, setCustomers] = useState([]);
@@ -194,7 +195,7 @@ const PartyLedger = () => {
                             <div className="p-12 text-center border-b border-slate-50 relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-50"></div>
                                 <div className="relative z-10 flex flex-col items-center gap-2">
-                                    <div className="w-16 h-16 bg-slate-900 text-white rounded-[1.5rem] flex items-center justify-center text-2xl font-black mb-4">DA</div>
+                                    <img src={logo} alt="Logo" className="h-16 w-auto mb-4" />
                                     <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">Dange Associates & Developers</h1>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">Commercial Financial Audit Report</p>
                                     <div className="w-20 h-1 bg-blue-600 rounded-full mt-4"></div>

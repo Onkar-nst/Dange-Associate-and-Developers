@@ -13,6 +13,9 @@ export const AuthProvider = ({ children }) => {
     
     if (token && savedUser) {
       setUser(JSON.parse(savedUser));
+    } else {
+      // Default guest user to allow viewing all pages
+      setUser({ name: 'Guest User', role: 'The Boss' });
     }
     setLoading(false);
   }, []);
@@ -31,7 +34,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    setUser(null);
+    setUser({ name: 'Guest User', role: 'The Boss' });
   };
 
   const value = {

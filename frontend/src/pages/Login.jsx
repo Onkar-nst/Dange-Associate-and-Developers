@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import logo from '../assets/logo.png';
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ userId: '', password: '' });
@@ -35,9 +36,7 @@ const Login = () => {
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -mr-16 -mt-16 group-hover:bg-white/10 transition-all duration-700"></div>
             
             <div className="text-center space-y-3">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-[1.5rem] bg-blue-600 text-white text-3xl font-black mb-4 shadow-2xl shadow-blue-500/20">
-                    DA
-                </div>
+                <img src={logo} alt="Logo" className="w-48 h-auto mx-auto mb-6" />
                 <h1 className="text-2xl font-black text-white tracking-widest uppercase">
                     Dange Associates
                 </h1>

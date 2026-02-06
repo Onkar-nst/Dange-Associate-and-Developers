@@ -70,7 +70,7 @@ const Layout = ({ children }) => {
             {/* Terminal Footer */}
             <footer className="mt-20 pt-10 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 pb-12 opacity-50">
               <div className="flex items-center gap-4">
-                <div className="w-8 h-8 border border-slate-200 rounded-lg flex items-center justify-center font-black text-[10px]">DA</div>
+                <img src={logo} alt="Logo" className="w-8 h-auto" />
                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Integrated Real Estate Intelligence System © 2026</p>
               </div>
               <div className="flex gap-6">

@@ -95,12 +95,12 @@ const Dashboard = () => {
             
             {/* Box 1: Project Summary */}
             <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[10px] uppercase tracking-[0.4em] flex justify-between items-center">
+                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
                     <span className="flex items-center gap-3"><span>📂</span> Project Summary</span>
                     <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Live Matrix</span>
                 </div>
                 <div className="p-8 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[10px] uppercase font-black text-slate-500 tracking-tighter">
+                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
@@ -135,12 +135,12 @@ const Dashboard = () => {
 
             {/* Box 2: Sales Position */}
             <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[10px] uppercase tracking-[0.4em] flex justify-between items-center">
+                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
                     <span className="flex items-center gap-3"><span>💹</span> Sales Position</span>
                     <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Market Sync</span>
                 </div>
                 <div className="p-8 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[10px] uppercase font-black text-slate-500 tracking-tighter">
+                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
@@ -170,7 +170,7 @@ const Dashboard = () => {
             {/* Box 3: Liquid Assets */}
             <div className="group relative bg-[#1B315A] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col transition-all duration-500 shadow-blue-900/10">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-[#F38C32]/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                <div className="px-8 py-5 text-white font-black text-[10px] uppercase tracking-[0.4em] flex justify-between items-center border-b border-white/5 relative z-10">
+                <div className="px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center border-b border-white/5 relative z-10">
                     <span className="flex items-center gap-3"><span>💎</span> Liquid Assets</span>
                     <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-[#F38C32] font-black">Vault Secure</span>
                 </div>
@@ -194,12 +194,12 @@ const Dashboard = () => {
 
             {/* Box 4: Project Receipts & Payments */}
             <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[10px] uppercase tracking-[0.4em] flex justify-between items-center">
-                    <span className="flex items-center gap-3"><span>🔄</span> Reciepts & Disbursments</span>
+                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
+                    <span className="flex items-center gap-3"><span>🔄</span> Receipts & Disbursements</span>
                     <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Delta Sync</span>
                 </div>
                 <div className="p-8 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[10px] uppercase font-black text-slate-500 tracking-tighter">
+                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
