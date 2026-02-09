@@ -32,6 +32,7 @@ const commissionRoutes = require('./routes/commissionRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const ledgerAccountRoutes = require('./routes/ledgerAccountRoutes');
 const jvRoutes = require('./routes/jvRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 
 // Mount routers
 app.use('/api/auth', authRoutes);
@@ -47,6 +48,7 @@ app.use('/api/commission', commissionRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/ledger-accounts', ledgerAccountRoutes);
 app.use('/api/jv', jvRoutes);
+app.use('/api/chatbot', chatbotRoutes);
 
 // Health check route
 app.get('/', (req, res) => {

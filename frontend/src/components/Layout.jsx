@@ -13,7 +13,7 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] flex overflow-hidden font-jakarta">
+    <div className="h-screen bg-slate-50 flex overflow-hidden font-jakarta">
       
       {/* Sidebar - Modernized */}
       <Sidebar />

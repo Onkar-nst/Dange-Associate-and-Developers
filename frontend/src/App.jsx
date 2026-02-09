@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -26,6 +26,20 @@ import CustomerDetail from './pages/CustomerDetail';
 import ProjectStatus from './pages/ProjectStatus';
 import Explore from './pages/Explore';
 import PublicProjectStatus from './pages/PublicProjectStatus';
+import AIChatbot from './pages/AIChatbot';
+
+const RootRedirect = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  return <Navigate to={user ? "/dashboard" : "/explore"} replace />;
+};
+
+const PublicRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/dashboard" replace />;
+  return children;
+};
 
 function App() {
   return (
@@ -33,9 +47,12 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/explore/:id" element={<PublicProjectStatus />} />
+
+          {/* Root Redirect */}
+          <Route path="/" element={<RootRedirect />} />
 
           {/* Protected Routes */}
           <Route
@@ -173,11 +190,17 @@ function App() {
             }
           />
 
-          {/* Default Route */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/ai-assistant"
+            element={
+              <ProtectedRoute>
+                <AIChatbot />
+              </ProtectedRoute>
+            }
+          />
           
-          {/* Catch all - redirect to dashboard */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* Catch all - redirect based on auth */}
+          <Route path="*" element={<RootRedirect />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

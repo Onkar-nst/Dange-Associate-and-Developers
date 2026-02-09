@@ -101,3 +101,9 @@ export const jvAPI = {
     create: (data) => axiosInstance.post('/jv', data),
     delete: (id) => axiosInstance.delete(`/jv/${id}`),
 };
+
+// AI Chatbot
+export const chatbotAPI = {
+    getContext: () => axiosInstance.get('/chatbot/context'),
+    query: (data) => axiosInstance.post('/chatbot/query', data),
+};

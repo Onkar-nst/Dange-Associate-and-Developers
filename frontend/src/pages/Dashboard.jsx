@@ -3,6 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { reportAPI } from '../api/services';
 import Layout from '../components/Layout';
+import {
+    Chart as ChartJS,
+    ArcElement,
+    Tooltip,
+    Legend
+} from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
+
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -77,16 +86,107 @@ const Dashboard = () => {
     cards: section.cards.filter(card => card.roles.includes(user?.role))
   })).filter(section => section.cards.length > 0);
 
+  const totalSales = summaries.project.reduce((acc, p) => acc + p.totalSale, 0);
+  const totalCollections = summaries.project.reduce((acc, p) => acc + p.totalReceived, 0);
+  const totalBalance = summaries.project.reduce((acc, p) => acc + p.balance, 0);
+  const liquidity = summaries.cashBank.cash + summaries.cashBank.bank;
+
+  // Chart Data
+  const totalSold = summaries.sales.reduce((acc, s) => acc + s.sold, 0);
+  const totalBooked = summaries.sales.reduce((acc, s) => acc + s.booked, 0);
+  const totalAvailable = summaries.sales.reduce((acc, s) => acc + s.available, 0);
+  
+  const inventoryData = {
+      labels: ['Sold', 'Booked', 'Available'],
+      datasets: [
+          {
+              data: [totalSold, totalBooked, totalAvailable],
+              backgroundColor: ['#10B981', '#3B82F6', '#E2E8F0'],
+              borderWidth: 0,
+              cutout: '75%',
+          },
+      ],
+  };
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-10">
         
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-[#1B315A] to-[#2a4a85] p-10 rounded-3xl shadow-2xl text-white relative overflow-hidden">
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-10 rounded-3xl shadow-2xl text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#F38C32]/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
             <div className="relative z-10">
                 <h1 className="text-4xl font-black tracking-tighter">Welcome back, {user?.name}!</h1>
                 <p className="text-[#F38C32] text-xs font-black uppercase tracking-[0.4em] mt-2">Dange Associates Enterprise Protocol | {user?.role}</p>
+                
+                <div className="mt-8 relative max-w-xl group">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-6 h-6 text-white group-focus-within:text-[#F38C32] transition-colors">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a2.25 2.25 0 00-1.694-1.694L15 6.75l1.047-.251a2.25 2.25 0 001.694-1.694L18 3.75l.259 1.035a2.25 2.25 0 001.694 1.694L21 6.75l-1.047.251a2.25 2.25 0 00-1.694 1.694z" />
+                        </svg>
+                    </div>
+                    <input 
+                        type="text" 
+                        placeholder="Ask AI about sales, customers, or dues..." 
+                        className="w-full pl-12 pr-32 py-4 bg-white/10 hover:bg-white/20 focus:bg-white/25 border border-white/10 rounded-2xl outline-none font-bold text-sm text-white placeholder:text-blue-200 transition-all backdrop-blur-md shadow-lg shadow-black/5"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && e.target.value.trim()) {
+                                navigate('/ai-assistant', { state: { autoQuery: e.target.value } });
+                            }
+                        }}
+                    />
+                    <button 
+                        className="absolute right-2 top-2 bottom-2 px-4 bg-white text-[#1B315A] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-50 transition-all shadow-md active:scale-95"
+                        onClick={(e) => {
+                            const input = e.currentTarget.parentElement.querySelector('input');
+                            if (input && input.value.trim()) {
+                                navigate('/ai-assistant', { state: { autoQuery: input.value } });
+                            }
+                        }}
+                    >
+                        Ask AI
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {/* KPI High-Level Metrics */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 bg-blue-50 rounded-2xl group-hover:bg-blue-500 group-hover:text-white transition-colors text-xl">📊</div>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg">Target</span>
+                </div>
+                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">₹{(totalSales / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gross Sales Volume</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 bg-emerald-50 rounded-2xl group-hover:bg-emerald-500 group-hover:text-white transition-colors text-xl">💰</div>
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">Inflow</span>
+                </div>
+                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">₹{(totalCollections / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Collections</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
+                <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 bg-rose-50 rounded-2xl group-hover:bg-rose-500 group-hover:text-white transition-colors text-xl">⚠️</div>
+                    <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest bg-rose-50 px-2 py-1 rounded-lg">Pending</span>
+                </div>
+                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">₹{(totalBalance / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Outstanding Bal</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
+                <div className="flex justify-between items-start mb-4 relative z-10">
+                    <div className="p-3 bg-orange-50 rounded-2xl group-hover:bg-orange-500 group-hover:text-white transition-colors text-xl">💎</div>
+                    <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 px-2 py-1 rounded-lg">Liquid</span>
+                </div>
+                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1 relative z-10">₹{(liquidity / 100000).toFixed(2)}L</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Cash + Bank Assets</p>
             </div>
         </div>
 
@@ -95,7 +195,7 @@ const Dashboard = () => {
             
             {/* Box 1: Project Summary */}
             <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
+                <div className="bg-slate-900 px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
                     <span className="flex items-center gap-3"><span>📂</span> Project Summary</span>
                     <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Live Matrix</span>
                 </div>
@@ -135,7 +235,7 @@ const Dashboard = () => {
 
             {/* Box 2: Sales Position */}
             <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
+                <div className="bg-slate-900 px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
                     <span className="flex items-center gap-3"><span>💹</span> Sales Position</span>
                     <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Market Sync</span>
                 </div>
@@ -167,34 +267,57 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Box 3: Liquid Assets */}
-            <div className="group relative bg-[#1B315A] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col transition-all duration-500 shadow-blue-900/10">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#F38C32]/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                <div className="px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center border-b border-white/5 relative z-10">
-                    <span className="flex items-center gap-3"><span>💎</span> Liquid Assets</span>
-                    <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-[#F38C32] font-black">Vault Secure</span>
+            {/* Box 3: Inventory Matrix (Chart) */}
+            <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
+                <div className="bg-slate-900 px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
+                    <span className="flex items-center gap-3"><span>🏙️</span> Inventory Matrix</span>
                 </div>
-                <div className="p-10 space-y-6 relative z-10">
-                    <div className="bg-white/5 p-8 rounded-[2rem] border border-white/5 flex justify-between items-center hover:bg-white/10 transition-colors">
-                        <div>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Cash In Registry</p>
-                            <p className="text-3xl font-black text-white tracking-tighter italic uppercase">Consolidated</p>
+                <div className="p-8 flex items-center justify-around relative overflow-hidden h-80">
+                    <div className="w-56 h-56 relative z-10">
+                        <Doughnut 
+                            data={inventoryData} 
+                            options={{ 
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { legend: { display: false }, tooltip: { enabled: true } } 
+                            }} 
+                        />
+                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="text-center">
+                                <span className="block text-4xl font-black text-slate-800 tracking-tighter">{totalSold + totalBooked + totalAvailable}</span>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Units</span>
+                            </div>
                         </div>
-                        <p className="text-4xl font-black text-emerald-400 font-mono italic tracking-tighter">₹{summaries.cashBank.cash.toLocaleString()}</p>
                     </div>
-                    <div className="bg-white/5 p-8 rounded-[2rem] border border-white/5 flex justify-between items-center hover:bg-white/10 transition-colors">
-                        <div>
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Bank Clearing</p>
-                            <p className="text-3xl font-black text-white tracking-tighter italic uppercase">Asset Liquid</p>
+                     <div className="space-y-6">
+                        <div className="flex items-center gap-3 group/item">
+                             <span className="w-3 h-3 rounded-full bg-emerald-500 group-hover/item:scale-125 transition-transform shadow-lg shadow-emerald-500/30"></span>
+                             <div>
+                                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Sold</p>
+                                 <p className="text-xl font-black text-slate-800 tracking-tighter">{totalSold}</p>
+                             </div>
                         </div>
-                        <p className="text-4xl font-black text-[#F38C32] font-mono italic tracking-tighter">₹{summaries.cashBank.bank.toLocaleString()}</p>
-                    </div>
+                        <div className="flex items-center gap-3 group/item">
+                             <span className="w-3 h-3 rounded-full bg-blue-500 group-hover/item:scale-125 transition-transform shadow-lg shadow-blue-500/30"></span>
+                             <div>
+                                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Booked</p>
+                                 <p className="text-xl font-black text-slate-800 tracking-tighter">{totalBooked}</p>
+                             </div>
+                        </div>
+                         <div className="flex items-center gap-3 group/item">
+                             <span className="w-3 h-3 rounded-full bg-slate-200 group-hover/item:scale-125 transition-transform"></span>
+                             <div>
+                                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Avail</p>
+                                 <p className="text-xl font-black text-slate-800 tracking-tighter">{totalAvailable}</p>
+                             </div>
+                        </div>
+                     </div>
                 </div>
             </div>
 
             {/* Box 4: Project Receipts & Payments */}
             <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-[#1B315A] px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
+                <div className="bg-slate-900 px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
                     <span className="flex items-center gap-3"><span>🔄</span> Receipts & Disbursements</span>
                     <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Delta Sync</span>
                 </div>
@@ -235,7 +358,7 @@ const Dashboard = () => {
           {filteredSections.map((section, sIdx) => (
             <div key={sIdx} className="space-y-6">
               <div className="flex items-center gap-4">
-                <h2 className="text-[11px] font-black text-[#1B315A] uppercase tracking-[0.3em] whitespace-nowrap">{section.title}</h2>
+                <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] whitespace-nowrap">{section.title}</h2>
                 <div className="h-px bg-slate-200 w-full"></div>
               </div>
               

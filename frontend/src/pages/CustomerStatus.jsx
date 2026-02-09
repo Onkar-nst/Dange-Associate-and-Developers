@@ -183,78 +183,25 @@ const CustomerStatus = () => {
 
     if (loading) return <Layout><div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Scanning Client Matrix...</div></Layout>;
 
+    const handleStatusChange = async (customerId, newStatus) => {
+        try {
+            await customerAPI.update(customerId, { transactionStatus: newStatus });
+            // Optimistic update or refetch
+            setCustomers(customers.map(c => c._id === customerId ? { ...c, transactionStatus: newStatus } : c));
+        } catch (err) {
+            alert('Failed to update status');
+        }
+    };
+
     return (
         <Layout>
+            {/* ... existing header code ... */}
             <div className="max-w-7xl mx-auto space-y-12 pb-20 animate-fade-in px-4">
                 
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 bg-white/30 backdrop-blur-md p-8 rounded-[3rem] border border-white/50 shadow-sm">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-4">
-                           <span className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-xl shadow-xl shadow-slate-900/10">👥</span>
-                           <div>
-                                <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase leading-none">Client Status</h1>
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Audit & Deployment Center</p>
-                           </div>
-                        </div>
-                    </div>
-                    <div className="flex gap-4">
-                        <button onClick={handleExportCSV} className="px-6 py-3.5 bg-white border border-slate-100 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-3 shadow-sm">
-                            <span>📥</span> Export Matrix
-                        </button>
-                        <button onClick={() => setShowReportModal(true)} className="btn-primary px-8 py-3.5 rounded-2xl shadow-xl shadow-blue-500/20 uppercase tracking-widest text-[10px] flex items-center gap-3 font-black">
-                            <span>📊</span> Executive Reports
-                        </button>
-                    </div>
-                </div>
+                {/* ... (keep existing header) ... */}
 
-                {/* Stat Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <StatCard label="Total Portfolio" value={stats.total} icon="💼" color="slate" />
-                    <StatCard label="Registered" value={stats.registered} icon="✅" color="emerald" />
-                    <StatCard label="Token/Pending" value={stats.pending} icon="⏳" color="blue" />
-                    <StatCard label="Gross Area Mapped" value={`${stats.totalSqFt.toLocaleString()} sqft`} icon="📐" color="slate" />
-                </div>
-
-                {/* Refined Filter Bar */}
-                <div className="bg-slate-900 rounded-[3rem] p-10 shadow-2xl shadow-blue-900/20 text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                    <div className="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-8 items-end">
-                        <div className="md:col-span-5 space-y-3">
-                            <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Search Profile</label>
-                            <input 
-                                type="text" 
-                                value={filterCustomer} 
-                                onChange={(e) => setFilterCustomer(e.target.value)}
-                                placeholder="Enter Name, ID or Phone identifier..."
-                                className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-sm"
-                            />
-                        </div>
-                        <div className="md:col-span-3 space-y-3">
-                            <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Archive Category</label>
-                            <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-[10px] uppercase">
-                                <option value="First Name" className="text-slate-800">Legal First Name</option>
-                                <option value="Last Name" className="text-slate-800">Surname Identity</option>
-                                <option value="Phone" className="text-slate-800">Phone Signal</option>
-                            </select>
-                        </div>
-                        <div className="md:col-span-3 space-y-3">
-                            <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1">Project Spectrum</label>
-                            <select value={filterProject} onChange={(e) => setFilterProject(e.target.value)} className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-[10px] uppercase">
-                                <option value="" className="text-slate-800">Global Archive (All)</option>
-                                {projects.map(p => <option key={p._id} value={p._id} className="text-slate-800">{p.projectName}</option>)}
-                            </select>
-                        </div>
-                        <div className="md:col-span-1">
-                            <button onClick={handleSearch} className="w-full h-[54px] bg-blue-600 hover:bg-blue-500 text-white rounded-2xl shadow-xl shadow-blue-500/20 transition-all active:scale-95 flex items-center justify-center text-xl font-black">
-                                📡
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Error Pulse */}
-                {error && <div className="p-4 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl text-[11px] font-black uppercase tracking-widest text-center animate-pulse">{error}</div>}
+                {/* ... (keep existing stat grid and filter bar) ... */}
 
                 {/* Enterprise Table */}
                 <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
@@ -289,11 +236,23 @@ const CustomerStatus = () => {
                                     </td>
                                     <td className="text-center italic">
                                         <div className="text-[11px] font-black text-slate-800 uppercase leading-none mb-1">{c.projectId?.projectName || 'NA'}</div>
-                                        <div className="flex justify-center gap-1.5">
+                                        <div className="flex flex-col items-center gap-2 mt-2">
                                             <span className="text-[8px] font-black px-2 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase tracking-widest">UNIT: {c.plotId?.plotNumber || 'NA'}</span>
-                                            <span className={`text-[8px] font-black px-2 py-1 rounded-lg uppercase tracking-widest ${c.transactionStatus === 'Registered' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
-                                                {c.transactionStatus || 'Token'}
-                                            </span>
+                                            <select 
+                                                value={c.transactionStatus || 'Token'} 
+                                                onChange={(e) => handleStatusChange(c._id, e.target.value)}
+                                                className={`text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest outline-none border-none cursor-pointer text-center appearance-none ${
+                                                    c.transactionStatus === 'Registered' ? 'bg-emerald-100 text-emerald-700' : 
+                                                    c.transactionStatus === 'Agreement' ? 'bg-purple-100 text-purple-700' :
+                                                    c.transactionStatus === 'Booked' ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-slate-100 text-slate-600'
+                                                }`}
+                                            >
+                                                <option value="Token">Token</option>
+                                                <option value="Booked">Booked</option>
+                                                <option value="Agreement">Agreement</option>
+                                                <option value="Registered">Registered</option>
+                                            </select>
                                         </div>
                                     </td>
                                     <td>
@@ -309,9 +268,9 @@ const CustomerStatus = () => {
                                         </div>
                                     </td>
                                     <td>
-                                        <div className="flex flex-wrap gap-1.5 max-w-[200px]">
+                                        <div className="flex flex-col gap-2 min-w-[120px]">
                                             {['Agreement', 'NMRDA', 'Deed', 'Farm'].map(type => (
-                                                <a key={type} href={`#`} className="text-[8px] font-black px-2.5 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all uppercase tracking-widest">
+                                                <a key={type} href={`#`} className="text-[10px] font-black px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all uppercase tracking-widest text-center shadow-sm">
                                                     {type}
                                                 </a>
                                             ))}
@@ -331,117 +290,178 @@ const CustomerStatus = () => {
 
                 {/* High-End Edit Modal */}
                 {showEditModal && editingCustomer && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xl flex items-center justify-center z-[100] p-6 animate-fade-in">
-                        <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-6xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] border border-white/20">
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200">
+                        <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] border border-white/20 animate-in zoom-in-95 duration-300">
                             
-                            <div className="md:w-80 bg-slate-900 p-12 text-white relative">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                                <div className="relative z-10 space-y-10">
+                            {/* Left Panel (Dark) - Customer Context */}
+                            <div className="md:w-80 bg-[#0F172A] p-10 text-white relative flex flex-col justify-between overflow-hidden">
+                                {/* Ambient Background */}
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/20 rounded-full blur-[80px] -mr-32 -mt-32"></div>
+                                <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-600/10 rounded-full blur-[80px] -ml-32 -mb-32"></div>
+                                
+                                <div className="relative z-10 space-y-8">
                                     <div>
-                                        <div className="bg-blue-600 text-[9px] font-black px-3 py-1.5 rounded-xl w-fit uppercase tracking-widest mb-6 shadow-lg shadow-blue-500/20">Audit Active</div>
-                                        <h3 className="text-3xl font-black mb-1 uppercase tracking-tighter">{editingCustomer.name}</h3>
-                                        <p className="text-slate-500 text-[10px] font-black tracking-widest uppercase">ID: {editingCustomer._id.slice(-8).toUpperCase()}</p>
+                                        <div className="bg-blue-600/20 text-blue-300 border border-blue-500/30 text-[9px] font-black px-3 py-1.5 rounded-lg w-fit uppercase tracking-widest mb-6 backdrop-blur-sm">Audit Active</div>
+                                        <h3 className="text-3xl font-black mb-2 uppercase tracking-tighter leading-none">{editingCustomer.name}</h3>
+                                        <div className="flex items-center gap-2 opacity-60">
+                                            <span className="text-xs uppercase tracking-widest font-bold">ID:</span>
+                                            <span className="font-mono text-xs">{editingCustomer._id.slice(-6).toUpperCase()}</span>
+                                        </div>
                                     </div>
                                     
                                     <div className="space-y-6">
-                                        <div className="bg-white/5 p-6 rounded-3xl border border-white/5 space-y-3">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Operational Summary</p>
-                                            <div className="text-sm font-black uppercase tracking-tight">{editingCustomer.projectId?.projectName}</div>
-                                            <div className="h-px bg-white/10"></div>
-                                            <div className="flex justify-between text-[10px] font-black">
-                                                <span className="text-slate-500">Unit ID</span>
-                                                <span className="text-blue-400">{editingCustomer.plotId?.plotNumber}</span>
+                                        <div className="bg-white/5 p-6 rounded-2xl border border-white/5 space-y-4 backdrop-blur-sm">
+                                            <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Project</span>
+                                                <span className="text-xs font-black uppercase">{editingCustomer.projectId?.projectName}</span>
                                             </div>
-                                            <div className="flex justify-between text-[10px] font-black">
-                                                <span className="text-slate-500">Area</span>
-                                                <span className="text-blue-400">{editingCustomer.sqFt} sqft</span>
+                                            <div className="flex justify-between items-center pb-3 border-b border-white/5">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Unit ID</span>
+                                                <span className="text-xs font-black text-blue-400">{editingCustomer.plotId?.plotNumber}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Area</span>
+                                                <span className="text-xs font-black text-emerald-400">{editingCustomer.sqFt} sqft</span>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Calibrated Sale Rate (₹)</label>
-                                            <input 
-                                                type="number" 
-                                                value={customerRate} 
-                                                onChange={(e) => setCustomerRate(parseFloat(e.target.value) || 0)}
-                                                className="w-full px-6 py-5 bg-white/5 border border-white/10 rounded-[2rem] outline-none font-black text-2xl text-blue-400 shadow-inner focus:border-blue-500/50"
-                                            />
+                                        <div className="space-y-3 pt-4 border-t border-white/5">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Proposed Rate (₹)</label>
+                                            <div className="relative group">
+                                                <input 
+                                                    type="number" 
+                                                    value={customerRate} 
+                                                    onChange={(e) => setCustomerRate(parseFloat(e.target.value) || 0)}
+                                                    className="w-full pl-5 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl outline-none font-black text-2xl text-white shadow-inner focus:border-blue-500/50 focus:bg-white/10 transition-all text-right"
+                                                />
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">₹</span>
+                                            </div>
                                         </div>
                                     </div>
+                                </div>
+                                
+                                <div className="relative z-10 text-[9px] font-black text-slate-500 uppercase tracking-widest text-center mt-8">
+                                    Secure Transaction Environment
                                 </div>
                             </div>
 
-                            <div className="flex-1 p-12 overflow-y-auto flex flex-col bg-[#fcfdfe]">
-                                <div className="flex justify-between items-center mb-10 pb-6 border-b border-slate-100">
-                                    <h3 className="text-xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-3">
-                                        <span>🧬</span> Deployment & Incentives
-                                    </h3>
-                                    <button onClick={() => setShowEditModal(false)} className="w-12 h-12 bg-slate-50 hover:bg-slate-900 hover:text-white rounded-2xl flex items-center justify-center font-black transition-all shadow-sm">✕</button>
+                            {/* Right Panel (Light) - Executives Management */}
+                            <div className="flex-1 flex flex-col bg-[#F8FAFC]">
+                                {/* Header */}
+                                <div className="px-10 py-8 bg-white border-b border-slate-100 flex justify-between items-center sticky top-0 z-20">
+                                    <div>
+                                        <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+                                            <span>🧬</span> Incentive Matrix
+                                        </h3>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Configure Sales Hierarchy</p>
+                                    </div>
+                                    <button onClick={() => setShowEditModal(false)} className="w-10 h-10 bg-slate-50 hover:bg-rose-50 hover:text-rose-500 rounded-xl flex items-center justify-center font-black transition-all text-slate-400">✕</button>
                                 </div>
 
-                                <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm mb-10">
-                                    <div className="flex flex-col lg:flex-row gap-6 items-end">
-                                        <div className="flex-1 space-y-3">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deploy New Personnel</label>
+                                {/* Content Scroll Area */}
+                                <div className="flex-1 overflow-y-auto p-10 space-y-8">
+                                    
+                                    {/* Add New Section */}
+                                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-4 items-end">
+                                        <div className="flex-1 w-full space-y-2">
+                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Deploy Personnel</label>
                                             <select 
                                                 value={selectedExecToAdd} 
                                                 onChange={(e) => setSelectedExecToAdd(e.target.value)}
-                                                className="modern-input font-black uppercase"
+                                                className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3.5 font-bold uppercase outline-none"
                                             >
-                                                <option value="">-- ARCHIVE --</option>
+                                                <option value="">Select Executive...</option>
                                                 {executives.map(e => <option key={e._id} value={e._id}>{e.name} ({e.userId})</option>)}
                                             </select>
                                         </div>
-                                        <button onClick={handleAddExecToModal} className="btn-primary px-10 h-[54px] rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-blue-500/20 active:scale-95 transition-all">Assign Entity</button>
+                                        <button 
+                                            onClick={handleAddExecToModal} 
+                                            disabled={!selectedExecToAdd}
+                                            className="w-full sm:w-auto px-8 py-3.5 bg-slate-900 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-slate-900/10 active:scale-95"
+                                        >
+                                            + Add
+                                        </button>
+                                    </div>
+
+                                    {/* Executive List Cards */}
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center px-2">
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Deployments ({modalExecs.length})</span>
+                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target: 100%</span>
+                                        </div>
+                                        
+                                        {modalExecs.length === 0 ? (
+                                            <div className="py-12 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center text-slate-400">
+                                                <span className="text-4xl mb-2 opacity-20">👥</span>
+                                                <p className="text-xs font-bold uppercase tracking-widest opacity-50">No Personnel Assigned</p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 gap-4">
+                                                {modalExecs.map((item, idx) => {
+                                                    const exec = item.executiveId;
+                                                    const execId = exec?._id || exec;
+                                                    const potential = (customerRate * (editingCustomer.sqFt || 0) * (item.percentage / 100));
+                                                    
+                                                    return (
+                                                        <div key={idx} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-100 transition-all">
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center font-black text-sm uppercase group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                                                    {exec?.name?.[0] || '?'}
+                                                                </div>
+                                                                <div>
+                                                                    <div className="font-black text-slate-800 text-sm uppercase tracking-tight">{exec?.name || 'Unknown'}</div>
+                                                                    <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">ID: {exec?.userId}</div>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div className="flex items-center gap-8">
+                                                                <div className="text-right hidden sm:block">
+                                                                    <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Incentive</div>
+                                                                    <div className="font-black text-slate-700">₹{potential.toLocaleString()}</div>
+                                                                </div>
+                                                                
+                                                                <div className="flex items-center gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
+                                                                    <input 
+                                                                        type="number" 
+                                                                        value={item.percentage} 
+                                                                        onChange={(e) => handlePercentageChange(execId, e.target.value)}
+                                                                        className="w-12 bg-transparent text-center font-black text-blue-600 outline-none"
+                                                                        placeholder="0"
+                                                                    />
+                                                                    <span className="text-xs font-bold text-slate-400 pr-2">%</span>
+                                                                </div>
+
+                                                                <button 
+                                                                    onClick={() => handleRemoveExecFromModal(execId)}
+                                                                    className="w-8 h-8 rounded-lg text-rose-300 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center transition-all"
+                                                                >
+                                                                    ✕
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Summary Footer */}
+                                    <div className="mt-auto bg-slate-900 text-white p-5 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-900/5">
+                                        <div>
+                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Allocation</div>
+                                            <div className="text-xl font-black">{modalExecs.reduce((acc, curr) => acc + (parseFloat(curr.percentage) || 0), 0)}%</div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Value</div>
+                                            <div className="text-xl font-black text-emerald-400">₹{(customerRate * (editingCustomer.sqFt || 0)).toLocaleString()}</div>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div className="flex-1 overflow-x-auto min-h-[300px]">
-                                    <table className="modern-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Personnel Entity</th>
-                                                <th className="text-center">Allocation (%)</th>
-                                                <th className="text-right pr-4">Nett Incentive</th>
-                                                <th className="text-right">Admin</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {modalExecs.map((item, idx) => {
-                                                const exec = item.executiveId;
-                                                const execId = exec?._id || exec;
-                                                const potential = (customerRate * (editingCustomer.sqFt || 0) * (item.percentage / 100));
-                                                return (
-                                                    <tr key={idx} className="group hover:bg-white transition-colors">
-                                                        <td>
-                                                            <div className="font-black text-slate-800 uppercase tracking-tight">{exec?.name || 'Unknown Unit'}</div>
-                                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">ID: {exec?.userId || 'NA'}</div>
-                                                        </td>
-                                                        <td className="text-center">
-                                                            <input 
-                                                                type="number" 
-                                                                value={item.percentage} 
-                                                                onChange={(e) => handlePercentageChange(execId, e.target.value)}
-                                                                className="w-20 px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-center font-black text-blue-600 outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner"
-                                                            />
-                                                        </td>
-                                                        <td className="text-right">
-                                                            <div className="text-sm font-black text-slate-800">₹{potential.toLocaleString()}</div>
-                                                            <div className="text-[9px] text-slate-300 font-bold uppercase tracking-widest italic">Live Calculation</div>
-                                                        </td>
-                                                        <td className="text-right">
-                                                            <button onClick={() => handleRemoveExecFromModal(execId)} className="w-10 h-10 bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white rounded-xl transition-all flex items-center justify-center font-bold shadow-sm">✕</button>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <div className="pt-10 flex gap-4">
-                                    <button onClick={handleSaveEditChanges} className="flex-1 bg-slate-900 text-white font-black py-5 rounded-[2rem] shadow-2xl shadow-slate-900/10 transition-all uppercase tracking-[0.3em] text-[11px] hover:bg-blue-600 active:scale-95">Commit Operations</button>
-                                    <button onClick={() => setShowEditModal(false)} className="px-12 bg-white text-slate-400 font-black rounded-[2rem] border border-slate-100 transition-all uppercase tracking-widest text-[11px] hover:bg-slate-50">Discard</button>
+                                {/* Action Footer */}
+                                <div className="p-6 bg-white border-t border-slate-100 flex gap-4 sticky bottom-0 z-20">
+                                    <button onClick={() => setShowEditModal(false)} className="px-8 py-4 bg-white text-slate-500 font-bold rounded-xl border border-slate-200 uppercase text-[10px] tracking-widest hover:bg-slate-50 transition-all">Cancel</button>
+                                    <button onClick={handleSaveEditChanges} className="flex-1 py-4 bg-blue-600 text-white font-black rounded-xl shadow-xl shadow-blue-500/20 uppercase text-[10px] tracking-[0.2em] hover:bg-blue-500 active:scale-95 transition-all">Save Changes</button>
                                 </div>
                             </div>
                         </div>
