@@ -329,14 +329,14 @@ const AIChatbot = () => {
             return (
                 <div key={idx} className="my-4 w-full overflow-hidden bg-white rounded-xl border border-slate-200 shadow-sm">
                     <div className="p-3 bg-slate-50 border-b border-slate-200">
-                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{chartData.title}</p>
+                         <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{String(chartData.title || 'Summary List')}</p>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-xs text-left">
                             <thead className="text-[10px] text-slate-500 uppercase bg-slate-50 font-black">
                                 <tr>
                                     {(chartData.headers || []).map((h, i) => (
-                                        <th key={i} className="px-4 py-3 whitespace-nowrap">{h}</th>
+                                        <th key={i} className="px-4 py-3 whitespace-nowrap">{String(h)}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -347,7 +347,11 @@ const AIChatbot = () => {
                                     return (
                                         <tr key={ri} className="border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
                                             {cells.map((cell, ci) => (
-                                                <td key={ci} className="px-4 py-3 font-medium text-slate-700 whitespace-nowrap">{cell}</td>
+                                                <td key={ci} className="px-4 py-3 font-medium text-slate-700 whitespace-nowrap">
+                                                    {typeof cell === 'object' && cell !== null 
+                                                        ? JSON.stringify(cell) 
+                                                        : String(cell ?? '')}
+                                                </td>
                                             ))}
                                         </tr>
                                     );
