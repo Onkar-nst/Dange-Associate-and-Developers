@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { customerAPI, projectAPI, userAPI, reportAPI } from '../api/services';
 import Layout from '../components/Layout';
 import logo from '../assets/logo.png';
@@ -27,6 +28,21 @@ const PartyLedger = () => {
     useEffect(() => {
         fetchInitialData();
     }, []);
+
+    const location = useLocation();
+    const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+
+    useEffect(() => {
+        const partyId = queryParams.get('partyId');
+        if (partyId && customers.length > 0) {
+            setSelectedCustomer(partyId);
+            // Trigger fetch automatically
+            setTimeout(() => {
+                const btn = document.getElementById('generate-report-btn');
+                if (btn) btn.click();
+            }, 500);
+        }
+    }, [queryParams, customers]);
 
     const fetchInitialData = async () => {
         try {
@@ -167,6 +183,7 @@ const PartyLedger = () => {
 
                             <div className="space-y-3">
                                 <button 
+                                    id="generate-report-btn"
                                     onClick={handleFetchLedger} 
                                     disabled={fetching}
                                     className="btn-primary w-full !py-4 rounded-2xl shadow-xl shadow-blue-500/20 uppercase tracking-widest text-[11px] flex items-center justify-center gap-3"
@@ -235,7 +252,7 @@ const PartyLedger = () => {
                                             <td className="text-right font-black text-slate-300">-</td>
                                             <td className="text-right font-black text-slate-300">-</td>
                                             <td className="text-right font-black text-blue-600">
-                                                ₹{Math.abs(openingBalance).toLocaleString()} {openingBalance >= 0 ? 'Dr' : 'Cr'}
+                                                ₹{Math.abs(openingBalance).toLocaleString('en-IN')} {openingBalance >= 0 ? 'Dr' : 'Cr'}
                                             </td>
                                         </tr>
 
@@ -251,13 +268,13 @@ const PartyLedger = () => {
                                                     <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Automated Entry</div>
                                                 </td>
                                                 <td className="text-right font-black text-rose-500">
-                                                    {entry.debit > 0 ? `₹${entry.debit.toLocaleString()}` : '-'}
+                                                    {entry.debit > 0 ? `₹${entry.debit.toLocaleString('en-IN')}` : '-'}
                                                 </td>
                                                 <td className="text-right font-black text-emerald-600">
-                                                    {entry.credit > 0 ? `₹${entry.credit.toLocaleString()}` : '-'}
+                                                    {entry.credit > 0 ? `₹${entry.credit.toLocaleString('en-IN')}` : '-'}
                                                 </td>
                                                 <td className="text-right font-black text-slate-900 bg-slate-50/30">
-                                                    ₹{Math.abs(entry.runningBalance).toLocaleString()} {entry.runningBalance >= 0 ? 'Dr' : 'Cr'}
+                                                    ₹{Math.abs(entry.runningBalance).toLocaleString('en-IN')} {entry.runningBalance >= 0 ? 'Dr' : 'Cr'}
                                                 </td>
                                             </tr>
                                         ))}
@@ -275,13 +292,13 @@ const PartyLedger = () => {
                                         <tr className="bg-slate-900 text-white font-black">
                                             <td colSpan="2" className="text-right uppercase tracking-widest text-[9px] pr-4">Nett Totals :</td>
                                             <td className="text-right py-6">
-                                                ₹{ledgerData.reduce((acc, curr) => acc + (curr.debit || 0), 0).toLocaleString()}
+                                                ₹{ledgerData.reduce((acc, curr) => acc + (curr.debit || 0), 0).toLocaleString('en-IN')}
                                             </td>
                                             <td className="text-right py-6">
-                                                ₹{ledgerData.reduce((acc, curr) => acc + (curr.credit || 0), 0).toLocaleString()}
+                                                ₹{ledgerData.reduce((acc, curr) => acc + (curr.credit || 0), 0).toLocaleString('en-IN')}
                                             </td>
                                             <td className="text-right py-6 text-blue-400 border-l border-white/10">
-                                                ₹{Math.abs(closingBalance).toLocaleString()} {closingBalance >= 0 ? 'Dr' : 'Cr'}
+                                                ₹{Math.abs(closingBalance).toLocaleString('en-IN')} {closingBalance >= 0 ? 'Dr' : 'Cr'}
                                             </td>
                                         </tr>
                                     </tfoot>

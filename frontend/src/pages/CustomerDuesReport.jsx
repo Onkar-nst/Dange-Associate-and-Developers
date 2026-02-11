@@ -136,16 +136,16 @@ const CustomerDuesReport = () => {
                                         </td>
                                         <td className="text-center font-black text-slate-900">{r.plotNo}</td>
                                         <td className="text-right text-slate-400 font-mono text-[10px]">{r.area} <span className="text-[8px] uppercase">sqft</span></td>
-                                        <td className="text-right font-black text-blue-600 bg-blue-50/10">₹{r.emiAmt.toLocaleString()}</td>
-                                        <td className="text-right font-black text-slate-800">₹{r.cost.toLocaleString()}</td>
-                                        <td className="text-right text-slate-400">₹{r.paidAmt.toLocaleString()}</td>
-                                        <td className="text-right font-black text-rose-600 bg-rose-50/10">₹{r.balance.toLocaleString()}</td>
-                                        <td className="text-right font-black text-emerald-600">₹{r.dpPaid.toLocaleString()}</td>
+                                        <td className="text-right font-black text-blue-600 bg-blue-50/10">₹{r.emiAmt.toLocaleString('en-IN')}</td>
+                                        <td className="text-right font-black text-slate-800">₹{r.cost.toLocaleString('en-IN')}</td>
+                                        <td className="text-right text-slate-400">₹{r.paidAmt.toLocaleString('en-IN')}</td>
+                                        <td className="text-right font-black text-rose-600 bg-rose-50/10">₹{r.balance.toLocaleString('en-IN')}</td>
+                                        <td className="text-right font-black text-emerald-600">₹{r.dpPaid.toLocaleString('en-IN')}</td>
                                         <td className="text-center">
                                             <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-black text-slate-600">{r.noEMI} M</span>
                                         </td>
-                                        <td className="text-right font-black text-rose-500 font-mono">₹{r.beAmt.toLocaleString()}</td>
-                                        <td className="text-right font-black text-slate-900 text-[12px] bg-slate-50/50">₹{r.totalBal.toLocaleString()}</td>
+                                        <td className="text-right font-black text-rose-500 font-mono">₹{r.beAmt.toLocaleString('en-IN')}</td>
+                                        <td className="text-right font-black text-slate-900 text-[12px] bg-slate-50/50">₹{r.totalBal.toLocaleString('en-IN')}</td>
                                         <td>
                                             <div className="text-[10px] font-black text-slate-500 uppercase tracking-tighter truncate max-w-[120px]">{r.agent}</div>
                                         </td>

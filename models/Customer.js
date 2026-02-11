@@ -173,13 +173,18 @@ const CustomerSchema = new mongoose.Schema({
     },
     transactionStatus: {
         type: String,
-        enum: ['Token', 'Registered', 'Cancelled'],
+        enum: ['Token', 'Booked', 'Agreement', 'Registered', 'Cancelled'],
         default: 'Token'
     },
     remarks: {
         type: String,
         trim: true
     },
+    documents: [{
+        name: { type: String, required: true },
+        path: { type: String, required: true },
+        uploadedAt: { type: Date, default: Date.now }
+    }],
     aRate: {
         type: Number
     },

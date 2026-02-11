@@ -214,18 +214,18 @@ const Dashboard = () => {
                                 {summaries.project.map((p, i) => (
                                     <tr key={i} className="group/row cursor-pointer hover:bg-white transition-colors" onClick={() => navigate(`/report/outstanding?projectId=${p._id}`)}>
                                         <td className="py-4 text-slate-800 group-hover/row:text-[#F38C32] transition-colors">{p.projectName}</td>
-                                        <td className="py-4 text-right font-mono">₹{p.totalSale.toLocaleString()}</td>
-                                        <td className="py-4 text-right font-mono text-emerald-600">₹{p.totalReceived.toLocaleString()}</td>
-                                        <td className="py-4 text-right font-mono text-rose-500 italic">₹{p.balance.toLocaleString()}</td>
+                                        <td className="py-4 text-right font-mono">₹{p.totalSale.toLocaleString('en-IN')}</td>
+                                        <td className="py-4 text-right font-mono text-emerald-600">₹{p.totalReceived.toLocaleString('en-IN')}</td>
+                                        <td className="py-4 text-right font-mono text-rose-500 italic">₹{p.balance.toLocaleString('en-IN')}</td>
                                     </tr>
                                 ))}
                             </tbody>
                             <tfoot>
                                 <tr className="border-t-2 border-[#1B315A] text-slate-900">
                                     <td className="pt-4 font-black">Consolidated Metrics :</td>
-                                    <td className="pt-4 text-right font-mono">₹{summaries.project.reduce((acc, p) => acc + p.totalSale, 0).toLocaleString()}</td>
-                                    <td className="pt-4 text-right font-mono">₹{summaries.project.reduce((acc, p) => acc + p.totalReceived, 0).toLocaleString()}</td>
-                                    <td className="pt-4 text-right font-mono text-rose-600">₹{summaries.project.reduce((acc, p) => acc + p.balance, 0).toLocaleString()}</td>
+                                    <td className="pt-4 text-right font-mono">₹{summaries.project.reduce((acc, p) => acc + p.totalSale, 0).toLocaleString('en-IN')}</td>
+                                    <td className="pt-4 text-right font-mono">₹{summaries.project.reduce((acc, p) => acc + p.totalReceived, 0).toLocaleString('en-IN')}</td>
+                                    <td className="pt-4 text-right font-mono text-rose-600">₹{summaries.project.reduce((acc, p) => acc + p.balance, 0).toLocaleString('en-IN')}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -335,16 +335,16 @@ const Dashboard = () => {
                                 {summaries.rp.map((r, i) => (
                                     <tr key={i} className="group/row cursor-pointer hover:bg-white transition-colors" onClick={() => navigate('/report/cash-book')}>
                                         <td className="py-4 text-slate-800 group-hover/row:text-[#F38C32] transition-colors uppercase italic">{r.projectName}</td>
-                                        <td className="py-4 text-right font-mono text-emerald-600 italic">₹{r.totalReceipt.toLocaleString()}</td>
-                                        <td className="py-4 text-right font-mono text-rose-500 italic">₹{r.totalPayment.toLocaleString()}</td>
+                                        <td className="py-4 text-right font-mono text-emerald-600 italic">₹{r.totalReceipt.toLocaleString('en-IN')}</td>
+                                        <td className="py-4 text-right font-mono text-rose-500 italic">₹{r.totalPayment.toLocaleString('en-IN')}</td>
                                     </tr>
                                 ))}
                             </tbody>
                             <tfoot>
                                 <tr className="border-t-2 border-[#1B315A] text-slate-900">
                                     <td className="pt-4 font-black">Aggregate Flow :</td>
-                                    <td className="pt-4 text-right font-mono text-emerald-600">₹{summaries.rp.reduce((acc, r) => acc + r.totalReceipt, 0).toLocaleString()}</td>
-                                    <td className="pt-4 text-right font-mono text-rose-600">₹{summaries.rp.reduce((acc, r) => acc + r.totalPayment, 0).toLocaleString()}</td>
+                                    <td className="pt-4 text-right font-mono text-emerald-600">₹{summaries.rp.reduce((acc, r) => acc + r.totalReceipt, 0).toLocaleString('en-IN')}</td>
+                                    <td className="pt-4 text-right font-mono text-rose-600">₹{summaries.rp.reduce((acc, r) => acc + r.totalPayment, 0).toLocaleString('en-IN')}</td>
                                 </tr>
                             </tfoot>
                         </table>

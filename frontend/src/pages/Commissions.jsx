@@ -103,6 +103,19 @@ const Commissions = () => {
     }
   };
 
+  const handleDeleteRule = async (id) => {
+    if (!window.confirm('Are you sure you want to DELETE this commission rule? This will not affect existing ledger entries but no new commissions will be calculated using this rule.')) return;
+    
+    try {
+      setError('');
+      await commissionAPI.deleteRule(id);
+      setSuccess('Rule deleted successfully');
+      fetchInitialData();
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to delete rule');
+    }
+  };
+
   if (loading && !ledger) {
     return (
       <Layout>
@@ -288,8 +301,17 @@ const Commissions = () => {
               ) : (
                 <div className="space-y-4">
                   {rules.map(rule => (
-                    <div key={rule._id} className="p-3 bg-gray-50 rounded border-l-4 border-indigo-400">
-                      <div className="font-bold text-gray-800">{rule.name}</div>
+                    <div key={rule._id} className="p-3 bg-gray-50 rounded border-l-4 border-indigo-400 group relative">
+                      {user?.role === 'The Boss' && (
+                        <button 
+                          onClick={() => handleDeleteRule(rule._id)}
+                          className="absolute top-2 right-2 text-rose-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete Rule"
+                        >
+                          🗑️
+                        </button>
+                      )}
+                      <div className="font-bold text-gray-800 pr-6">{rule.name}</div>
                       <div className="text-sm text-gray-600">
                         {rule.type === 'percentage' ? `${rule.value}%` : `₹${rule.value}`} of {rule.basis.replace(/_/g, ' ')}
                       </div>
@@ -336,18 +358,18 @@ const Commissions = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-gray-500 uppercase tracking-wider font-bold">Pending Balance</div>
-                    <div className="text-3xl font-black text-indigo-600">₹{ledger.summary.balance.toLocaleString()}</div>
+                    <div className="text-3xl font-black text-indigo-600">₹{ledger.summary.balance.toLocaleString('en-IN')}</div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-green-50 p-4 rounded text-center">
                     <div className="text-xs text-green-600 font-bold uppercase">Total Earned</div>
-                    <div className="text-xl font-bold text-green-800">₹{ledger.summary.totalEarned.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-green-800">₹{ledger.summary.totalEarned.toLocaleString('en-IN')}</div>
                   </div>
                   <div className="bg-blue-50 p-4 rounded text-center">
                     <div className="text-xs text-blue-600 font-bold uppercase">Total Paid</div>
-                    <div className="text-xl font-bold text-blue-800">₹{ledger.summary.totalPaid.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-blue-800">₹{ledger.summary.totalPaid.toLocaleString('en-IN')}</div>
                   </div>
                 </div>
 
@@ -372,7 +394,7 @@ const Commissions = () => {
                             {item.customerId && <div className="text-xs text-gray-400">Customer: {item.customerId.name}</div>}
                           </td>
                           <td className={`px-4 py-3 text-right font-bold ${item.status === 'earned' ? 'text-gray-800' : 'text-green-600'}`}>
-                            {item.status === 'paid' ? '-' : ''}₹{item.amount.toLocaleString()}
+                            {item.status === 'paid' ? '-' : ''}₹{item.amount.toLocaleString('en-IN')}
                           </td>
                           <td className="px-4 py-3 text-center">
                             <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${

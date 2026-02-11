@@ -112,30 +112,66 @@ const PublicProjectStatus = () => {
                         <p className="text-[10px] text-slate-400 mt-2">UNIT IDENTIFIER</p>
                      </div>
                      <div className="h-px bg-slate-100"></div>
-                     <div className="grid grid-cols-1 gap-4 text-center">
+                     <div className="grid grid-cols-1 gap-6 text-center">
                         <div>
                           <p className="text-[8px] text-slate-400 tracking-[0.2em] mb-1">TOTAL DEVELOPED AREA</p>
-                          <p className="text-xl italic text-blue-600 font-black leading-none">{selectedPlot.size} <span className="text-[10px] text-slate-400">SQFT</span></p>
+                          <p className="text-2xl italic text-blue-600 font-black leading-none">{selectedPlot.size} <span className="text-[10px] text-slate-400">SQFT</span></p>
                         </div>
-                        <div className="pt-4 border-t border-slate-50">
-                          <p className={`text-[10px] font-black px-6 py-2 rounded-full inline-block border-2 ${
-                            selectedPlot.status === 'vacant' ? 'bg-lime-50 text-lime-700 border-lime-100' :
-                            selectedPlot.status === 'booked' ? 'bg-rose-50 text-rose-700 border-rose-100' :
-                            selectedPlot.status === 'sold' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                            'bg-indigo-50 text-indigo-700 border-indigo-100'
+
+                        {/* Directions Matrix */}
+                        <div className="pt-4 border-t border-slate-50 text-left">
+                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                             <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span> Matrix Boundaries
+                           </p>
+                           <div className="grid grid-cols-2 gap-2">
+                             {[
+                               { label: 'East', val: selectedPlot.east },
+                               { label: 'West', val: selectedPlot.west },
+                               { label: 'North', val: selectedPlot.north },
+                               { label: 'South', val: selectedPlot.south }
+                             ].map((dir, i) => (
+                               <div key={i} className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 group">
+                                 <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">{dir.label}</p>
+                                 <p className="text-[10px] text-slate-800 font-black truncate">{dir.val || '-'}</p>
+                               </div>
+                             ))}
+                           </div>
+                        </div>
+
+                        {/* Valuation Logic */}
+                        <div className="bg-[#1B315A] p-6 rounded-[2.5rem] shadow-xl shadow-blue-900/10 relative overflow-hidden group text-left border border-white/5">
+                           <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl -mr-12 -mt-12 group-hover:scale-125 transition-transform"></div>
+                           <p className="text-[8px] font-black text-blue-300/60 uppercase tracking-widest mb-1 relative z-10">Unit Valuation</p>
+                           <div className="flex items-baseline gap-1 relative z-10">
+                              <span className="text-white text-sm font-black">₹</span>
+                              <p className="text-2xl font-black text-white italic tracking-tighter leading-none">
+                                {(selectedPlot.size * (selectedPlot.rate || 0)).toLocaleString('en-IN')}
+                              </p>
+                           </div>
+                           <p className="text-[8px] font-black text-emerald-400 mt-3 uppercase tracking-widest border-l-2 border-emerald-400/30 pl-2 relative z-10">
+                              Standard Rate: ₹{selectedPlot.rate || 0}/Ft²
+                           </p>
+                        </div>
+
+                        <div className="pt-2">
+                          <p className={`text-[10px] font-black px-8 py-2.5 rounded-full inline-block border-2 shadow-sm ${
+                            selectedPlot.status === 'vacant' ? 'bg-lime-50 text-lime-700 border-lime-200' :
+                            selectedPlot.status === 'booked' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                            selectedPlot.status === 'sold' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                            'bg-indigo-50 text-indigo-700 border-indigo-200'
                           }`}>
-                            {selectedPlot.status === 'vacant' ? 'AVAILABLE' : selectedPlot.status}
+                            {selectedPlot.status === 'vacant' ? 'AVAILABLE FOR POSSESSION' : selectedPlot.status}
                           </p>
                         </div>
                         {selectedPlot.status === 'vacant' && (
                             <button 
                                 onClick={() => setShowInquiry(true)}
-                                className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-blue-600 transition-all shadow-xl"
+                                className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] hover:bg-blue-600 transition-all shadow-xl active:scale-95 group flex items-center justify-center gap-3"
                             >
-                                Secure This Unit ➔
+                                Secure This Unit <span className="group-hover:translate-x-2 transition-transform">➔</span>
                             </button>
                         )}
-                     </div>
+                      </div>
                    </div>
                  ) : (
                    <div className="text-slate-300 text-[10px] font-black uppercase text-center py-12 tracking-widest leading-loose italic">

@@ -48,6 +48,30 @@ exports.getRules = async (req, res) => {
     }
 };
 
+// @desc    Delete a commission rule
+// @route   DELETE /api/commission/rules/:id
+// @access  Private (Boss only)
+exports.deleteRule = async (req, res) => {
+    try {
+        const rule = await CommissionRule.findByIdAndDelete(req.params.id);
+        if (!rule) {
+            return res.status(404).json({
+                success: false,
+                error: 'Rule not found'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            data: {}
+        });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            error: err.message
+        });
+    }
+};
+
 // @desc    Get commission ledger for an executive
 // @route   GET /api/commission/executive/:id
 // @access  Private (Boss & Owner Executive)

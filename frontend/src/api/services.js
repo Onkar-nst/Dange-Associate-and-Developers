@@ -68,6 +68,7 @@ export const commissionAPI = {
     createRule: (data) => axiosInstance.post('/commission/rules', data),
     getExecutiveLedger: (id) => axiosInstance.get(`/commission/executive/${id}`),
     pay: (data) => axiosInstance.post('/commission/pay', data),
+    deleteRule: (id) => axiosInstance.delete(`/commission/rules/${id}`),
 };
 
 // Ledger Accounts
@@ -106,4 +107,13 @@ export const jvAPI = {
 export const chatbotAPI = {
     getContext: () => axiosInstance.get('/chatbot/context'),
     query: (data) => axiosInstance.post('/chatbot/query', data),
+};
+
+// File Upload
+export const uploadAPI = {
+    upload: (formData) => axiosInstance.post('/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    }),
 };

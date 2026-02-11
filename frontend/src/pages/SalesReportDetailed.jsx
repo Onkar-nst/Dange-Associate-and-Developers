@@ -73,7 +73,7 @@ const SalesReportDetailed = () => {
                                 </div>
                                 <div className="px-6 py-3 bg-white/5 border border-white/10 rounded-2xl">
                                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nett Valuation</p>
-                                    <p className="text-2xl font-black text-emerald-400 font-mono tracking-tighter">₹{summary.value.toLocaleString()}</p>
+                                    <p className="text-2xl font-black text-emerald-400 font-mono tracking-tighter">₹{summary.value.toLocaleString('en-IN')}</p>
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-6 items-end">
@@ -141,11 +141,11 @@ const SalesReportDetailed = () => {
                                         </div>
                                     </td>
                                     <td className="text-right">
-                                        <div className="font-black text-slate-900 text-base">₹{row.totalValue.toLocaleString()}</div>
+                                        <div className="font-black text-slate-900 text-base">₹{row.totalValue.toLocaleString('en-IN')}</div>
                                         <div className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">Nett Realized</div>
                                     </td>
                                     <td className="text-right pr-12">
-                                        <div className="font-black text-slate-400 text-sm">₹{(row.totalValue / row.totalDeals).toLocaleString()}</div>
+                                        <div className="font-black text-slate-400 text-sm">₹{(row.totalValue / row.totalDeals).toLocaleString('en-IN')}</div>
                                         <div className="text-[8px] font-bold text-slate-300 uppercase tracking-widest">Per Strategic Unit</div>
                                     </td>
                                 </tr>
@@ -164,9 +164,9 @@ const SalesReportDetailed = () => {
                                 <tr className="bg-slate-50 border-t border-slate-100">
                                     <td className="pl-12 py-8 font-black text-[10px] uppercase text-slate-400 tracking-widest">Aggregate Convergence</td>
                                     <td className="text-center font-black text-slate-800">{summary.deals} Deals</td>
-                                    <td className="text-right font-black text-emerald-600 text-lg">₹{summary.value.toLocaleString()}</td>
+                                    <td className="text-right font-black text-emerald-600 text-lg">₹{summary.value.toLocaleString('en-IN')}</td>
                                     <td className="text-right pr-12 font-black text-slate-400">
-                                        ₹{(summary.value / summary.deals || 0).toLocaleString()} <span className="text-[8px] tracking-widest ml-1">(avg)</span>
+                                        ₹{(summary.value / summary.deals || 0).toLocaleString('en-IN')} <span className="text-[8px] tracking-widest ml-1">(avg)</span>
                                     </td>
                                 </tr>
                             </tfoot>

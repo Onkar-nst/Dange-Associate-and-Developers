@@ -152,7 +152,7 @@ const DirectCustomerStatement = () => {
                                         <td className="text-slate-500 uppercase flex items-center gap-2"><span>🏦</span> Opening Audit Balance</td>
                                         <td className="text-right text-slate-200">₹0</td>
                                         <td className="text-right text-slate-200">₹0</td>
-                                        <td className="text-right text-blue-600">₹{summary.opening.toLocaleString()}</td>
+                                        <td className="text-right text-blue-600">₹{summary.opening.toLocaleString('en-IN')}</td>
                                     </tr>
                                     {ledgerData.map((t, idx) => (
                                         <tr key={idx} className="group hover:bg-slate-50/20 transition-colors border-b border-slate-50">
@@ -161,16 +161,16 @@ const DirectCustomerStatement = () => {
                                                 <div className="font-black text-slate-800 uppercase tracking-tight text-[11px]">{t.description}</div>
                                                 <div className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mt-0.5">Automated Asset Posting</div>
                                             </td>
-                                            <td className="text-right font-black text-blue-600 bg-blue-50/10">₹{t.debit.toLocaleString()}</td>
-                                            <td className="text-right font-black text-rose-500 bg-rose-50/10">₹{t.credit.toLocaleString()}</td>
-                                            <td className="text-right font-black text-slate-900 bg-slate-50/30">₹{t.runningBalance.toLocaleString()}</td>
+                                            <td className="text-right font-black text-blue-600 bg-blue-50/10">₹{t.debit.toLocaleString('en-IN')}</td>
+                                            <td className="text-right font-black text-rose-500 bg-rose-50/10">₹{t.credit.toLocaleString('en-IN')}</td>
+                                            <td className="text-right font-black text-slate-900 bg-slate-50/30">₹{t.runningBalance.toLocaleString('en-IN')}</td>
                                         </tr>
                                     ))}
                                 </tbody>
                                 <tfoot>
                                     <tr className="bg-slate-900 text-white font-black">
                                         <td colSpan="4" className="py-8 px-6 text-right uppercase tracking-[0.4em] text-[10px] text-blue-400">Final Liability Settlement Balance ➔</td>
-                                        <td className="py-8 px-6 text-right text-2xl font-mono tracking-tighter shadow-2xl">₹{summary.closing.toLocaleString()}</td>
+                                        <td className="py-8 px-6 text-right text-2xl font-mono tracking-tighter shadow-2xl">₹{summary.closing.toLocaleString('en-IN')}</td>
                                     </tr>
                                 </tfoot>
                             </table>

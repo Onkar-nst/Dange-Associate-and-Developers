@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { customerAPI, projectAPI, userAPI } from '../api/services';
+import { customerAPI, projectAPI, userAPI, uploadAPI } from '../api/services';
 import Layout from '../components/Layout';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
 
 const CustomerStatus = () => {
     const [customers, setCustomers] = useState([]);
@@ -8,6 +10,7 @@ const CustomerStatus = () => {
     const [executives, setExecutives] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [activeDocNaming, setActiveDocNaming] = useState({ customerId: null, name: '' });
     
     // Filters
     const [filterCustomer, setFilterCustomer] = useState('');
@@ -193,59 +196,182 @@ const CustomerStatus = () => {
         }
     };
 
+    const handleFileUpload = async (customerId, docName, file) => {
+        if (!file || !docName) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            setLoading(true);
+            const res = await uploadAPI.upload(formData);
+            const filePath = res.data.data;
+
+            const customer = customers.find(c => c._id === customerId);
+            const newDoc = { name: docName, path: filePath };
+            const updatedDocuments = [...(customer.documents || []), newDoc];
+
+            await customerAPI.update(customerId, { documents: updatedDocuments });
+            
+            setCustomers(customers.map(c => 
+                c._id === customerId 
+                ? { ...c, documents: updatedDocuments } 
+                : c
+            ));
+            
+            setActiveDocNaming({ customerId: null, name: '' });
+            setLoading(false);
+        } catch (err) {
+            console.error(err);
+            setError('Failed to upload document');
+            setLoading(false);
+            setActiveDocNaming({ customerId: null, name: '' });
+        }
+    };
+
+    const handleFileDelete = async (customerId, docPath) => {
+        if (!window.confirm(`Are you sure you want to REMOVE this document?`)) return;
+
+        try {
+            setLoading(true);
+            const customer = customers.find(c => c._id === customerId);
+            const updatedDocuments = (customer.documents || []).filter(d => d.path !== docPath);
+
+            await customerAPI.update(customerId, { documents: updatedDocuments });
+            
+            setCustomers(customers.map(c => 
+                c._id === customerId 
+                ? { ...c, documents: updatedDocuments } 
+                : c
+            ));
+            
+            setLoading(false);
+        } catch (err) {
+            console.error(err);
+            setError('Failed to remove document');
+            setLoading(false);
+        }
+    };
+
     return (
         <Layout>
-            {/* ... existing header code ... */}
-            <div className="max-w-7xl mx-auto space-y-12 pb-20 animate-fade-in px-4">
-                
-                {/* Header Section */}
-                {/* ... (keep existing header) ... */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 lg:p-10 gap-6">
+          <div>
+            <h1 className="text-4xl font-black text-slate-900 uppercase italic tracking-tighter flex items-center gap-3">
+              <span className="text-blue-600">Client</span> Status Matrix
+            </h1>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mt-2 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></span>
+              Operational Oversight • Registry Control
+            </p>
+          </div>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleExportCSV}
+              className="px-6 py-3 bg-slate-900 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-slate-900/10 hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-3"
+            >
+              <span>📥</span> Export CSV Log
+            </button>
+          </div>
+        </div>
 
-                {/* ... (keep existing stat grid and filter bar) ... */}
+        <div className="max-w-7xl mx-auto space-y-12 pb-20 animate-fade-in px-4">
+            
+            {/* Filter Control Console */}
+            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 relative overflow-hidden group">
+               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 transition-transform group-hover:scale-150"></div>
+               <div className="relative z-10 flex flex-col xl:flex-row gap-6 items-end">
+                  
+                  {/* Search Engine */}
+                  <div className="flex-1 w-full space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2">Search Registry</label>
+                    <div className="flex gap-2">
+                      <select 
+                        value={filterType} 
+                        onChange={(e) => setFilterType(e.target.value)}
+                        className="bg-slate-50 border border-slate-100 text-[11px] font-black uppercase tracking-widest rounded-2xl px-4 outline-none focus:border-blue-500 transition-colors"
+                      >
+                        <option>First Name</option>
+                        <option>Last Name</option>
+                        <option>Phone</option>
+                      </select>
+                      <input 
+                        type="text" 
+                        placeholder="ENTER SEARCH QUERY..." 
+                        value={filterCustomer}
+                        onChange={(e) => setFilterCustomer(e.target.value)}
+                        className="flex-1 h-14 bg-slate-50 border border-slate-100 rounded-2xl px-6 text-sm font-bold placeholder:text-slate-300 outline-none focus:bg-white focus:border-blue-500 transition-all shadow-inner"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Project Intelligence Filter */}
+                  <div className="w-full xl:w-80 space-y-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] ml-2">Project Deployment</label>
+                    <select 
+                      value={filterProject} 
+                      onChange={(e) => setFilterProject(e.target.value)}
+                      className="w-full h-14 bg-blue-50/50 border border-blue-100 rounded-2xl px-6 text-[11px] font-black text-blue-900 uppercase tracking-widest outline-none focus:ring-2 focus:ring-blue-500/20 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="">-- ALL ACTIVE VENTURES --</option>
+                      {projects.map(p => (
+                        <option key={p._id} value={p._id}>{p.projectName}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button 
+                    onClick={handleSearch}
+                    className="h-14 px-10 bg-blue-600 text-white rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] shadow-xl shadow-blue-500/20 hover:bg-slate-900 transition-all active:scale-95"
+                  >
+                    Initiate Search
+                  </button>
+               </div>
+            </div>
 
                 {/* Enterprise Table */}
                 <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
                     <table className="modern-table">
                         <thead>
-                            <tr>
-                                <th className="pl-10">Client Profile</th>
-                                <th className="text-center">Venture & Log</th>
-                                <th>Sales Deployment</th>
-                                <th>Fiscal Documents</th>
-                                <th className="text-right pr-10">Administration</th>
+                            <tr className="bg-slate-50/50">
+                                <th className="pl-10 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500">Client Profile</th>
+                                <th className="text-center py-4 text-[11px] font-black uppercase tracking-widest text-slate-500">Venture & Log</th>
+                                <th className="py-4 text-[11px] font-black uppercase tracking-widest text-slate-500">Sales Deployment</th>
+                                <th className="py-4 text-[11px] font-black uppercase tracking-widest text-slate-500">Fiscal Documents</th>
+                                <th className="text-right pr-10 py-4 text-[11px] font-black uppercase tracking-widest text-slate-500">Administration</th>
                             </tr>
                         </thead>
                         <tbody>
                             {customers.map((c) => (
-                                <tr key={c._id} className="group hover:bg-slate-50/50 transition-colors">
-                                    <td className="pl-10">
+                                <tr key={c._id} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-50 last:border-none">
+                                    <td className="pl-10 py-4">
                                         <div className="flex items-center gap-5">
-                                            <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center font-black text-white text-lg transition-transform group-hover:scale-110">
+                                            <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center font-black text-white text-lg transition-transform group-hover:scale-110 shadow-lg">
                                                 {c.name?.[0].toUpperCase()}
                                             </div>
                                             <div>
-                                                <div className="font-black text-slate-800 uppercase tracking-tight text-sm">{c.name}</div>
-                                                <div className="flex items-center gap-3 mt-1">
+                                                <div className="font-black text-slate-800 uppercase tracking-tight text-sm mb-1">{c.name}</div>
+                                                <div className="flex items-center gap-3">
                                                     <span className="text-[10px] font-black text-slate-400 font-mono tracking-tighter">{c.phone}</span>
-                                                    <a href={`https://wa.me/${c.phone}`} target="_blank" className="text-[9px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md transition-colors flex items-center gap-1">
+                                                    <a href={`https://wa.me/${c.phone}`} target="_blank" className="text-[9px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-md transition-all flex items-center gap-1 border border-emerald-100 shadow-sm">
                                                         <span>💬</span> WhatsApp
                                                     </a>
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="text-center italic">
-                                        <div className="text-[11px] font-black text-slate-800 uppercase leading-none mb-1">{c.projectId?.projectName || 'NA'}</div>
-                                        <div className="flex flex-col items-center gap-2 mt-2">
-                                            <span className="text-[8px] font-black px-2 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase tracking-widest">UNIT: {c.plotId?.plotNumber || 'NA'}</span>
+                                    <td className="text-center italic py-4">
+                                        <div className="text-[11px] font-black text-slate-800 uppercase leading-none mb-1 tracking-tight">{c.projectId?.projectName || 'NA'}</div>
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span className="text-[8px] font-black px-2 py-1 bg-slate-100 text-slate-500 rounded-lg uppercase tracking-widest border border-slate-200">UNIT: {c.plotId?.plotNumber || 'NA'}</span>
                                             <select 
                                                 value={c.transactionStatus || 'Token'} 
                                                 onChange={(e) => handleStatusChange(c._id, e.target.value)}
-                                                className={`text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest outline-none border-none cursor-pointer text-center appearance-none ${
-                                                    c.transactionStatus === 'Registered' ? 'bg-emerald-100 text-emerald-700' : 
-                                                    c.transactionStatus === 'Agreement' ? 'bg-purple-100 text-purple-700' :
-                                                    c.transactionStatus === 'Booked' ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-slate-100 text-slate-600'
+                                                className={`text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest outline-none border transition-all cursor-pointer text-center appearance-none shadow-sm ${
+                                                    c.transactionStatus === 'Registered' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
+                                                    c.transactionStatus === 'Agreement' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                                    c.transactionStatus === 'Booked' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                    'bg-slate-50 text-slate-700 border-slate-200'
                                                 }`}
                                             >
                                                 <option value="Token">Token</option>
@@ -255,28 +381,84 @@ const CustomerStatus = () => {
                                             </select>
                                         </div>
                                     </td>
-                                    <td>
+                                    <td className="py-4">
                                         <div className="flex flex-col gap-2">
                                             <div className="flex flex-wrap gap-1 max-w-[160px]">
                                                 {c.assignedExecutives && c.assignedExecutives.length > 0 ? c.assignedExecutives.map((e, idx) => (
-                                                    <span key={idx} className="bg-slate-900 text-white px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight">{e.executiveId?.name}</span>
-                                                )) : <span className="text-[9px] font-black text-slate-300 uppercase italic">Unassigned Units</span>}
+                                                    <span key={idx} className="bg-slate-900 text-white px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight shadow-sm">{e.executiveId?.name}</span>
+                                                )) : <span className="text-[9px] font-black text-slate-300 uppercase italic tracking-widest">Unassigned Personnel</span>}
                                             </div>
-                                            <button onClick={() => openEditModal(c)} className="text-[8px] font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2 hover:translate-x-1 transition-transform">
+                                            <button onClick={() => openEditModal(c)} className="text-[8px] font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2 hover:translate-x-1 transition-transform bg-blue-50/50 w-fit px-2 py-1 rounded-lg border border-blue-100 shadow-sm">
                                                 <span>⚙️</span> Sync Executives
                                             </button>
                                         </div>
                                     </td>
-                                    <td>
-                                        <div className="flex flex-col gap-2 min-w-[120px]">
-                                            {['Agreement', 'NMRDA', 'Deed', 'Farm'].map(type => (
-                                                <a key={type} href={`#`} className="text-[10px] font-black px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-slate-500 hover:bg-slate-900 hover:text-white hover:border-slate-900 transition-all uppercase tracking-widest text-center shadow-sm">
-                                                    {type}
-                                                </a>
+                                    <td className="py-4">
+                                        <div className="flex flex-col gap-2 min-w-[140px]">
+                                            {/* Registered Documents */}
+                                            {(c.documents || []).map((doc, idx) => (
+                                                <div key={idx} className="flex items-center gap-2 group/doc">
+                                                    <a 
+                                                        href={`${API_BASE_URL}${doc.path}`} 
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="flex-1 text-[9px] font-black px-3 py-1.5 rounded-lg transition-all uppercase tracking-widest text-center shadow-sm border bg-slate-900 text-white border-slate-900 hover:bg-emerald-600 hover:border-emerald-600"
+                                                    >
+                                                        {doc.name}
+                                                    </a>
+                                                    <button 
+                                                        onClick={() => handleFileDelete(c._id, doc.path)}
+                                                        className="bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white w-7 h-7 rounded-lg flex items-center justify-center transition-all shadow-sm border border-rose-100"
+                                                        title="Delete Document"
+                                                    >
+                                                        <span className="text-[10px]">🗑️</span>
+                                                    </button>
+                                                </div>
                                             ))}
+
+                                            {/* Add New Document Option */}
+                                            {activeDocNaming.customerId === c._id ? (
+                                                <div className="flex flex-col gap-2 p-2 bg-slate-50 rounded-xl border border-slate-200 animate-in fade-in slide-in-from-top-1">
+                                                    <input 
+                                                        autoFocus
+                                                        type="text" 
+                                                        placeholder="DOC NAME (e.g. Agreement)" 
+                                                        className="text-[9px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg border border-slate-200 outline-none w-full"
+                                                        value={activeDocNaming.name}
+                                                        onChange={(e) => setActiveDocNaming({...activeDocNaming, name: e.target.value})}
+                                                    />
+                                                    <div className="flex gap-1">
+                                                        <button 
+                                                            onClick={() => setActiveDocNaming({ customerId: null, name: '' })}
+                                                            className="flex-1 py-1 text-[8px] font-black uppercase text-slate-400 hover:bg-slate-100 rounded"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                        <label className={`flex-1 flex items-center justify-center py-1 text-[8px] font-black uppercase rounded cursor-pointer transition-all ${activeDocNaming.name ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-400 pointer-events-none'}`}>
+                                                            <span>Upload</span>
+                                                            <input 
+                                                                type="file" 
+                                                                className="hidden" 
+                                                                accept=".pdf,.jpg,.jpeg,.png"
+                                                                onChange={(e) => handleFileUpload(c._id, activeDocNaming.name, e.target.files[0])}
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => {
+                                                        const hasAgreement = c.documents?.some(d => d.name.toLowerCase().includes('agreement'));
+                                                        setActiveDocNaming({ customerId: c._id, name: hasAgreement ? '' : 'Agreement' });
+                                                    }}
+                                                    className="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 hover:border-blue-400 hover:text-blue-500 transition-all font-black text-[9px] uppercase tracking-widest group"
+                                                >
+                                                    <span className="group-hover:rotate-90 transition-transform">+</span> Add Document
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
-                                    <td className="text-right pr-10">
+                                    <td className="text-right pr-10 py-4">
                                         <div className="flex justify-end gap-3">
                                             <button className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:bg-blue-600 shadow-sm active:scale-95">Update Log</button>
                                             <button onClick={() => handleDeleteCustomer(c._id)} className="w-10 h-10 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all flex items-center justify-center shadow-sm">🗑️</button>
@@ -290,7 +472,7 @@ const CustomerStatus = () => {
 
                 {/* High-End Edit Modal */}
                 {showEditModal && editingCustomer && (
-                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200">
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-start justify-center z-[100] p-4 pt-4 md:pt-8 animate-in fade-in duration-200">
                         <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] border border-white/20 animate-in zoom-in-95 duration-300">
                             
                             {/* Left Panel (Dark) - Customer Context */}
@@ -417,7 +599,7 @@ const CustomerStatus = () => {
                                                             <div className="flex items-center gap-8">
                                                                 <div className="text-right hidden sm:block">
                                                                     <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Incentive</div>
-                                                                    <div className="font-black text-slate-700">₹{potential.toLocaleString()}</div>
+                                                                    <div className="font-black text-slate-700">₹{potential.toLocaleString('en-IN')}</div>
                                                                 </div>
                                                                 
                                                                 <div className="flex items-center gap-3 bg-slate-50 p-1.5 rounded-xl border border-slate-100">
@@ -453,7 +635,7 @@ const CustomerStatus = () => {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Total Value</div>
-                                            <div className="text-xl font-black text-emerald-400">₹{(customerRate * (editingCustomer.sqFt || 0)).toLocaleString()}</div>
+                                            <div className="text-xl font-black text-emerald-400">₹{(customerRate * (editingCustomer.sqFt || 0)).toLocaleString('en-IN')}</div>
                                         </div>
                                     </div>
                                 </div>

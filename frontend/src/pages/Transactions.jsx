@@ -277,12 +277,12 @@ const Transactions = () => {
                             </thead>
                             <tbody>
                                 <tr className="font-bold">
-                                    <td className="p-2 border-r border-gray-300">₹{selectedCustomer?.emiAmount?.toLocaleString() || '0'}</td>
-                                    <td className="p-2 border-r border-gray-300">₹{selectedCustomer?.dealValue?.toLocaleString() || '0'}</td>
-                                    <td className="p-2 border-r border-gray-300">₹{selectedCustomer?.paidAmount?.toLocaleString() || '0'}</td>
-                                    <td className="p-2 border-r border-gray-300">₹{selectedCustomer?.paidAmount?.toLocaleString() || '0'}</td>
+                                    <td className="p-2 border-r border-gray-300">₹{selectedCustomer?.emiAmount?.toLocaleString('en-IN') || '0'}</td>
+                                    <td className="p-2 border-r border-gray-300">₹{selectedCustomer?.dealValue?.toLocaleString('en-IN') || '0'}</td>
+                                    <td className="p-2 border-r border-gray-300">₹{selectedCustomer?.paidAmount?.toLocaleString('en-IN') || '0'}</td>
+                                    <td className="p-2 border-r border-gray-300">₹{selectedCustomer?.paidAmount?.toLocaleString('en-IN') || '0'}</td>
                                     <td className="p-2 border-r border-gray-300">{selectedCustomer?.tenure || '0'}</td>
-                                    <td className="p-2 border-r border-gray-300 text-red-600">₹{selectedCustomer?.balanceAmount?.toLocaleString() || '0'}</td>
+                                    <td className="p-2 border-r border-gray-300 text-red-600">₹{selectedCustomer?.balanceAmount?.toLocaleString('en-IN') || '0'}</td>
                                     <td className="p-2">{selectedCustomer?.emiStartDate ? new Date(selectedCustomer.emiStartDate).toLocaleDateString() : '-'}</td>
                                 </tr>
                             </tbody>
@@ -312,9 +312,9 @@ const Transactions = () => {
                                         <td className="p-1 border-r border-gray-200 uppercase">{t.transactionType}</td>
                                         <td className="p-1 border-r border-gray-200">{t.receiptNumber || '-'}</td>
                                         <td className="p-1 border-r border-gray-200">{t.narration || '-'}</td>
-                                        <td className="p-1 border-r border-gray-200 font-bold text-red-600">{t.entryType === 'Payment' ? `₹${t.amount.toLocaleString()}` : '-'}</td>
-                                        <td className="p-1 border-r border-gray-200 font-bold text-green-600">{t.entryType === 'Receipt' ? `₹${t.amount.toLocaleString()}` : '-'}</td>
-                                        <td className="p-1 font-bold">₹{t.balanceAtTime?.toLocaleString() || '-'}</td>
+                                        <td className="p-1 border-r border-gray-200 font-bold text-red-600">{t.entryType === 'Payment' ? `₹${t.amount.toLocaleString('en-IN')}` : '-'}</td>
+                                        <td className="p-1 border-r border-gray-200 font-bold text-green-600">{t.entryType === 'Receipt' ? `₹${t.amount.toLocaleString('en-IN')}` : '-'}</td>
+                                        <td className="p-1 font-bold">₹{t.balanceAtTime?.toLocaleString('en-IN') || '-'}</td>
                                     </tr>
                                 ))}
                                 {customerTransactions.length === 0 && (

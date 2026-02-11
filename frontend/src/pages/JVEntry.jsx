@@ -319,7 +319,7 @@ const JVEntry = () => {
                                                         <div className="font-black text-slate-700 uppercase tracking-tighter text-[11px]">{jv.debitAccount.accountName}</div>
                                                         <div className="text-[8px] font-bold text-slate-300 uppercase italic mt-0.5 max-w-[150px] truncate">{jv.narration}</div>
                                                     </td>
-                                                    <td className="text-right pr-8 font-black text-blue-600 text-base">₹{jv.amount.toLocaleString()}</td>
+                                                    <td className="text-right pr-8 font-black text-blue-600 text-base">₹{jv.amount.toLocaleString('en-IN')}</td>
                                                 </tr>
                                                 {/* Credit Row */}
                                                 <tr className="border-b border-slate-50 group-hover:bg-slate-50/30 transition-colors">
@@ -330,7 +330,7 @@ const JVEntry = () => {
                                                         <div className="font-black text-slate-500 uppercase tracking-tighter text-[11px] italic">{jv.creditAccount.accountName}</div>
                                                         <div className="text-[8px] font-black text-slate-200 uppercase tracking-[0.2em] mt-0.5">Automated Double Entry Post</div>
                                                     </td>
-                                                    <td className="text-right pr-8 font-black text-slate-300">₹{jv.amount.toLocaleString()}</td>
+                                                    <td className="text-right pr-8 font-black text-slate-300">₹{jv.amount.toLocaleString('en-IN')}</td>
                                                 </tr>
                                             </React.Fragment>
                                         ))}

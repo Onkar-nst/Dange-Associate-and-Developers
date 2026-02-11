@@ -1,9 +1,9 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from './Sidebar';
 import logo from '../assets/logo.png';
 
-const Layout = ({ children }) => {
+const Layout = ({ children, hideFooter }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -68,16 +68,18 @@ const Layout = ({ children }) => {
             {children}
             
             {/* Terminal Footer */}
-            <footer className="mt-20 pt-10 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 pb-12 opacity-50">
-              <div className="flex items-center gap-4">
-                <img src={logo} alt="Logo" className="w-8 h-auto" />
-                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Integrated Real Estate Intelligence System © 2026</p>
-              </div>
-              <div className="flex gap-6">
-                <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2"><span>🛡️</span> SSL ENCRYPTED</span>
-                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2"><span>⚡</span> LATENCY: 14MS</span>
-              </div>
-            </footer>
+            {!hideFooter && (
+              <footer className="mt-20 pt-10 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 pb-12 opacity-50">
+                <div className="flex items-center gap-4">
+                  <img src={logo} alt="Logo" className="w-8 h-auto" />
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.4em]">Integrated Real Estate Intelligence System © 2026</p>
+                </div>
+                <div className="flex gap-6">
+                  <span className="text-[9px] font-black text-blue-500 uppercase tracking-widest flex items-center gap-2"><span>🛡️</span> SSL ENCRYPTED</span>
+                  <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-2"><span>⚡</span> LATENCY: 14MS</span>
+                </div>
+              </footer>
+            )}
         </main>
       </div>
     </div>

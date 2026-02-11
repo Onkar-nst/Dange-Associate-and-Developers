@@ -439,7 +439,7 @@ const Customers = () => {
                       </div>
                       <div className="grid grid-cols-[1fr_2fr] items-center gap-4">
                         <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest text-right">Total Cost</label>
-                        <div className="modern-input !py-2.5 bg-slate-50 font-black text-slate-800 text-[11px]">₹{(parseFloat(formData.dealValue) || 0).toLocaleString()}</div>
+                        <div className="modern-input !py-2.5 bg-slate-50 font-black text-slate-800 text-[11px]">₹{(parseFloat(formData.dealValue) || 0).toLocaleString('en-IN')}</div>
                       </div>
                     </div>
 
@@ -450,7 +450,7 @@ const Customers = () => {
                       </div>
                       <div className="grid grid-cols-[1fr_2fr] items-center gap-4">
                         <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest text-right">Balance</label>
-                        <div className="modern-input !py-2.5 bg-slate-50 font-black text-rose-600 border-rose-200 text-[11px]">₹{(parseFloat(formData.balanceAmount) || 0).toLocaleString()}</div>
+                        <div className="modern-input !py-2.5 bg-slate-50 font-black text-rose-600 border-rose-200 text-[11px]">₹{(parseFloat(formData.balanceAmount) || 0).toLocaleString('en-IN')}</div>
                       </div>
                     </div>
 
@@ -485,6 +485,7 @@ const Customers = () => {
                         <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest text-right">Status</label>
                         <select name="transactionStatus" value={formData.transactionStatus} onChange={handleChange} className="modern-input !py-2.5 uppercase text-[11px] font-black text-blue-600">
                           <option value="Token">Token</option>
+                          <option value="Agreement">Agreement</option>
                           <option value="Registered">Registered</option>
                           <option value="Cancelled">Cancelled</option>
                         </select>
@@ -621,7 +622,7 @@ const Customers = () => {
                       ₹{customers
                         .filter(c => filterProject === 'ALL' || c.projectId?._id === filterProject)
                         .reduce((sum, c) => sum + (c.dealValue || 0), 0)
-                        .toLocaleString()}
+                        .toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div className="w-px h-8 bg-white/10 mx-2"></div>
@@ -631,7 +632,7 @@ const Customers = () => {
                       ₹{customers
                         .filter(c => filterProject === 'ALL' || c.projectId?._id === filterProject)
                         .reduce((sum, c) => sum + (c.paidAmount || 0), 0)
-                        .toLocaleString()}
+                        .toLocaleString('en-IN')}
                     </p>
                   </div>
                 </div>
@@ -672,17 +673,19 @@ const Customers = () => {
                               <span className="text-[11px] font-black text-slate-900 tracking-tighter">{customer.plotId?.plotNumber || 'N/A'}</span>
                             </div>
                           </td>
-                          <td className="text-right font-black text-[11px] text-slate-700">₹{(customer.dealValue || 0).toLocaleString()}</td>
+                          <td className="text-right font-black text-[11px] text-slate-700">₹{(customer.dealValue || 0).toLocaleString('en-IN')}</td>
                           <td className="text-right">
-                             <span className="font-black text-[11px] text-emerald-600 tracking-tighter">₹{(customer.paidAmount || 0).toLocaleString()}</span>
+                             <span className="font-black text-[11px] text-emerald-600 tracking-tighter">₹{(customer.paidAmount || 0).toLocaleString('en-IN')}</span>
                           </td>
                           <td className="text-right">
-                             <span className="font-black text-[11px] text-rose-600 tracking-tighter">₹{(customer.balanceAmount || 0).toLocaleString()}</span>
+                             <span className="font-black text-[11px] text-rose-600 tracking-tighter">₹{(customer.balanceAmount || 0).toLocaleString('en-IN')}</span>
                           </td>
                           <td className="text-center">
                             <span className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-sm ${
                               customer.transactionStatus === 'Registered' ? 'bg-emerald-500 text-white' : 
-                              customer.transactionStatus === 'Cancelled' ? 'bg-rose-500 text-white' : 'bg-[#F38C32] text-white'
+                              customer.transactionStatus === 'Cancelled' ? 'bg-rose-500 text-white' : 
+                              customer.transactionStatus === 'Agreement' ? 'bg-blue-500 text-white' :
+                              'bg-[#F38C32] text-white'
                             }`}>
                               {customer.transactionStatus || 'Token'}
                             </span>
@@ -696,7 +699,6 @@ const Customers = () => {
                               >
                                 👁️
                               </button>
-                              <button className="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 hover:bg-white hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm" title="Customer Ledger">🧾</button>
                             </div>
                           </td>
                         </tr>

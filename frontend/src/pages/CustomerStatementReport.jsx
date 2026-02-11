@@ -133,9 +133,9 @@ const CustomerStatementReport = () => {
                                             <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">verified_partner_id: {row._id?.slice(-6)}</div>
                                         </td>
                                         <td className="text-center font-black text-slate-900">{row.plotNo}</td>
-                                        <td className="text-right text-slate-400 font-mono">₹{row.cost.toLocaleString()}</td>
-                                        <td className="text-right font-black text-emerald-600 bg-emerald-50/10">₹{row.received.toLocaleString()}</td>
-                                        <td className="text-right font-black text-rose-500 bg-rose-50/10">₹{row.balance.toLocaleString()}</td>
+                                        <td className="text-right text-slate-400 font-mono">₹{row.cost.toLocaleString('en-IN')}</td>
+                                        <td className="text-right font-black text-emerald-600 bg-emerald-50/10">₹{row.received.toLocaleString('en-IN')}</td>
+                                        <td className="text-right font-black text-rose-500 bg-rose-50/10">₹{row.balance.toLocaleString('en-IN')}</td>
                                         <td className="pr-10 text-center">
                                             <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${
                                                 row.status === 'registered' ? 'bg-emerald-100 text-emerald-600' : 
@@ -159,9 +159,9 @@ const CustomerStatementReport = () => {
                                 <tfoot>
                                     <tr className="bg-slate-900 text-white font-black">
                                         <td colSpan="4" className="py-8 pl-10 text-right uppercase tracking-[0.4em] text-[10px] text-slate-500">Gross Period Aggregates ➔</td>
-                                        <td className="text-right text-slate-400 font-mono">₹{data.reduce((acc, curr) => acc + curr.cost, 0).toLocaleString()}</td>
-                                        <td className="text-right text-emerald-400 font-mono">₹{data.reduce((acc, curr) => acc + curr.received, 0).toLocaleString()}</td>
-                                        <td className="text-right text-rose-400 font-mono text-lg">₹{data.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString()}</td>
+                                        <td className="text-right text-slate-400 font-mono">₹{data.reduce((acc, curr) => acc + curr.cost, 0).toLocaleString('en-IN')}</td>
+                                        <td className="text-right text-emerald-400 font-mono">₹{data.reduce((acc, curr) => acc + curr.received, 0).toLocaleString('en-IN')}</td>
+                                        <td className="text-right text-rose-400 font-mono text-lg">₹{data.reduce((acc, curr) => acc + curr.balance, 0).toLocaleString('en-IN')}</td>
                                         <td className="pr-10"></td>
                                     </tr>
                                 </tfoot>

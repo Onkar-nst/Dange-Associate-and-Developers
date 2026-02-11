@@ -267,7 +267,7 @@ const LedgerAccounts = () => {
                                                         <span className="text-[11px] font-bold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-lg uppercase tracking-wider">{account.group}</span>
                                                     </td>
                                                     <td className="px-6 py-5 font-mono text-xs font-bold text-gray-700">
-                                                        ₹{account.openingBalance.toLocaleString()} <span className={account.balanceType === 'Dr' ? 'text-blue-500' : 'text-red-500'}>{account.balanceType}</span>
+                                                        ₹{account.openingBalance.toLocaleString('en-IN')} <span className={account.balanceType === 'Dr' ? 'text-blue-500' : 'text-red-500'}>{account.balanceType}</span>
                                                     </td>
                                                     <td className="px-6 py-5 text-right">
                                                         <button 
@@ -307,7 +307,7 @@ const LedgerAccounts = () => {
                             </div>
                             <div className="bg-blue-600 p-6 rounded-2xl text-white shadow-lg shadow-blue-600/20 md:w-64">
                                 <div className="text-blue-200 text-xs font-bold uppercase tracking-wider">Current Balance</div>
-                                <div className="text-2xl font-black mt-1">₹{transactions.length > 0 ? transactions[transactions.length - 1].balance.toLocaleString() : '0'}</div>
+                                <div className="text-2xl font-black mt-1">₹{transactions.length > 0 ? transactions[transactions.length - 1].balance.toLocaleString('en-IN') : '0'}</div>
                             </div>
                         </div>
 
@@ -403,9 +403,9 @@ const LedgerAccounts = () => {
                                                 <td className="px-8 py-5 text-xs font-bold">{new Date(t.transactionDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                                                 <td className="px-6 py-5 text-sm">{t.description}</td>
                                                 <td className="px-6 py-5 text-xs text-gray-400 uppercase tracking-wider font-bold">{t.referenceType}</td>
-                                                <td className="px-6 py-5 text-right font-mono text-sm text-blue-600 font-bold">{t.debit > 0 ? `+ ₹${t.debit.toLocaleString()}` : '-'}</td>
-                                                <td className="px-6 py-5 text-right font-mono text-sm text-red-500 font-bold">{t.credit > 0 ? `- ₹${t.credit.toLocaleString()}` : '-'}</td>
-                                                <td className="px-8 py-5 text-right font-mono text-sm font-black text-gray-900 border-l border-gray-50 bg-gray-50/30">₹{t.balance.toLocaleString()}</td>
+                                                <td className="px-6 py-5 text-right font-mono text-sm text-blue-600 font-bold">{t.debit > 0 ? `+ ₹${t.debit.toLocaleString('en-IN')}` : '-'}</td>
+                                                <td className="px-6 py-5 text-right font-mono text-sm text-red-500 font-bold">{t.credit > 0 ? `- ₹${t.credit.toLocaleString('en-IN')}` : '-'}</td>
+                                                <td className="px-8 py-5 text-right font-mono text-sm font-black text-gray-900 border-l border-gray-50 bg-gray-50/30">₹{t.balance.toLocaleString('en-IN')}</td>
                                             </tr>
                                         ))}
                                         {transactions.length === 0 && (

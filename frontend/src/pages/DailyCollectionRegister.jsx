@@ -145,14 +145,14 @@ const DailyCollectionRegister = () => {
                                             </td>
                                             <td><span className="text-[9px] font-black uppercase text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{c.recType}</span></td>
                                             <td className="text-slate-400 italic font-medium">{c.particular}</td>
-                                            <td className="text-right font-black text-emerald-600 bg-emerald-50/10">₹{c.received.toLocaleString()}</td>
-                                            <td className="text-right font-black text-rose-500">₹{c.payment.toLocaleString()}</td>
+                                            <td className="text-right font-black text-emerald-600 bg-emerald-50/10">₹{c.received.toLocaleString('en-IN')}</td>
+                                            <td className="text-right font-black text-rose-500">₹{c.payment.toLocaleString('en-IN')}</td>
                                         </tr>
                                     ))}
                                     <tr className="bg-emerald-50 font-black">
                                         <td colSpan="5" className="text-right uppercase tracking-[0.2em] text-[9px] pr-4">Nett Cash Movements:</td>
-                                        <td className="text-right text-emerald-700 py-4">₹{data.summary.cashRec?.toLocaleString()}</td>
-                                        <td className="text-right text-rose-600 py-4">₹{data.summary.cashPay?.toLocaleString()}</td>
+                                        <td className="text-right text-emerald-700 py-4">₹{data.summary.cashRec?.toLocaleString('en-IN')}</td>
+                                        <td className="text-right text-rose-600 py-4">₹{data.summary.cashPay?.toLocaleString('en-IN')}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -186,14 +186,14 @@ const DailyCollectionRegister = () => {
                                             </td>
                                             <td><span className="text-[9px] font-black uppercase text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{c.recType}</span></td>
                                             <td className="text-slate-400 italic font-medium">{c.particular}</td>
-                                            <td className="text-right font-black text-emerald-600 bg-emerald-50/10">₹{c.received.toLocaleString()}</td>
-                                            <td className="text-right font-black text-rose-500">₹{c.payment.toLocaleString()}</td>
+                                            <td className="text-right font-black text-emerald-600 bg-emerald-50/10">₹{c.received.toLocaleString('en-IN')}</td>
+                                            <td className="text-right font-black text-rose-500">₹{c.payment.toLocaleString('en-IN')}</td>
                                         </tr>
                                     ))}
                                     <tr className="bg-emerald-50 font-black">
                                         <td colSpan="5" className="text-right uppercase tracking-[0.2em] text-[9px] pr-4">Nett Bank Movements:</td>
-                                        <td className="text-right text-emerald-700 py-4">₹{data.summary.bankRec?.toLocaleString()}</td>
-                                        <td className="text-right text-rose-600 py-4">₹{data.summary.bankPay?.toLocaleString()}</td>
+                                        <td className="text-right text-emerald-700 py-4">₹{data.summary.bankRec?.toLocaleString('en-IN')}</td>
+                                        <td className="text-right text-rose-600 py-4">₹{data.summary.bankPay?.toLocaleString('en-IN')}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -212,19 +212,19 @@ const DailyCollectionRegister = () => {
                                             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Cash Liquidity</p>
                                             <p className="text-sm font-black uppercase">Nett Flow</p>
                                         </div>
-                                        <p className="text-xl font-black text-emerald-400">₹{(data.summary.cashRec - data.summary.cashPay)?.toLocaleString()}</p>
+                                        <p className="text-xl font-black text-emerald-400">₹{(data.summary.cashRec - data.summary.cashPay)?.toLocaleString('en-IN')}</p>
                                     </div>
                                     <div className="flex justify-between items-center py-4 border-b border-white/5">
                                         <div>
                                             <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Banking Assets</p>
                                             <p className="text-sm font-black uppercase">Nett Flow</p>
                                         </div>
-                                        <p className="text-xl font-black text-emerald-400">₹{(data.summary.bankRec - data.summary.bankPay)?.toLocaleString()}</p>
+                                        <p className="text-xl font-black text-emerald-400">₹{(data.summary.bankRec - data.summary.bankPay)?.toLocaleString('en-IN')}</p>
                                     </div>
                                     <div className="pt-6">
                                         <div className="bg-blue-600 p-8 rounded-[2rem] flex flex-col items-center gap-2 shadow-2xl shadow-blue-500/20">
                                             <p className="text-[10px] font-black text-blue-200 uppercase tracking-[0.4em]">Combined Daily Balance</p>
-                                            <p className="text-4xl font-black tracking-tighter">₹{(data.summary.cashRec + data.summary.bankRec - (data.summary.cashPay + data.summary.bankPay))?.toLocaleString()}</p>
+                                            <p className="text-4xl font-black tracking-tighter">₹{(data.summary.cashRec + data.summary.bankRec - (data.summary.cashPay + data.summary.bankPay))?.toLocaleString('en-IN')}</p>
                                         </div>
                                     </div>
                                 </div>

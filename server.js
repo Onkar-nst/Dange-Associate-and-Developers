@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const cors = require('cors');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +18,9 @@ app.use(cors());
 
 // Body parser middleware
 app.use(express.json());
+
+// Set static folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Route files
 const authRoutes = require('./routes/authRoutes');
@@ -33,6 +37,7 @@ const reportRoutes = require('./routes/reportRoutes');
 const ledgerAccountRoutes = require('./routes/ledgerAccountRoutes');
 const jvRoutes = require('./routes/jvRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 // Mount routers
 app.use('/api/auth', authRoutes);
@@ -49,6 +54,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/ledger-accounts', ledgerAccountRoutes);
 app.use('/api/jv', jvRoutes);
 app.use('/api/chatbot', chatbotRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check route
 app.get('/', (req, res) => {

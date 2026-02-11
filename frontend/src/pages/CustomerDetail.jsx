@@ -9,6 +9,7 @@ const CustomerDetail = () => {
   const [customer, setCustomer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     const fetchCustomer = async () => {
@@ -24,6 +25,29 @@ const CustomerDetail = () => {
     fetchCustomer();
   }, [id]);
 
+  const handleStatusChange = async (newStatus) => {
+    setIsUpdatingStatus(true);
+    try {
+      await customerAPI.update(id, { transactionStatus: newStatus });
+      setCustomer(prev => ({ ...prev, transactionStatus: newStatus }));
+    } catch (err) {
+      alert('Failed to update status');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('CRITICAL ACTION: Are you sure you want to permanently delete this customer from the intelligence matrix? This action cannot be reversed.')) {
+      try {
+        await customerAPI.delete(id);
+        navigate('/customers');
+      } catch (err) {
+        alert(err.response?.data?.error || 'Failed to delete customer');
+      }
+    }
+  };
+
   if (loading) return <Layout><div className="flex justify-center items-center h-96 font-black uppercase text-slate-400">Loading Intelligence...</div></Layout>;
   if (error) return <Layout><div className="p-10 text-rose-500 font-black uppercase text-center">{error}</div></Layout>;
   if (!customer) return <Layout><div className="p-10 text-slate-500 font-black uppercase text-center">Customer not found in directory.</div></Layout>;
@@ -32,7 +56,7 @@ const CustomerDetail = () => {
     <Layout>
       <div className="p-1 max-w-7xl mx-auto pb-20">
         {/* Header Navigation */}
-        <div className="flex justify-between items-center mb-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+        <div className="flex justify-between items-center mb-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
           <div className="flex items-center gap-6">
             <button 
               onClick={() => navigate('/customers')}
@@ -44,14 +68,42 @@ const CustomerDetail = () => {
               <h1 className="text-2xl font-black text-[#1B315A] tracking-tighter uppercase leading-none">
                 {customer.firstName} {customer.lastName}
               </h1>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-2 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                Strategic Asset Portfolio • {customer.transactionStatus || 'Token'}
-              </p>
+              <div className="flex items-center gap-3 mt-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  Strategic Asset Portfolio •
+                </p>
+                <select
+                  value={customer.transactionStatus || 'Token'}
+                  onChange={(e) => handleStatusChange(e.target.value)}
+                  disabled={isUpdatingStatus}
+                  className={`text-[9px] font-black uppercase tracking-widest px-3 py-1 rounded-lg border transition-all cursor-pointer outline-none ${
+                    customer.transactionStatus === 'Registered' ? 'bg-emerald-500 text-white border-emerald-600' : 
+                    customer.transactionStatus === 'Cancelled' ? 'bg-rose-500 text-white border-rose-600' : 
+                    customer.transactionStatus === 'Agreement' ? 'bg-blue-500 text-white border-blue-600' :
+                    'bg-[#F38C32] text-white border-[#e07b22]'
+                  } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 shadow-sm'}`}
+                >
+                  <option value="Token">Token</option>
+                  <option value="Agreement">Agreement</option>
+                  <option value="Registered">Registry</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+                {isUpdatingStatus && <span className="text-[8px] font-black text-blue-500 animate-pulse uppercase tracking-widest">Updating...</span>}
+              </div>
             </div>
           </div>
           <div className="flex gap-4">
-             <button className="flex items-center gap-3 px-8 py-4 bg-[#1B315A] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#F38C32] transition-all shadow-xl shadow-blue-900/10">
+             <button 
+               onClick={handleDelete}
+               className="flex items-center gap-3 px-6 py-4 bg-rose-50 text-rose-600 border border-rose-100 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all shadow-sm active:scale-95"
+             >
+               <span>🗑️</span> Purge Record
+             </button>
+             <button 
+               onClick={() => navigate(`/party-ledger?partyId=${customer._id}`)}
+               className="flex items-center gap-3 px-8 py-4 bg-[#1B315A] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#F38C32] transition-all shadow-xl shadow-blue-900/10 active:scale-95"
+             >
                <span>🧾</span> View Ledger
              </button>
           </div>
@@ -130,20 +182,20 @@ const CustomerDetail = () => {
                   <div className="space-y-8">
                     <div>
                       <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Total Transaction Value</p>
-                      <p className="text-3xl font-black tracking-tighter italic">₹{(customer.dealValue || 0).toLocaleString()}</p>
+                      <p className="text-3xl font-black tracking-tighter italic">₹{(customer.dealValue || 0).toLocaleString('en-IN')}</p>
                     </div>
 
                     <div className="flex justify-between items-end border-l-4 border-emerald-500 pl-6 py-2">
                        <div>
                          <p className="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1">Recovered Capital</p>
-                         <p className="text-xl font-black tracking-tighter">₹{(customer.paidAmount || 0).toLocaleString()}</p>
+                         <p className="text-xl font-black tracking-tighter">₹{(customer.paidAmount || 0).toLocaleString('en-IN')}</p>
                        </div>
                     </div>
 
                     <div className="flex justify-between items-end border-l-4 border-rose-500 pl-6 py-2">
                        <div>
                          <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest mb-1">Outstanding Liability</p>
-                         <p className="text-xl font-black tracking-tighter">₹{(customer.balanceAmount || 0).toLocaleString()}</p>
+                         <p className="text-xl font-black tracking-tighter">₹{(customer.balanceAmount || 0).toLocaleString('en-IN')}</p>
                        </div>
                     </div>
 
@@ -172,7 +224,7 @@ const CustomerDetail = () => {
                   <DetailItem label="Agreement Finalisation" value={customer.agreementDate ? new Date(customer.agreementDate).toLocaleDateString() : 'PENDING'} />
                   <DetailItem label="EMI Commencement" value={customer.emiStartDate ? new Date(customer.emiStartDate).toLocaleDateString() : 'N/A'} />
                   <DetailItem label="Payment Tenure" value={`${customer.tenure || 0} Months`} />
-                  <DetailItem label="Monthly Installment" value={`₹${(customer.emiAmount || 0).toLocaleString()}`} />
+                  <DetailItem label="Monthly Installment" value={`₹${(customer.emiAmount || 0).toLocaleString('en-IN')}`} />
                 </div>
              </div>
           </div>

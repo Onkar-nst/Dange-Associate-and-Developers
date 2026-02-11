@@ -84,14 +84,14 @@ const ProjectStatus = () => {
                      <p className="text-4xl italic text-slate-900 leading-none">P-{selectedPlot.plotNumber}</p>
                      <p className="text-[10px] text-slate-400">Inventory Registry Unit</p>
                      <div className="h-px bg-slate-100"></div>
-                     <div className="grid grid-cols-2 gap-2 text-left">
+                      <div className="grid grid-cols-2 gap-4 text-left">
                         <div>
-                          <p className="text-[7px] text-slate-400">Sq.Ft.</p>
-                          <p className="text-sm italic">{selectedPlot.size}</p>
+                          <p className="text-[7px] text-slate-400 font-bold uppercase tracking-widest">Sq.Ft.</p>
+                          <p className="text-lg italic text-slate-800 leading-none mt-1">{selectedPlot.size}</p>
                         </div>
-                        <div>
-                          <p className="text-[7px] text-slate-400">Status</p>
-                          <p className={`text-[10px] font-black px-2 py-0.5 rounded-full inline-block ${
+                        <div className="text-right">
+                          <p className="text-[7px] text-slate-400 font-bold uppercase tracking-widest">Status</p>
+                          <p className={`text-[9px] font-black px-2 py-0.5 rounded-lg inline-block mt-1 ${
                             selectedPlot.status === 'vacant' ? 'bg-lime-100 text-lime-700' :
                             selectedPlot.status === 'booked' ? 'bg-rose-100 text-rose-700' :
                             selectedPlot.status === 'sold' ? 'bg-emerald-100 text-emerald-700' :
@@ -100,8 +100,48 @@ const ProjectStatus = () => {
                             {selectedPlot.status}
                           </p>
                         </div>
-                     </div>
-                   </div>
+                      </div>
+
+                      <div className="space-y-4 pt-4 border-t border-slate-50 text-left">
+                        <div>
+                           <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                             <span className="w-1 h-1 bg-blue-500 rounded-full"></span> Matrix Directions
+                           </p>
+                           <div className="grid grid-cols-2 gap-2">
+                             <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                               <p className="text-[7px] font-bold text-slate-400 uppercase">East</p>
+                               <p className="text-[10px] text-slate-700 lowercase italic">{selectedPlot.east || '-'}</p>
+                             </div>
+                             <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                               <p className="text-[7px] font-bold text-slate-400 uppercase">West</p>
+                               <p className="text-[10px] text-slate-700 lowercase italic">{selectedPlot.west || '-'}</p>
+                             </div>
+                             <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                               <p className="text-[7px] font-bold text-slate-400 uppercase">North</p>
+                               <p className="text-[10px] text-slate-700 lowercase italic">{selectedPlot.north || '-'}</p>
+                             </div>
+                             <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
+                               <p className="text-[7px] font-bold text-slate-400 uppercase">South</p>
+                               <p className="text-[10px] text-slate-700 lowercase italic">{selectedPlot.south || '-'}</p>
+                             </div>
+                           </div>
+                        </div>
+
+                        <div className="bg-[#1B315A] p-5 rounded-[2rem] shadow-lg shadow-blue-900/10 relative overflow-hidden group">
+                           <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/10 rounded-full blur-2xl -mr-10 -mt-10 group-hover:bg-blue-500/20 transition-all"></div>
+                           <p className="text-[8px] font-black text-blue-300/60 uppercase tracking-widest mb-1">Asset Valuation</p>
+                           <div className="flex items-baseline gap-1">
+                              <span className="text-white text-xs font-black">₹</span>
+                              <p className="text-2xl font-black text-white italic tracking-tighter leading-none">
+                                 {(selectedPlot.size * (selectedPlot.rate || 0)).toLocaleString('en-IN')}
+                              </p>
+                           </div>
+                           <p className="text-[8px] font-black text-emerald-400 mt-2 uppercase tracking-widest border-l-2 border-emerald-400/30 pl-2">
+                              decided rate: ₹{selectedPlot.rate || 0} / ft²
+                           </p>
+                        </div>
+                      </div>
+                    </div>
                  ) : (
                    <div className="text-slate-300 text-[10px] font-black uppercase text-center py-10 tracking-widest leading-loose italic">
                       NO UNIT<br/>SELECTED<br/>FOR REVIEW

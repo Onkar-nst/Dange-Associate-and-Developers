@@ -84,7 +84,7 @@ const CashBook = () => {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-[10px] font-black text-slate-400 group-hover:text-slate-500 uppercase tracking-widest">Daily Closing</p>
-                                        <p className="text-2xl font-black text-orange-600 group-hover:text-orange-400">₹{day.closingBalance.toLocaleString()}</p>
+                                        <p className="text-2xl font-black text-orange-600 group-hover:text-orange-400">₹{day.closingBalance.toLocaleString('en-IN')}</p>
                                     </div>
                                 </div>
 
@@ -105,7 +105,7 @@ const CashBook = () => {
                                                 <td className="font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
                                                     <span>🏦</span> Opening Statement Balance
                                                 </td>
-                                                <td className="text-right font-black text-emerald-600">₹{day.openingBalance.toLocaleString()}</td>
+                                                <td className="text-right font-black text-emerald-600">₹{day.openingBalance.toLocaleString('en-IN')}</td>
                                                 <td className="text-right font-black text-slate-200">₹0</td>
                                             </tr>
 
@@ -123,10 +123,10 @@ const CashBook = () => {
                                                         <div className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mt-0.5">Automated System Posting</div>
                                                     </td>
                                                     <td className={`text-right font-black text-base ${item.debit > 0 ? 'text-emerald-600 bg-emerald-50/10' : 'text-slate-200'}`}>
-                                                        {item.debit > 0 ? `₹${item.debit.toLocaleString()}` : '₹0'}
+                                                        {item.debit > 0 ? `₹${item.debit.toLocaleString('en-IN')}` : '₹0'}
                                                     </td>
                                                     <td className={`text-right font-black text-base ${item.credit > 0 ? 'text-rose-500 bg-rose-50/10' : 'text-slate-200'}`}>
-                                                        {item.credit > 0 ? `₹${item.credit.toLocaleString()}` : '₹0'}
+                                                        {item.credit > 0 ? `₹${item.credit.toLocaleString('en-IN')}` : '₹0'}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -136,14 +136,14 @@ const CashBook = () => {
                                                 <td></td>
                                                 <td className="text-right uppercase text-[9px] tracking-widest opacity-50 pr-4 italic">Nett Daily Closing Balance ➔</td>
                                                 <td className="text-right font-black text-slate-600 tracking-widest opacity-20">₹0</td>
-                                                <td className="text-right font-black text-orange-400 py-6">₹{day.closingBalance.toLocaleString()}</td>
+                                                <td className="text-right font-black text-orange-400 py-6">₹{day.closingBalance.toLocaleString('en-IN')}</td>
                                             </tr>
                                         </tbody>
                                         <tfoot>
                                             <tr className="bg-slate-50 border-t border-slate-100">
                                                 <td colSpan="2" className="py-6 text-right uppercase text-[10px] font-black text-slate-400 pr-4">Nett Daily Aggregate Flow:</td>
-                                                <td className="text-right py-6 font-black text-emerald-900">₹{(day.openingBalance + day.totalReceipt).toLocaleString()}</td>
-                                                <td className="text-right py-6 font-black text-rose-900 font-mono">₹{(day.closingBalance + day.totalPayment).toLocaleString()}</td>
+                                                <td className="text-right py-6 font-black text-emerald-900">₹{(day.openingBalance + day.totalReceipt).toLocaleString('en-IN')}</td>
+                                                <td className="text-right py-6 font-black text-rose-900 font-mono">₹{(day.closingBalance + day.totalPayment).toLocaleString('en-IN')}</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -169,16 +169,16 @@ const CashBook = () => {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
                                 <div className="text-center space-y-2">
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Receipts</p>
-                                    <p className="text-3xl font-black text-emerald-400">₹{data.reduce((acc, d) => acc + d.totalReceipt, 0).toLocaleString()}</p>
+                                    <p className="text-3xl font-black text-emerald-400">₹{data.reduce((acc, d) => acc + d.totalReceipt, 0).toLocaleString('en-IN')}</p>
                                 </div>
                                 <div className="text-center space-y-2 border-x border-white/5">
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Payments</p>
-                                    <p className="text-3xl font-black text-rose-500">₹{data.reduce((acc, d) => acc + d.totalPayment, 0).toLocaleString()}</p>
+                                    <p className="text-3xl font-black text-rose-500">₹{data.reduce((acc, d) => acc + d.totalPayment, 0).toLocaleString('en-IN')}</p>
                                 </div>
                                 <div className="text-center space-y-2">
                                     <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Period Balance</p>
                                     <div className="bg-blue-600 px-6 py-4 rounded-[2rem] shadow-2xl shadow-blue-500/20">
-                                        <p className="text-3xl font-black font-mono">₹{(data.reduce((acc, d) => acc + d.totalReceipt, 0) - data.reduce((acc, d) => acc + d.totalPayment, 0)).toLocaleString()}</p>
+                                        <p className="text-3xl font-black font-mono">₹{(data.reduce((acc, d) => acc + d.totalReceipt, 0) - data.reduce((acc, d) => acc + d.totalPayment, 0)).toLocaleString('en-IN')}</p>
                                     </div>
                                 </div>
                             </div>

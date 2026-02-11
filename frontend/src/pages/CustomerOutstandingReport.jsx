@@ -82,7 +82,7 @@ const CustomerOutstandingReport = () => {
                             {total > 0 ? (
                                 <div className="p-8 bg-rose-500/10 border border-rose-500/20 rounded-[2.5rem] flex flex-col items-center justify-center gap-2">
                                     <p className="text-[10px] font-black text-rose-400 uppercase tracking-[0.4em]">Gross Liability Exposure</p>
-                                    <p className="text-4xl font-black text-rose-500 font-mono tracking-tighter italic">₹{total.toLocaleString()}</p>
+                                    <p className="text-4xl font-black text-rose-500 font-mono tracking-tighter italic">₹{total.toLocaleString('en-IN')}</p>
                                 </div>
                             ) : (
                                 <div className="p-8 bg-emerald-500/10 border border-emerald-500/20 rounded-[2.5rem] flex flex-col items-center justify-center gap-2">
@@ -121,9 +121,9 @@ const CustomerOutstandingReport = () => {
                                             PLOT {row.plotId?.plotNumber || 'NA'}
                                         </span>
                                     </td>
-                                    <td className="text-right font-black text-slate-400">₹{row.dealValue.toLocaleString()}</td>
-                                    <td className="text-right font-black text-emerald-600">₹{row.paidAmount.toLocaleString()}</td>
-                                    <td className="text-right font-black text-rose-500 bg-rose-50/10 text-base">₹{row.balanceAmount.toLocaleString()}</td>
+                                    <td className="text-right font-black text-slate-400">₹{row.dealValue.toLocaleString('en-IN')}</td>
+                                    <td className="text-right font-black text-emerald-600">₹{row.paidAmount.toLocaleString('en-IN')}</td>
+                                    <td className="text-right font-black text-rose-500 bg-rose-50/10 text-base">₹{row.balanceAmount.toLocaleString('en-IN')}</td>
                                     <td className="text-center pr-12">
                                         <a href={`https://wa.me/${row.phone}`} target="_blank" className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all shadow-sm">
                                             💬
@@ -144,7 +144,7 @@ const CustomerOutstandingReport = () => {
                             <tfoot>
                                 <tr className="bg-slate-900 text-white font-black">
                                     <td colSpan="5" className="py-8 pl-12 text-right uppercase tracking-[0.4em] text-[10px] text-slate-500">Gross Recovery Target Balance ➔</td>
-                                    <td className="text-right text-2xl font-mono text-rose-400 tracking-tighter">₹{total.toLocaleString()}</td>
+                                    <td className="text-right text-2xl font-mono text-rose-400 tracking-tighter">₹{total.toLocaleString('en-IN')}</td>
                                     <td className="pr-12"></td>
                                 </tr>
                             </tfoot>
