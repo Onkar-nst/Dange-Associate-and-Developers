@@ -413,8 +413,7 @@ const AIChatbot = () => {
     };
 
     return (
-        <Layout hideFooter>
-            <div className="min-h-screen -m-10 p-10 bg-[#0f172a] text-slate-200">
+        <div className="min-h-screen -m-10 p-10 bg-[#0f172a] text-slate-200">
                 <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
                     {/* Header - Sophisticated Dark */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative">
@@ -619,7 +618,6 @@ const AIChatbot = () => {
                     </footer>
                 </div>
             </div>
-        </Layout>
     );
 };
 

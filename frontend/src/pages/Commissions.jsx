@@ -118,14 +118,11 @@ const Commissions = () => {
 
   if (loading && !ledger) {
     return (
-      <Layout>
         <div className="text-center py-10">Loading Commission System...</div>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800">Commission Management</h1>
@@ -418,7 +415,6 @@ const Commissions = () => {
           </div>
         </div>
       </div>
-    </Layout>
   );
 };
 

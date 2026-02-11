@@ -38,6 +38,7 @@ const ledgerAccountRoutes = require('./routes/ledgerAccountRoutes');
 const jvRoutes = require('./routes/jvRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Mount routers
 app.use('/api/auth', authRoutes);
@@ -55,6 +56,7 @@ app.use('/api/ledger-accounts', ledgerAccountRoutes);
 app.use('/api/jv', jvRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Health check route
 app.get('/', (req, res) => {

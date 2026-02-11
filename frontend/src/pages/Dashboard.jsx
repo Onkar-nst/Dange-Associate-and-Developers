@@ -109,7 +109,6 @@ const Dashboard = () => {
   };
 
   return (
-    <Layout>
       <div className="max-w-7xl mx-auto space-y-10">
         
         {/* Welcome Banner */}
@@ -119,33 +118,36 @@ const Dashboard = () => {
                 <h1 className="text-4xl font-black tracking-tighter">Welcome back, {user?.name}!</h1>
                 <p className="text-[#F38C32] text-xs font-black uppercase tracking-[0.4em] mt-2">Dange Associates Enterprise Protocol | {user?.role}</p>
                 
-                <div className="mt-8 relative max-w-xl group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="w-6 h-6 text-white group-focus-within:text-[#F38C32] transition-colors">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a2.25 2.25 0 00-1.694-1.694L15 6.75l1.047-.251a2.25 2.25 0 001.694-1.694L18 3.75l.259 1.035a2.25 2.25 0 001.694 1.694L21 6.75l-1.047.251a2.25 2.25 0 00-1.694 1.694z" />
-                        </svg>
+                <div className="mt-8 relative max-w-2xl">
+                    <div className="flex gap-4">
+                        <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center text-2xl border border-white/10 shadow-2xl shrink-0">
+                            🤖
+                        </div>
+                        <div className="flex-1 flex items-center bg-white/5 border border-white/10 rounded-2xl transition-all focus-within:border-cyan-500 focus-within:bg-white/[0.08] focus-within:shadow-[0_0_30px_rgba(6,182,212,0.1)]">
+                            <input 
+                                type="text" 
+                                placeholder="Ask about your business intelligence..." 
+                                className="flex-1 px-6 py-4 bg-transparent outline-none font-bold text-sm text-white placeholder:text-slate-600 transition-all"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && e.target.value.trim()) {
+                                        navigate('/ai-assistant', { state: { autoQuery: e.target.value } });
+                                    }
+                                }}
+                            />
+                            <button 
+                                className="px-8 py-3 mr-2 bg-white text-slate-950 rounded-xl font-black text-[11px] uppercase tracking-widest hover:bg-[#F38C32] hover:text-white transition-all active:scale-95 shadow-2xl flex items-center gap-3 group"
+                                onClick={(e) => {
+                                    const input = e.currentTarget.closest('.flex-1').querySelector('input');
+                                    if (input && input.value.trim()) {
+                                        navigate('/ai-assistant', { state: { autoQuery: input.value } });
+                                    }
+                                }}
+                            >
+                                <span>Ask AI</span>
+                                <span className="text-base group-hover:translate-x-1 transition-transform">➔</span>
+                            </button>
+                        </div>
                     </div>
-                    <input 
-                        type="text" 
-                        placeholder="Ask AI about sales, customers, or dues..." 
-                        className="w-full pl-12 pr-32 py-4 bg-white/10 hover:bg-white/20 focus:bg-white/25 border border-white/10 rounded-2xl outline-none font-bold text-sm text-white placeholder:text-blue-200 transition-all backdrop-blur-md shadow-lg shadow-black/5"
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' && e.target.value.trim()) {
-                                navigate('/ai-assistant', { state: { autoQuery: e.target.value } });
-                            }
-                        }}
-                    />
-                    <button 
-                        className="absolute right-2 top-2 bottom-2 px-4 bg-white text-[#1B315A] rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-50 transition-all shadow-md active:scale-95"
-                        onClick={(e) => {
-                            const input = e.currentTarget.parentElement.querySelector('input');
-                            if (input && input.value.trim()) {
-                                navigate('/ai-assistant', { state: { autoQuery: input.value } });
-                            }
-                        }}
-                    >
-                        Ask AI
-                    </button>
                 </div>
             </div>
         </div>
@@ -391,7 +393,6 @@ const Dashboard = () => {
         </div>
 
       </div>
-    </Layout>
   );
 };
 

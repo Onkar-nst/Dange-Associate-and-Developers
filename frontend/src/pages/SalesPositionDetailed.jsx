@@ -59,11 +59,10 @@ const SalesPositionDetailed = () => {
         </div>
     );
 
-    if (loading && plots.length === 0) return <Layout><div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Mapping Plot Matrix...</div></Layout>;
+    if (loading && plots.length === 0) return <div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Mapping Plot Matrix...</div>;
 
     return (
-        <Layout>
-            <div className="max-w-[1600px] mx-auto space-y-12 animate-fade-in px-6 pb-20">
+        <div className="max-w-[1600px] mx-auto space-y-12 animate-fade-in px-6 pb-20">
                 
                 {/* Header Intelligence */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-10">
@@ -146,7 +145,6 @@ const SalesPositionDetailed = () => {
 
                 <p className="text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] pb-10">Dange Associates Spatial Intelligence © 2026</p>
             </div>
-        </Layout>
     );
 };
 

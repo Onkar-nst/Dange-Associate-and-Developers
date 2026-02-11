@@ -8,6 +8,7 @@ const Sidebar = () => {
     const location = useLocation();
     
     const menuGroups = [
+
         {
             title: 'Inventory & CRM',
             items: [
@@ -15,7 +16,7 @@ const Sidebar = () => {
                 { title: 'Venture Gallery', link: '/projects', icon: '🏢' },
                 { title: 'Asset Plots', link: '/plots', icon: '⛳' },
                 { title: 'Client Status', link: '/customer-status', icon: '📉' },
-                { title: 'CRM Leads', link: '#', icon: '📡' },
+                { title: 'CRM Leads', link: '/crm', icon: '📡' },
             ]
         },
         {
@@ -33,6 +34,7 @@ const Sidebar = () => {
             items: [
                 { title: 'Sales Analytics', link: '/report/sales', icon: '📈' },
                 { title: 'Master Statement', link: '/report/customer-statement', icon: '📜' },
+                { title: 'Direct Statement', link: '/report/direct-statement', icon: '🧾' },
                 { title: 'Outstanding Dues', link: '/report/outstanding', icon: '⚠️' },
                 { title: 'EMI Schedule', link: '/report/dues', icon: '📅' },
                 { title: 'Global Cash Book', link: '/report/cash-book', icon: '📖' },

@@ -111,11 +111,11 @@ const PartyLedger = () => {
         </label>
     );
 
-    if (loading) return <Layout><div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Syncing Party Archive...</div></Layout>;
+    if (loading) return <div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Syncing Party Archive...</div>;
 
     return (
-        <Layout>
-            <div className="max-w-7xl mx-auto space-y-8 animate-fade-in px-4 print:p-0">
+        <>
+        <div className="max-w-7xl mx-auto space-y-8 animate-fade-in px-4 print:p-0">
                 
                 {/* Header Area (No Print) */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 print:hidden">
@@ -341,15 +341,9 @@ const PartyLedger = () => {
                         background: #f8fafc !important;
                         color: #000 !important;
                     }
-                    .modern-table td {
-                        border-bottom: 1px solid #f1f5f9 !important;
-                    }
-                    header, footer, nav, aside, button, .print\\:hidden {
-                        display: none !important;
-                    }
                 }
             `}} />
-        </Layout>
+        </>
     );
 };
 

@@ -168,10 +168,9 @@ const Users = () => {
     }
   };
 
-  if (loading) return <Layout><div className="p-8 text-center font-bold">Loading Users...</div></Layout>;
+  if (loading) return <div className="p-8 text-center font-bold">Loading Users...</div>;
 
   return (
-    <Layout>
       <div className="p-4 bg-gray-50 min-h-screen">
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800 uppercase tracking-wider">User Creation</h1>
         
@@ -329,8 +328,7 @@ const Users = () => {
           </div>
         </form>
       </div>
-    </Layout>
-  );
+    );
 };
 
 export default Users;

@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -27,7 +27,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     );
   }
 
-  return children;
+  return children || <Outlet />;
 };
 
 export default ProtectedRoute;

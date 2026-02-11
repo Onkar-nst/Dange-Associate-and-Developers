@@ -117,11 +117,10 @@ const Executives = () => {
         ? executives 
         : executives.filter(e => e._id === searchTerm || e.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    if (loading) return <Layout><div className="p-8 text-center font-bold">Loading Executives...</div></Layout>;
+    if (loading) return <div className="p-8 text-center font-bold">Loading Executives...</div>;
 
     return (
-        <Layout>
-            <div className="flex flex-col lg:flex-row gap-6 p-4 bg-gray-50 min-h-screen font-sans">
+        <div className="flex flex-col lg:flex-row gap-6 p-4 bg-gray-50 min-h-screen font-sans">
                 {/* Left Side: Forms */}
                 <div className="lg:w-1/3 space-y-4">
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -443,7 +442,6 @@ const Executives = () => {
                     </div>
                 </div>
             </div>
-        </Layout>
     );
 };
 

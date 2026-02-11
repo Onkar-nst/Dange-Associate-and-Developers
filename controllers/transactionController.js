@@ -4,6 +4,7 @@ const Ledger = require('../models/Ledger');
 const asyncHandler = require('../middleware/asyncHandler');
 const { PARTY_TYPES, COMMISSION_TRIGGERS } = require('../utils/constants');
 const { processCommission } = require('./commissionController');
+const { createNotification } = require('./notificationController');
 
 /**
  * @desc    Create a new transaction (payment received)
@@ -12,11 +13,12 @@ const { processCommission } = require('./commissionController');
  * @business Updates customer paidAmount and balance, creates ledger entry
  */
 exports.createTransaction = asyncHandler(async (req, res, next) => {
-    const {
+    let {
         customerId, amount, paymentMode,
         referenceNumber, bankName, remarks, transactionDate,
         entryType, transactionType, projectId, narration, receiptNumber
     } = req.body;
+    amount = Number(amount);
 
     // Validate required fields
     if (!customerId || amount === undefined || !paymentMode) {
@@ -103,6 +105,16 @@ exports.createTransaction = asyncHandler(async (req, res, next) => {
         .populate('customerId', 'name phone')
         .populate('projectId', 'projectName')
         .populate('enteredBy', 'name');
+
+    // Send notification
+    await createNotification({
+        type: 'payment_received',
+        title: `${entryType || 'Receipt'} Recorded`,
+        message: `₹${amount.toLocaleString('en-IN')} ${entryType || 'Receipt'} from ${customer.firstName} ${customer.lastName} via ${paymentMode}`,
+        icon: entryType === 'Payment' ? '💸' : '💰',
+        referenceId: transaction._id.toString(),
+        referenceType: 'transaction'
+    });
 
     res.status(201).json({
         success: true,

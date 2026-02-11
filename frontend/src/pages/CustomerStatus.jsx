@@ -184,8 +184,6 @@ const CustomerStatus = () => {
         </div>
     );
 
-    if (loading) return <Layout><div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Scanning Client Matrix...</div></Layout>;
-
     const handleStatusChange = async (customerId, newStatus) => {
         try {
             await customerAPI.update(customerId, { transactionStatus: newStatus });
@@ -253,8 +251,10 @@ const CustomerStatus = () => {
         }
     };
 
+    if (loading) return <div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Scanning Client Matrix...</div>;
+
     return (
-        <Layout>
+        <>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center p-4 lg:p-10 gap-6">
           <div>
             <h1 className="text-4xl font-black text-slate-900 uppercase italic tracking-tighter flex items-center gap-3">
@@ -650,7 +650,7 @@ const CustomerStatus = () => {
                     </div>
                 )}
             </div>
-        </Layout>
+        </>
     );
 };
 

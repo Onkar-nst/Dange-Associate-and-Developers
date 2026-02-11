@@ -9,7 +9,8 @@ const mongoose = require('mongoose');
  * @access  Private
  */
 exports.createJV = asyncHandler(async (req, res, next) => {
-    const { branch, transactionDate, debitAccount, creditAccount, amount, narration } = req.body;
+    let { branch, transactionDate, debitAccount, creditAccount, amount, narration } = req.body;
+    amount = Number(amount);
 
     if (!debitAccount || !creditAccount || !amount) {
         return res.status(400).json({

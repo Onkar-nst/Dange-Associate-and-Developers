@@ -78,6 +78,8 @@ export const ledgerAPI = {
     update: (id, data) => axiosInstance.put(`/ledger-accounts/${id}`, data),
     getTransactions: (id) => axiosInstance.get(`/ledger-accounts/${id}/transactions`),
     createEntry: (data) => axiosInstance.post('/ledger', data),
+    delete: (id) => axiosInstance.delete(`/ledger-accounts/${id}`),
+    deleteEntry: (id) => axiosInstance.delete(`/ledger/${id}`),
 };
 
 // Reports
@@ -116,4 +118,12 @@ export const uploadAPI = {
             'Content-Type': 'multipart/form-data'
         }
     }),
+};
+
+// Notifications
+export const notificationAPI = {
+    getAll: () => axiosInstance.get('/notifications'),
+    markAsRead: (id) => axiosInstance.put(`/notifications/${id}/read`),
+    markAllAsRead: () => axiosInstance.put('/notifications/read-all'),
+    delete: (id) => axiosInstance.delete(`/notifications/${id}`),
 };

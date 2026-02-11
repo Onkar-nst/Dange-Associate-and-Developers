@@ -109,11 +109,10 @@ const Transactions = () => {
         }
     };
 
-    if (loading) return <Layout><div className="p-8 text-center font-bold">Loading Transactions...</div></Layout>;
+    if (loading) return <div className="p-8 text-center font-bold">Loading Transactions...</div>;
 
     return (
-        <Layout>
-            <div className="flex flex-col lg:flex-row gap-6 p-4 bg-gray-50 min-h-screen font-sans">
+        <div className="flex flex-col lg:flex-row gap-6 p-4 bg-gray-50 min-h-screen font-sans">
                 {/* Left Side: Entry Form */}
                 <div className="lg:w-1/3">
                     <form onSubmit={handleSubmit} className="bg-white border-2 border-gray-400 rounded p-4 shadow-md space-y-4">
@@ -327,7 +326,6 @@ const Transactions = () => {
                     </div>
                 </div>
             </div>
-        </Layout>
     );
 };
 

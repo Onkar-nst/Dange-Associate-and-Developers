@@ -92,6 +92,30 @@ const LedgerAccounts = () => {
         }
     };
 
+    const handleDeleteAccount = async (id, name) => {
+        if (!window.confirm(`Are you sure you want to permanently delete "${name}"? This will also remove all related transaction records.`)) return;
+
+        try {
+            await ledgerAPI.delete(id);
+            setSuccess('Account and related records deleted successfully');
+            fetchAccounts();
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to delete account');
+        }
+    };
+
+    const handleDeleteEntry = async (id) => {
+        if (!window.confirm('Are you sure you want to remove this entry from the ledger book?')) return;
+
+        try {
+            await ledgerAPI.deleteEntry(id);
+            setSuccess('Transaction entry removed successfully');
+            fetchTransactions(selectedAccount._id);
+        } catch (err) {
+            setError(err.response?.data?.error || 'Failed to remove entry');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -117,11 +141,10 @@ const LedgerAccounts = () => {
         'BANK BOOK'
     ];
 
-    if (loading) return <Layout><div className="flex items-center justify-center min-h-screen text-xl font-semibold">Loading Ledger Data...</div></Layout>;
+    if (loading) return <div className="flex items-center justify-center min-h-screen text-xl font-semibold">Loading Ledger Data...</div>;
 
     return (
-        <Layout>
-            <div className="p-6 max-w-7xl mx-auto font-sans">
+        <div className="p-6 max-w-7xl mx-auto font-sans">
                 {/* Header Section */}
                 <div className="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div>
@@ -269,12 +292,19 @@ const LedgerAccounts = () => {
                                                     <td className="px-6 py-5 font-mono text-xs font-bold text-gray-700">
                                                         ₹{account.openingBalance.toLocaleString('en-IN')} <span className={account.balanceType === 'Dr' ? 'text-blue-500' : 'text-red-500'}>{account.balanceType}</span>
                                                     </td>
-                                                    <td className="px-6 py-5 text-right">
+                                                    <td className="px-6 py-5 text-right flex items-center justify-end gap-2">
                                                         <button 
                                                             onClick={() => handleSelectAccount(account)}
                                                             className="text-xs font-black text-blue-600 hover:text-blue-800 bg-blue-50 px-4 py-2 rounded-lg transition-all"
                                                         >
                                                             VIEW LEDGER
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDeleteAccount(account._id, account.accountName)}
+                                                            className="w-9 h-9 flex items-center justify-center bg-rose-50 text-rose-500 rounded-lg hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                                                            title="Delete Account"
+                                                        >
+                                                            🗑️
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -395,6 +425,7 @@ const LedgerAccounts = () => {
                                             <th className="px-6 py-6 text-right">Debit (Dr)</th>
                                             <th className="px-6 py-6 text-right">Credit (Cr)</th>
                                             <th className="px-8 py-6 text-right">Balance</th>
+                                            <th className="px-4 py-6 text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-50 font-medium text-gray-700">
@@ -406,6 +437,15 @@ const LedgerAccounts = () => {
                                                 <td className="px-6 py-5 text-right font-mono text-sm text-blue-600 font-bold">{t.debit > 0 ? `+ ₹${t.debit.toLocaleString('en-IN')}` : '-'}</td>
                                                 <td className="px-6 py-5 text-right font-mono text-sm text-red-500 font-bold">{t.credit > 0 ? `- ₹${t.credit.toLocaleString('en-IN')}` : '-'}</td>
                                                 <td className="px-8 py-5 text-right font-mono text-sm font-black text-gray-900 border-l border-gray-50 bg-gray-50/30">₹{t.balance.toLocaleString('en-IN')}</td>
+                                                <td className="px-4 py-5 text-center">
+                                                    <button 
+                                                        onClick={() => handleDeleteEntry(t._id)}
+                                                        className="w-8 h-8 flex items-center justify-center bg-gray-50 text-gray-400 rounded-lg hover:bg-rose-500 hover:text-white transition-all active:scale-90"
+                                                        title="Remove Entry"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                         {transactions.length === 0 && (
@@ -420,7 +460,6 @@ const LedgerAccounts = () => {
                     </div>
                 )}
             </div>
-        </Layout>
     );
 };
 

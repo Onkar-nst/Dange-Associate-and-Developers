@@ -37,11 +37,10 @@ const ProjectStatus = () => {
     hold: 'bg-[#1E1B4B]',   // Regi./Dark Blue (Indigo-950)
   };
 
-  if (loading) return <Layout><div className="p-20 text-center font-black uppercase tracking-[0.5em] text-slate-300">Syncing Asset Map...</div></Layout>;
+  if (loading) return <div className="p-20 text-center font-black uppercase tracking-[0.5em] text-slate-300">Syncing Asset Map...</div>;
 
   return (
-    <Layout>
-      <div className="max-w-7xl mx-auto space-y-6 pb-20 px-4">
+    <div className="max-w-7xl mx-auto space-y-6 pb-20 px-4">
         
         {/* Header Unit */}
         <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm space-y-6">
@@ -207,7 +206,6 @@ const ProjectStatus = () => {
           </div>
         </div>
       </div>
-    </Layout>
   );
 };
 

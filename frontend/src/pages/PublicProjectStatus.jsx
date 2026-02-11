@@ -295,7 +295,7 @@ const PublicProjectStatus = () => {
       
       {/* Global Footer */}
       <footer className="py-20 bg-slate-100 flex flex-col items-center gap-6 border-t border-slate-200">
-         <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-md font-black text-xs text-slate-900">DA</div>
+         <img src={logo} alt="Logo" className="w-12 h-auto" />
          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Official Corporate Repository © 2026 Dange Associates</p>
       </footer>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { reportAPI, projectAPI, userAPI } from '../api/services';
 import Layout from '../components/Layout';
+import logo from '../assets/logo.png';
 
 const DailyCollectionRegister = () => {
     const [data, setData] = useState({ cash: [], bank: [], summary: {} });
@@ -58,11 +59,11 @@ const DailyCollectionRegister = () => {
 
     const Label = ({ children }) => <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1 mb-2 block">{children}</label>;
 
-    if (loading && !data.summary.cashRec) return <Layout><div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Syncing Collection Register...</div></Layout>;
+    if (loading && !data.summary.cashRec) return <div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Syncing Collection Register...</div>;
 
     return (
-        <Layout>
-            <div className="max-w-7xl mx-auto space-y-10 animate-fade-in px-4 print:p-0">
+        <>
+        <div className="max-w-7xl mx-auto space-y-10 animate-fade-in px-4 print:p-0">
                 
                 {/* Header Filter Bar (Glassmorphism) */}
                 <div className="bg-slate-900 rounded-[3rem] p-10 shadow-2xl shadow-blue-900/20 text-white relative overflow-hidden group print:hidden">
@@ -106,7 +107,7 @@ const DailyCollectionRegister = () => {
                     <div className="p-12 text-center border-b border-slate-50 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-40"></div>
                         <div className="relative z-10 flex flex-col items-center gap-2">
-                            <div className="w-16 h-16 bg-slate-900 text-white rounded-[1.5rem] flex items-center justify-center text-2xl font-black mb-4">DA</div>
+                            <img src={logo} alt="Logo" className="h-16 w-auto mb-4" />
                             <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">Dange Associates & Developers</h1>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4">Daily Collection Register Audit</p>
                             <div className="px-6 py-2 bg-emerald-50 border border-emerald-100 rounded-full">
@@ -297,7 +298,7 @@ const DailyCollectionRegister = () => {
                     .bg-blue-600 { background: #2563eb !important; -webkit-print-color-adjust: exact; }
                 }
             `}} />
-        </Layout>
+        </>
     );
 };
 

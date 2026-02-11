@@ -5,6 +5,7 @@ const Ledger = require('../models/Ledger');
 const asyncHandler = require('../middleware/asyncHandler');
 const { PLOT_STATUS, PARTY_TYPES, COMMISSION_TRIGGERS } = require('../utils/constants');
 const { processCommission } = require('./commissionController');
+const { createNotification } = require('./notificationController');
 
 /**
  * @desc    Create a new customer
@@ -93,6 +94,16 @@ exports.createCustomer = asyncHandler(async (req, res, next) => {
         .populate('plotId', 'plotNumber size rate')
         .populate('assignedExecutive', 'name phone')
         .populate('createdBy', 'name');
+
+    // Send notification
+    await createNotification({
+        type: 'customer_added',
+        title: 'New Customer Added',
+        message: `${customer.firstName} ${customer.lastName} booked Plot ${plot.plotNumber} in ${project.projectName}`,
+        icon: '👤',
+        referenceId: customer._id.toString(),
+        referenceType: 'customer'
+    });
 
     res.status(201).json({
         success: true,

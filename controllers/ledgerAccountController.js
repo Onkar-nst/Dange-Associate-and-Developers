@@ -108,3 +108,33 @@ exports.getAccountTransactions = asyncHandler(async (req, res, next) => {
         data: transactions
     });
 });
+
+/**
+ * @desc    Delete ledger account (Soft delete)
+ * @route   DELETE /api/ledger-accounts/:id
+ * @access  Private
+ */
+exports.deleteLedgerAccount = asyncHandler(async (req, res, next) => {
+    let account = await LedgerAccount.findById(req.params.id);
+
+    if (!account) {
+        return res.status(404).json({
+            success: false,
+            error: 'Account not found'
+        });
+    }
+
+    // Soft delete account
+    await LedgerAccount.findByIdAndUpdate(req.params.id, { active: false });
+
+    // Also deactivate related ledger entries
+    await Ledger.updateMany(
+        { partyType: PARTY_TYPES.LEDGER_ACCOUNT, partyId: req.params.id },
+        { active: false }
+    );
+
+    res.status(200).json({
+        success: true,
+        message: 'Account deleted successfully'
+    });
+});

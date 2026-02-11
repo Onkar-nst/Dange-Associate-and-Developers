@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import CRM from './pages/CRM';
 import Projects from './pages/Projects';
 import Plots from './pages/Plots';
 import Customers from './pages/Customers';
@@ -55,150 +56,37 @@ function App() {
           {/* Root Redirect */}
           <Route path="/" element={<RootRedirect />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/projects/:id/status"
-            element={
-              <ProtectedRoute>
-                <ProjectStatus />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/projects"
-            element={
-              <ProtectedRoute>
-                <Projects />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/plots"
-            element={
-              <ProtectedRoute>
-                <Plots />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/customers"
-            element={
-              <ProtectedRoute>
-                <Customers />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/customers/:id"
-            element={
-              <ProtectedRoute>
-                <CustomerDetail />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/transactions"
-            element={
-              <ProtectedRoute>
-                <Transactions />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/commissions"
-            element={
-              <ProtectedRoute>
-                <Commissions />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/executives"
-            element={
-              <ProtectedRoute>
-                <Executives />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/ledger-accounts"
-            element={
-              <ProtectedRoute>
-                <LedgerAccounts />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/customer-status"
-            element={
-              <ProtectedRoute>
-                <CustomerStatus />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/party-ledger"
-            element={
-              <ProtectedRoute>
-                <PartyLedger />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/jv-entry"
-            element={
-              <ProtectedRoute>
-                <JVEntry />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route path="/report/customer-statement" element={<ProtectedRoute><CustomerStatementReport /></ProtectedRoute>} />
-          <Route path="/report/sales" element={<ProtectedRoute><SalesReportDetailed /></ProtectedRoute>} />
-          <Route path="/report/direct-statement" element={<ProtectedRoute><DirectCustomerStatement /></ProtectedRoute>} />
-          <Route path="/report/outstanding" element={<ProtectedRoute><CustomerOutstandingReport /></ProtectedRoute>} />
-          <Route path="/report/dues" element={<ProtectedRoute><CustomerDuesReport /></ProtectedRoute>} />
-          <Route path="/report/cash-book" element={<ProtectedRoute><CashBook /></ProtectedRoute>} />
-          <Route path="/report/daily-collection" element={<ProtectedRoute><DailyCollectionRegister /></ProtectedRoute>} />
-          <Route path="/report/sales-position/:projectId" element={<ProtectedRoute><SalesPositionDetailed /></ProtectedRoute>} />
-
-          <Route
-            path="/users"
-            element={
-              <ProtectedRoute allowedRoles={['The Boss']}>
-                <Users />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/ai-assistant"
-            element={
-              <ProtectedRoute>
-                <AIChatbot />
-              </ProtectedRoute>
-            }
-          />
+          {/* Protected Routes with Persistent Layout */}
+          <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/crm" element={<CRM />} />
+            <Route path="/projects/:id/status" element={<ProjectStatus />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/plots" element={<Plots />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/customers/:id" element={<CustomerDetail />} />
+            <Route path="/transactions" element={<Transactions />} />
+            <Route path="/commissions" element={<Commissions />} />
+            <Route path="/executives" element={<Executives />} />
+            <Route path="/ledger-accounts" element={<LedgerAccounts />} />
+            <Route path="/customer-status" element={<CustomerStatus />} />
+            <Route path="/party-ledger" element={<PartyLedger />} />
+            <Route path="/jv-entry" element={<JVEntry />} />
+            <Route path="/report/customer-statement" element={<CustomerStatementReport />} />
+            <Route path="/report/sales" element={<SalesReportDetailed />} />
+            <Route path="/report/direct-statement" element={<DirectCustomerStatement />} />
+            <Route path="/report/outstanding" element={<CustomerOutstandingReport />} />
+            <Route path="/report/dues" element={<CustomerDuesReport />} />
+            <Route path="/report/cash-book" element={<CashBook />} />
+            <Route path="/report/daily-collection" element={<DailyCollectionRegister />} />
+            <Route path="/report/sales-position/:projectId" element={<SalesPositionDetailed />} />
+            <Route path="/ai-assistant" element={<AIChatbot />} />
+            
+            {/* Restricted Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['The Boss']} />}>
+                <Route path="/users" element={<Users />} />
+            </Route>
+          </Route>
           
           {/* Catch all - redirect based on auth */}
           <Route path="*" element={<RootRedirect />} />

@@ -113,16 +113,13 @@ const Projects = () => {
 
   if (loading) {
     return (
-      <Layout>
         <div className="flex justify-center items-center min-h-[400px]">
           <div className="font-black text-slate-300 uppercase tracking-[0.5em] animate-pulse">Syncing Venture Matrix...</div>
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
       <div className="max-w-7xl mx-auto space-y-12 animate-fade-in px-4 pb-20">
         
         {/* Protocol Header */}
@@ -342,7 +339,6 @@ const Projects = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

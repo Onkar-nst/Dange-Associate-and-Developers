@@ -77,6 +77,13 @@ const Customers = () => {
   ];
 
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('add') === 'true') {
+      setShowForm(true);
+    }
+  }, [location]);
+
+  useEffect(() => {
     fetchInitialData();
   }, []);
 
@@ -188,19 +195,31 @@ const Customers = () => {
 
   if (loading) {
     return (
-      <Layout>
         <div className="text-center py-10">Loading...</div>
-      </Layout>
     );
   }
 
   return (
-    <Layout>
       <div className="p-1">
-        <div className="flex justify-between items-center mb-8 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-          <div>
-            <h1 className="text-2xl font-black text-[#1B315A] tracking-tighter uppercase">Customer Management</h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mt-1">Registry & Client Matrix</p>
+        <div className="flex justify-between items-center mb-10 bg-gradient-to-r from-white to-slate-50/50 p-8 rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -ml-32 -mt-32"></div>
+          <div className="flex items-center gap-8 relative z-10">
+            <button 
+                onClick={() => navigate('/dashboard')}
+                className="w-14 h-14 bg-slate-900 text-white rounded-[1.5rem] flex items-center justify-center text-xl hover:bg-blue-600 transition-all active:scale-90 shadow-2xl group/home"
+                title="Return Home"
+            >
+                <span className="group-hover/home:-translate-y-1 transition-transform">🏠</span>
+            </button>
+            <div className="space-y-1">
+              <h1 className="text-4xl font-black text-[#1B315A] tracking-tighter uppercase italic leading-none">
+                Customer <span className="text-blue-600">Hub</span>
+              </h1>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Strategic Inventory & Asset Allocation
+              </p>
+            </div>
           </div>
           <button
             onClick={() => {
@@ -208,12 +227,12 @@ const Customers = () => {
               setError('');
               setSuccess('');
             }}
-            className="flex items-center gap-3 px-8 py-4 bg-[#1B315A] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-[#F38C32] transition-all shadow-xl shadow-blue-900/10 active:scale-95"
+            className="flex items-center gap-4 px-10 py-5 bg-[#1B315A] text-white rounded-[2rem] font-black text-[11px] uppercase tracking-widest hover:bg-[#F38C32] hover:scale-105 transition-all shadow-2xl shadow-blue-900/20 active:scale-95 z-10"
           >
             {showForm ? (
-              <><span>📋</span> View Directory</>
+              <><span>📄</span> View Audit Trail</>
             ) : (
-              <><span>➕</span> Add New Customer</>
+              <><span>✨</span> Add New Asset</>
             )}
           </button>
         </div>
@@ -485,6 +504,7 @@ const Customers = () => {
                         <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest text-right">Status</label>
                         <select name="transactionStatus" value={formData.transactionStatus} onChange={handleChange} className="modern-input !py-2.5 uppercase text-[11px] font-black text-blue-600">
                           <option value="Token">Token</option>
+                          <option value="Booked">Booked</option>
                           <option value="Agreement">Agreement</option>
                           <option value="Registered">Registered</option>
                           <option value="Cancelled">Cancelled</option>
@@ -684,7 +704,8 @@ const Customers = () => {
                             <span className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-sm ${
                               customer.transactionStatus === 'Registered' ? 'bg-emerald-500 text-white' : 
                               customer.transactionStatus === 'Cancelled' ? 'bg-rose-500 text-white' : 
-                              customer.transactionStatus === 'Agreement' ? 'bg-blue-500 text-white' :
+                              customer.transactionStatus === 'Booked' ? 'bg-blue-400 text-white' :
+                              customer.transactionStatus === 'Agreement' ? 'bg-indigo-500 text-white' :
                               'bg-[#F38C32] text-white'
                             }`}>
                               {customer.transactionStatus || 'Token'}
@@ -716,7 +737,6 @@ const Customers = () => {
           </div>
         )}
       </div>
-    </Layout>
   );
 };
 

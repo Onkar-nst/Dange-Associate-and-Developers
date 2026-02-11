@@ -48,12 +48,11 @@ const CustomerDetail = () => {
     }
   };
 
-  if (loading) return <Layout><div className="flex justify-center items-center h-96 font-black uppercase text-slate-400">Loading Intelligence...</div></Layout>;
-  if (error) return <Layout><div className="p-10 text-rose-500 font-black uppercase text-center">{error}</div></Layout>;
-  if (!customer) return <Layout><div className="p-10 text-slate-500 font-black uppercase text-center">Customer not found in directory.</div></Layout>;
+  if (loading) return <div className="flex justify-center items-center h-96 font-black uppercase text-slate-400">Loading Intelligence...</div>;
+  if (error) return <div className="p-10 text-rose-500 font-black uppercase text-center">{error}</div>;
+  if (!customer) return <div className="p-10 text-slate-500 font-black uppercase text-center">Customer not found in directory.</div>;
 
   return (
-    <Layout>
       <div className="p-1 max-w-7xl mx-auto pb-20">
         {/* Header Navigation */}
         <div className="flex justify-between items-center mb-8 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
@@ -85,6 +84,7 @@ const CustomerDetail = () => {
                   } ${isUpdatingStatus ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 shadow-sm'}`}
                 >
                   <option value="Token">Token</option>
+                  <option value="Booked">Booked</option>
                   <option value="Agreement">Agreement</option>
                   <option value="Registered">Registry</option>
                   <option value="Cancelled">Cancelled</option>
@@ -230,7 +230,6 @@ const CustomerDetail = () => {
           </div>
         </div>
       </div>
-    </Layout>
   );
 };
 

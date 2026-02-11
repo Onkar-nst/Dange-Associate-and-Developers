@@ -3,7 +3,8 @@ const {
     getLedgerAccounts,
     createLedgerAccount,
     updateLedgerAccount,
-    getAccountTransactions
+    getAccountTransactions,
+    deleteLedgerAccount
 } = require('../controllers/ledgerAccountController');
 
 const router = express.Router();
@@ -19,7 +20,8 @@ router
 
 router
     .route('/:id')
-    .put(updateLedgerAccount);
+    .put(updateLedgerAccount)
+    .delete(deleteLedgerAccount);
 
 router
     .route('/:id/transactions')

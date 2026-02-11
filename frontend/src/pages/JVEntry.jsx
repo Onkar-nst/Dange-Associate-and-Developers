@@ -138,11 +138,10 @@ const JVEntry = () => {
         </label>
     );
 
-    if (loading) return <Layout><div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Syncing Journal Matrix...</div></Layout>;
+    if (loading) return <div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Syncing Journal Matrix...</div>;
 
     return (
-        <Layout>
-            <div className="max-w-7xl mx-auto space-y-12 animate-fade-in px-4 pb-20">
+        <div className="max-w-7xl mx-auto space-y-12 animate-fade-in px-4 pb-20">
                 
                 {/* Protocol Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
@@ -352,7 +351,6 @@ const JVEntry = () => {
 
                 <p className="text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] pb-10">Dange Associates Enterprise Ledger Infrastructure © 2026</p>
             </div>
-        </Layout>
     );
 };
 

@@ -91,13 +91,15 @@ exports.createLedgerEntry = asyncHandler(async (req, res, next) => {
         .sort({ transactionDate: -1 });
 
     const previousBalance = lastEntry ? lastEntry.balance : 0;
-    const newBalance = previousBalance + (debit || 0) - (credit || 0);
+    const numCredit = Number(credit) || 0;
+    const numDebit = Number(debit) || 0;
+    const newBalance = previousBalance + numDebit - numCredit;
 
     const ledgerEntry = await Ledger.create({
         partyType,
         partyId,
-        credit: credit || 0,
-        debit: debit || 0,
+        credit: numCredit,
+        debit: numDebit,
         balance: newBalance,
         description,
         referenceType: 'other',
@@ -108,5 +110,30 @@ exports.createLedgerEntry = asyncHandler(async (req, res, next) => {
         success: true,
         message: 'Ledger entry created',
         data: ledgerEntry
+    });
+});
+
+/**
+ * @desc    Soft delete a ledger entry
+ * @route   DELETE /api/ledger/:id
+ * @access  Private
+ */
+exports.deleteLedgerEntry = asyncHandler(async (req, res, next) => {
+    const entry = await Ledger.findById(req.params.id);
+
+    if (!entry) {
+        return res.status(404).json({
+            success: false,
+            error: 'Entry not found'
+        });
+    }
+
+    // Soft delete
+    entry.active = false;
+    await entry.save();
+
+    res.status(200).json({
+        success: true,
+        message: 'Entry removed from ledger balance'
     });
 });

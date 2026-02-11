@@ -32,10 +32,10 @@ const CashBook = () => {
 
     const Label = ({ children }) => <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1 mb-2 block">{children}</label>;
 
-    if (loading && data.length === 0) return <Layout><div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Auditing Cash Flow Archive...</div></Layout>;
+    if (loading && data.length === 0) return <div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Auditing Cash Flow Archive...</div>;
 
     return (
-        <Layout>
+        <>
             <div className="max-w-7xl mx-auto space-y-10 animate-fade-in px-4 print:p-0">
                 
                 {/* Header Filter Bar */}
@@ -196,7 +196,7 @@ const CashBook = () => {
                     .bg-slate-900 { background: #0f172a !important; color: white !important; -webkit-print-color-adjust: exact; }
                 }
             `}} />
-        </Layout>
+        </>
     );
 };
 
