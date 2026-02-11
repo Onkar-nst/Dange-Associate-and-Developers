@@ -16,66 +16,88 @@ dotenv.config();
 // Connect to DB
 mongoose.connect(process.env.MONGO_URI, { family: 4 });
 
+// ================================
 // Initial The Boss user
+// ================================
 const bossUser = {
-    name: 'Administrator',
+    firstName: 'Admin',
+    surname: 'Boss',
     userId: 'theboss',
     password: 'Admin@123',
     role: ROLES.THE_BOSS,
     active: true
 };
 
+// ================================
 // Initial currencies
+// ================================
 const currencies = [
     { currencyName: 'Indian Rupee', symbol: '₹', code: 'INR', active: true },
     { currencyName: 'US Dollar', symbol: '$', code: 'USD', active: true }
 ];
 
-// Import data
+// ================================
+// Import Data
+// ================================
 const importData = async () => {
     try {
+        console.log('🚀 Seeding started...\n');
+
         // Check if boss user exists
         const existingBoss = await User.findOne({ userId: 'theboss' });
+
         if (!existingBoss) {
             await User.create(bossUser);
             console.log('✅ The Boss user created');
             console.log('   UserId: theboss');
-            console.log('   Password: Admin@123');
+            console.log('   Password: Admin@123\n');
         } else {
-            console.log('ℹ️  The Boss user already exists');
+            console.log('ℹ️  The Boss user already exists\n');
         }
 
         // Create currencies if not exist
         for (const curr of currencies) {
-            const existing = await Currency.findOne({ currencyName: curr.currencyName });
-            if (!existing) {
+            const existingCurrency = await Currency.findOne({
+                currencyName: curr.currencyName
+            });
+
+            if (!existingCurrency) {
                 await Currency.create(curr);
                 console.log(`✅ Currency created: ${curr.currencyName}`);
+            } else {
+                console.log(`ℹ️  Currency already exists: ${curr.currencyName}`);
             }
         }
 
         console.log('\n🎉 Seeding complete!');
-        process.exit();
+        process.exit(0);
+
     } catch (err) {
-        console.error('❌ Error:', err.message);
+        console.error('\n❌ Seeder Error:', err);
         process.exit(1);
     }
 };
 
-// Delete data
+// ================================
+// Delete Data
+// ================================
 const deleteData = async () => {
     try {
         await User.deleteMany();
         await Currency.deleteMany();
-        console.log('🗑️  Data destroyed');
-        process.exit();
+
+        console.log('🗑️  All data destroyed');
+        process.exit(0);
+
     } catch (err) {
-        console.error('❌ Error:', err.message);
+        console.error('❌ Error deleting data:', err);
         process.exit(1);
     }
 };
 
+// ================================
 // Run based on flag
+// ================================
 if (process.argv[2] === '-d') {
     deleteData();
 } else {
