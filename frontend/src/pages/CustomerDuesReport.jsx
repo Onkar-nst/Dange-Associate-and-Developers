@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { reportAPI, projectAPI, userAPI } from '../api/services';
+import { reportAPI, projectAPI, executiveAPI } from '../api/services';
 import Layout from '../components/Layout';
 
 const CustomerDuesReport = () => {
@@ -11,26 +11,39 @@ const CustomerDuesReport = () => {
         projectId: '',
         executiveId: ''
     });
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
     useEffect(() => {
         fetchInitialData();
     }, []);
 
+    const handleToggleFullscreen = () => {
+        setIsFullscreen(!isFullscreen);
+    };
+
+    useEffect(() => {
+        const handleEsc = (e) => {
+            if (e.key === 'Escape' && isFullscreen) setIsFullscreen(false);
+        };
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, [isFullscreen]);
+
     const fetchInitialData = async () => {
         try {
             const [pRes, eRes] = await Promise.all([
                 projectAPI.getAll(),
-                userAPI.getList()
+                executiveAPI.getAll()
             ]);
             setProjects(pRes.data.data || []);
-            setExecutives((eRes.data.data || []).filter(u => ['Executive', 'Head Executive'].includes(u.role)));
+            setExecutives(eRes.data.data || []);
         } catch (err) { console.error(err); }
     };
 
-    const fetchReport = async () => {
+    const fetchReport = async (appliedFilters = filters) => {
         setLoading(true);
         try {
-            const res = await reportAPI.getDues(filters);
+            const res = await reportAPI.getDues(appliedFilters);
             setData(res.data.data || []);
         } catch (err) {
             console.error(err);
@@ -40,134 +53,188 @@ const CustomerDuesReport = () => {
     };
 
     const handleChange = (e) => {
-        setFilters({ ...filters, [e.target.name]: e.target.value });
+        const newFilters = { ...filters, [e.target.name]: e.target.value };
+        setFilters(newFilters);
+        fetchReport(newFilters);
     };
 
-    const formatDate = (date) => date ? new Date(date).toLocaleDateString('en-GB') : 'N/A';
-
-    const Label = ({ children, icon }) => (
-        <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1 mb-2 block flex items-center gap-2">
-            <span>{icon}</span> {children}
-        </label>
-    );
+    const formatDate = (date) => date ? new Date(date).toISOString().split('T')[0] : '';
 
     if (loading && data.length === 0) return <div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Syncing EMI Repayment Schedule...</div>;
 
+    const selectedExecName = executives.find(e => e._id === filters.executiveId)?.name || 'ALL EXECUTIVES';
+
     return (
-        <div className="max-w-[1600px] mx-auto space-y-10 animate-fade-in px-4 pb-20">
+        <div className="max-w-[100%] mx-auto space-y-4 animate-fade-in px-2 pb-20 font-serif">
+            <style>
+                {`
+                    @media print {
+                        @page { margin: 0.2cm; size: landscape; }
+                        body * { visibility: hidden !important; }
+                        .print-report, .print-report * { visibility: visible !important; }
+                        .print-report {
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100% !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                        }
+                        .no-print { display: none !important; }
+                    }
+                    .dues-table th {
+                        background-color: #00fa9a;
+                        color: #333;
+                        border: 1px solid #777;
+                        padding: 8px 4px;
+                        font-size: 13px;
+                        font-weight: bold;
+                    }
+                    .dues-table td {
+                        border: 1px solid #ccc;
+                        padding: 8px 4px;
+                        font-size: 13px;
+                        text-align: center;
+                    }
+                    .dues-table .text-right { text-align: right; }
+                    .dues-table .text-left { text-align: left; }
+                    .fullscreen-mode {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        background: white !important;
+                        z-index: 9999 !important;
+                        padding: 20px !important;
+                        overflow: auto !important;
+                    }
+                `}
+            </style>
+
+            <div className="text-center no-print">
+                <h1 className="text-2xl font-bold text-[#558B2F]">Customer Dues</h1>
                 
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-                    <div>
-                        <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase flex items-center gap-3">
-                            <span>📅</span> Customer Dues Matrix
-                        </h1>
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Global EMI Tracking & Strategic Repayment Analysis</p>
-                    </div>
-                </div>
-
-                {/* Filter Grid */}
-                <div className="bg-slate-900 rounded-[3rem] p-10 shadow-2xl shadow-blue-900/10 text-white relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                    <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 items-end">
-                        <div>
-                            <Label icon="🏢">Operational Venture</Label>
-                            <select 
-                                name="projectId" 
-                                value={filters.projectId} 
-                                onChange={handleChange} 
-                                className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-[11px] uppercase"
-                            >
-                                <option value="" className="text-slate-800">ALL PORTFOLIO ASSETS</option>
-                                {projects.map(p => <option key={p._id} value={p._id} className="text-slate-800">{p.projectName}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <Label icon="👔">Personnel Unit</Label>
-                            <select 
-                                name="executiveId" 
-                                value={filters.executiveId} 
-                                onChange={handleChange} 
-                                className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-[11px] uppercase"
-                            >
-                                <option value="" className="text-slate-800">ALL OPERATIONAL AGENTS</option>
-                                {executives.map(e => <option key={e._id} value={e._id} className="text-slate-800">{e.name}</option>)}
-                            </select>
-                        </div>
-                        <button 
-                            onClick={fetchReport} 
-                            className="btn-primary w-full !py-4 rounded-[2rem] uppercase tracking-widest shadow-xl shadow-blue-500/20 active:scale-95 text-[11px] font-black flex items-center justify-center gap-3"
+                <div className="flex flex-wrap justify-center items-center gap-6 mt-4">
+                    <div className="flex items-center gap-2">
+                        <label className="text-xs font-bold text-slate-700">project :</label>
+                        <select 
+                            name="projectId" 
+                            value={filters.projectId} 
+                            onChange={handleChange}
+                            className="px-3 py-1 bg-white border border-slate-300 rounded text-xs outline-none focus:border-emerald-500 shadow-sm min-w-[200px]"
                         >
-                            📡 Generate Dues Archive
+                            <option value="">-- ALL PROJECTS --</option>
+                            {projects.map(p => <option key={p._id} value={p._id}>{p.projectName}</option>)}
+                        </select>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <label className="text-xs font-bold text-slate-700">Executive Wise :</label>
+                        <select 
+                            name="executiveId" 
+                            value={filters.executiveId} 
+                            onChange={handleChange}
+                            className="px-3 py-1 bg-white border border-slate-300 rounded text-xs outline-none focus:border-emerald-500 shadow-sm min-w-[200px]"
+                        >
+                            <option value="">-- SELECT EXECUTIVE --</option>
+                            {executives.map(e => <option key={e._id} value={e._id}>{e.name} [ {e.code} ]</option>)}
+                        </select>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4">
+                        <button 
+                            onClick={handleToggleFullscreen}
+                            className={`p-1 px-2 border border-slate-300 rounded hover:bg-slate-100 shadow-sm transition-all ${isFullscreen ? 'bg-orange-500 text-white border-orange-600' : ''}`} 
+                            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen View"}
+                        >
+                            {isFullscreen ? '✖' : '📊'}
                         </button>
+                        <button onClick={() => window.print()} className="p-1 px-2 border border-slate-300 rounded hover:bg-slate-100 shadow-sm" title="Print Report">🖨️</button>
                     </div>
                 </div>
-
-                {/* Wide Data Matrix */}
-                <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden min-h-[600px] relative">
-                    <div className="overflow-x-auto">
-                        <table className="modern-table border !border-slate-50 min-w-[1400px]">
-                            <thead>
-                                <tr>
-                                    <th className="w-12 pl-10 text-center">#</th>
-                                    <th>Client Identity</th>
-                                    <th className="text-center">Unit No.</th>
-                                    <th className="text-right">Area</th>
-                                    <th className="text-right">EMI (₹)</th>
-                                    <th className="text-right">Total Cost</th>
-                                    <th className="text-right">Nett Paid</th>
-                                    <th className="text-right">Balance</th>
-                                    <th className="text-right text-emerald-600">DP Paid</th>
-                                    <th className="text-center">EMI Count</th>
-                                    <th className="text-right text-rose-500">BE Amt</th>
-                                    <th className="text-right">Gross Bal.</th>
-                                    <th>Agent Entity</th>
-                                    <th className="text-center pr-10">EMI Cycle</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.map((r, i) => (
-                                    <tr key={i} className="group hover:bg-slate-50/50 transition-colors border-b border-slate-50">
-                                        <td className="pl-10 text-center font-bold text-slate-300">{i + 1}</td>
-                                        <td>
-                                            <div className="font-black text-slate-800 uppercase tracking-tight text-[11px]">{r.name}</div>
-                                            <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Verified Profile</div>
-                                        </td>
-                                        <td className="text-center font-black text-slate-900">{r.plotNo}</td>
-                                        <td className="text-right text-slate-400 font-mono text-[10px]">{r.area} <span className="text-[8px] uppercase">sqft</span></td>
-                                        <td className="text-right font-black text-blue-600 bg-blue-50/10">₹{r.emiAmt.toLocaleString('en-IN')}</td>
-                                        <td className="text-right font-black text-slate-800">₹{r.cost.toLocaleString('en-IN')}</td>
-                                        <td className="text-right text-slate-400">₹{r.paidAmt.toLocaleString('en-IN')}</td>
-                                        <td className="text-right font-black text-rose-600 bg-rose-50/10">₹{r.balance.toLocaleString('en-IN')}</td>
-                                        <td className="text-right font-black text-emerald-600">₹{r.dpPaid.toLocaleString('en-IN')}</td>
-                                        <td className="text-center">
-                                            <span className="px-2 py-0.5 bg-slate-100 rounded text-[10px] font-black text-slate-600">{r.noEMI} M</span>
-                                        </td>
-                                        <td className="text-right font-black text-rose-500 font-mono">₹{r.beAmt.toLocaleString('en-IN')}</td>
-                                        <td className="text-right font-black text-slate-900 text-[12px] bg-slate-50/50">₹{r.totalBal.toLocaleString('en-IN')}</td>
-                                        <td>
-                                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-tighter truncate max-w-[120px]">{r.agent}</div>
-                                        </td>
-                                        <td className="pr-10 text-center font-black text-blue-600 text-[10px] italic">
-                                            {formatDate(r.emiDate)}
-                                        </td>
-                                    </tr>
-                                ))}
-                                {data.length === 0 && (
-                                    <tr>
-                                        <td colSpan="14" className="py-40 text-center">
-                                            <div className="text-6xl mb-6 grayscale opacity-10">🗓️</div>
-                                            <p className="text-[11px] font-black text-slate-300 uppercase tracking-[0.4em]">Repayment Schedule Chamber Locked</p>
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <p className="text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] pb-10">Dange Associates Financial Planning Unit © 2026</p>
             </div>
+
+            <div className={`border border-slate-400 p-1 print-report ${isFullscreen ? 'fullscreen-mode' : ''}`}>
+                {isFullscreen && (
+                    <div className="no-print flex justify-between items-center bg-slate-800 text-white p-2 mb-2 rounded">
+                        <span className="text-xs font-bold uppercase tracking-widest ml-2">Audit Mode: Full Table View</span>
+                        <button onClick={handleToggleFullscreen} className="bg-rose-500 hover:bg-rose-600 px-3 py-1 rounded text-xs font-black">EXIT [ESC]</button>
+                    </div>
+                )}
+                <div className="bg-[#FFEB3B] text-center py-2 border-b border-slate-400">
+                    <h2 className="text-sm font-bold uppercase tracking-wide">Customer Due Summary</h2>
+                    <p className="text-[11px] font-bold">Executive Name : {selectedExecName}</p>
+                </div>
+
+                <div className="overflow-x-auto">
+                    <table className="w-full dues-table border-collapse">
+                        <thead>
+                            <tr>
+                                <th>Sr</th>
+                                <th>Name</th>
+                                <th className="w-20">Plot No.</th>
+                                <th>Area (Sq.Ft.)</th>
+                                <th>EMI Amt</th>
+                                <th>Cost</th>
+                                <th>Paid Amt</th>
+                                <th>Bal.</th>
+                                <th className="w-24">DP/Paid</th>
+                                <th>No.EMI</th>
+                                <th>BE Amt</th>
+                                <th>Interest</th>
+                                <th>Total Bal.</th>
+                                <th>Contact No.</th>
+                                <th>Agent</th>
+                                <th className="w-24">EMI Date</th>
+                                <th className="w-8">N1</th>
+                                <th className="w-8">N2</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {data.map((r, i) => (
+                                <tr key={i} className="hover:bg-[#f9f9f9]">
+                                    <td>{i + 1}</td>
+                                    <td className="text-left font-bold uppercase whitespace-nowrap px-2">{r.name}</td>
+                                    <td className="font-bold">{r.plotNo}</td>
+                                    <td>{r.area}</td>
+                                    <td>{r.emiAmt.toFixed(2)}</td>
+                                    <td>{r.cost.toFixed(2)}</td>
+                                    <td>{r.paidAmt.toFixed(2)}</td>
+                                    <td>{r.balance.toFixed(2)}</td>
+                                    <td>{r.dpPaid || 0}/0</td>
+                                    <td className="p-0 border-none">
+                                        <div className={`w-full h-full py-1 text-white font-bold flex items-center justify-center ${r.noEMI > 0 ? 'bg-[#FF9800]' : 'bg-[#4CAF50]'}`}>
+                                            {r.noEMI}
+                                        </div>
+                                    </td>
+                                    <td>{(r.beAmt || 0).toFixed(2)}</td>
+                                    <td>{(r.interest || 0).toFixed(2)}</td>
+                                    <td className="font-bold">{(r.totalBal || 0).toFixed(2)}</td>
+                                    <td>{r.contactNo}</td>
+                                    <td className="text-left text-[12px] px-2">{r.agent}</td>
+                                    <td className="whitespace-nowrap">{formatDate(r.emiDate)}</td>
+                                    <td className="p-0">🖨️</td>
+                                    <td className="p-0">📓</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <tfoot className="bg-[#00fa9a] font-bold">
+                            <tr>
+                                <td colSpan="4"></td>
+                                <td>{data.reduce((acc, r) => acc + r.emiAmt, 0).toFixed(2)}</td>
+                                <td>{data.reduce((acc, r) => acc + r.cost, 0).toFixed(2)}</td>
+                                <td colSpan="4"></td>
+                                <td>{data.reduce((acc, r) => acc + r.beAmt, 0 || 0).toFixed(2)}</td>
+                                <td>{data.reduce((acc, r) => acc + r.interest, 0 || 0).toFixed(2)}</td>
+                                <td>{data.reduce((acc, r) => acc + r.totalBal, 0 || 0).toFixed(2)}</td>
+                                <td colSpan="5"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <p className="text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] pb-10">Dange Associates Intelligence Platform © 2026</p>
+        </div>
     );
 };
 

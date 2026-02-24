@@ -34,10 +34,17 @@ const Sidebar = () => {
             items: [
                 { title: 'Sales Analytics', link: '/report/sales', icon: '📈' },
                 { title: 'Master Statement', link: '/report/customer-statement', icon: '📜' },
-                { title: 'Direct Statement', link: '/report/direct-statement', icon: '🧾' },
+                { title: 'Direct Customer Report', link: '/report/direct-statement', icon: '🧾' },
                 { title: 'Outstanding Dues', link: '/report/outstanding', icon: '⚠️' },
                 { title: 'EMI Schedule', link: '/report/dues', icon: '📅' },
                 { title: 'Global Cash Book', link: '/report/cash-book', icon: '📖' },
+                { title: 'Monthly EMI Reminder', link: '/report/monthly-emi-reminder', icon: '🔔' },
+                { title: 'Token by Executive', link: '/report/token-by-executive', icon: '🎟️' },
+                { title: 'Exe/Cust Reminder', link: '/report/executive-reminder', icon: '⏰' },
+                { title: 'Project Summary', link: '/report/project-summary', icon: '🏢' },
+                { title: 'Unit Calculation', link: '/report/unit-calculation', icon: '📐' },
+                { title: 'User Collection', link: '/report/user-daily-collection', icon: '👤' },
+                { title: 'Customer EMI Dues', link: '/report/customer-emi-dues', icon: '🚨' },
             ]
         },
         {

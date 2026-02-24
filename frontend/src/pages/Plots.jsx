@@ -158,10 +158,11 @@ const Plots = () => {
     }
   };
 
-  const handleDelete = async (plotId) => {
-    if (window.confirm('Are you sure you want to delete this plot?')) {
+  const handleDelete = async (plotId, plotNumber) => {
+    if (window.confirm(`Plot No. "${plotNumber}" permanently delete hoga!\n\nKya aap sure hain? Ye data wapas nahi aayega.`)) {
       try {
         await plotAPI.deactivate(plotId);
+        setSuccess(`Plot No. "${plotNumber}" successfully delete ho gaya!`);
         fetchPlots(selectedProjectId);
       } catch (err) {
         setError('Failed to delete plot');
@@ -369,7 +370,7 @@ const Plots = () => {
                           <button onClick={() => handleEdit(plot)} className={`transition-colors text-xs ${editingPlotId === plot._id ? 'text-orange-600 scale-125' : 'text-blue-500 hover:text-blue-700'}`}>✏️</button>
                         </td>
                         <td className="border border-gray-400 p-1">
-                          <button onClick={() => handleDelete(plot._id)} className="text-red-500 hover:text-red-700 transition-all font-bold text-xs hover:scale-110">✕</button>
+                          <button onClick={() => handleDelete(plot._id, plot.plotNumber)} className="text-red-500 hover:text-red-700 transition-all font-bold text-xs hover:scale-110">✕</button>
                         </td>
                       </tr>
                     ))}

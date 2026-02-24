@@ -56,6 +56,26 @@ const Executives = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'senior') {
+            // Auto-fill Code, Percentage, Rs Per Sq.Ft from selected senior
+            if (value) {
+                const seniorExec = executives.find(ex => ex._id === value);
+                if (seniorExec) {
+                    setFormData(prev => ({
+                        ...prev,
+                        senior: value,
+                        code: seniorExec.code || prev.code,
+                        percentage: seniorExec.percentage || prev.percentage,
+                        rsPerSqFt: seniorExec.rsPerSqFt || prev.rsPerSqFt,
+                    }));
+                    return;
+                }
+            } else {
+                // Clear auto-filled fields if senior deselected
+                setFormData(prev => ({ ...prev, senior: '', code: '', percentage: 0, rsPerSqFt: 0 }));
+                return;
+            }
+        }
         if (name.includes('.')) {
             const [parent, child] = name.split('.');
             setFormData(prev => ({
@@ -131,21 +151,41 @@ const Executives = () => {
                             </div>
                             <div className="p-4 space-y-3">
                                 <div className="grid grid-cols-2 gap-2 items-center text-[11px]">
-                                    <label className="font-bold text-gray-700">Senior</label>
+                                    <label className="font-bold text-gray-700">
+                                        Senior
+                                        <span className="text-gray-400 font-normal text-[9px] ml-1">(Optional)</span>
+                                    </label>
                                     <select 
                                         name="senior" 
                                         value={formData.senior} 
                                         onChange={handleChange}
                                         className="border border-blue-200 p-1 rounded focus:outline-none focus:border-blue-500"
                                     >
-                                        <option value="">Select Senior</option>
+                                        <option value="">-- No Senior --</option>
                                         {executives
-                                            .filter(e => e.role === 'Head Executive' || e.role === 'The Boss')
+                                            .filter(e => e._id !== selectedId) // don't show self in edit mode
                                             .map(e => (
                                                 <option key={e._id} value={e._id}>{e.name} - {e.code}</option>
                                             ))
                                         }
                                     </select>
+
+                                    {/* Auto-filled fields from Senior */}
+                                    {formData.senior && (() => {
+                                        const s = executives.find(e => e._id === formData.senior);
+                                        return s ? (
+                                            <>
+                                                <label className="font-bold text-gray-500 text-[10px]">Code (from Senior)</label>
+                                                <div className="text-red-600 font-black text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1">{s.code || '-'}</div>
+
+                                                <label className="font-bold text-gray-500 text-[10px]">Per. (from Senior)</label>
+                                                <div className="text-red-600 font-black text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1">{s.percentage || 0}%</div>
+
+                                                <label className="font-bold text-gray-500 text-[10px]">Rs. (Per Sq.Ft from Senior)</label>
+                                                <div className="text-red-600 font-black text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1">{s.rsPerSqFt || 0}</div>
+                                            </>
+                                        ) : null;
+                                    })()}
 
                                     <label className="font-bold text-gray-700">Code</label>
                                     <input 
@@ -169,7 +209,7 @@ const Executives = () => {
                                         <option value="The Boss">The Boss</option>
                                     </select>
 
-                                    <label className="font-bold text-gray-700">Rex (Per Sq. Ft)</label>
+                                    <label className="font-bold text-gray-700">Rs. (Per Sq. Ft)</label>
                                     <input 
                                         type="number" 
                                         name="rexPerSqFt" 

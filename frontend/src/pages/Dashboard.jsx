@@ -56,27 +56,52 @@ const Dashboard = () => {
     {
       title: 'DATA ENTRY',
       cards: [
-        { title: 'Customer Creation', description: 'Add and manage customers', link: '/customers', color: 'from-blue-600 to-blue-400', roles: ['Executive', 'Head Executive', 'The Boss'] },
-        { title: 'Project Entry', description: 'Manage all projects', link: '/projects', color: 'from-sky-600 to-sky-400', roles: ['Executive', 'Head Executive', 'The Boss'] },
-        { title: 'Laser Creation', description: 'Manage money spend record books', link: '/ledger-accounts', color: 'from-rose-600 to-rose-400', roles: ['Executive', 'Head Executive', 'The Boss'] },
-        { title: 'Executive Detail', description: 'Manage executives and bank details', link: '/executives', color: 'from-cyan-600 to-cyan-400', roles: ['The Boss', 'Head Executive'] },
-        { title: 'Account Transaction', description: 'Record payments', link: '/transactions', color: 'from-orange-500 to-yellow-400', roles: ['Executive', 'Head Executive', 'The Boss'] },
-        { title: 'User Creation', description: 'Create and manage system users', link: '/users', color: 'from-red-600 to-red-400', roles: ['The Boss'] },
-        { title: 'Customer Entry Modify', description: 'Update and view customer details', link: '/customer-status', color: 'from-emerald-600 to-emerald-400', roles: ['Executive', 'Head Executive', 'The Boss'] },
-        { title: 'Party Ledger', description: 'View transaction history', link: '/party-ledger', color: 'from-amber-600 to-amber-400', roles: ['Executive', 'Head Executive', 'The Boss'] },
-        { title: 'JV Entry', description: 'manage journal vouchers', link: '/jv-entry', color: 'from-teal-600 to-teal-400', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'Customer Creation', description: 'Add and manage customers', link: '/customers', color: 'from-slate-700 to-slate-600', icon: '👤', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'Project Entry', description: 'Manage all projects', link: '/projects', color: 'from-slate-700 to-slate-600', icon: '🏢', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'Laser Creation', description: 'Manage money spend record books', link: '/ledger-accounts', color: 'from-slate-700 to-slate-600', icon: '💎', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'Executive Detail', description: 'Manage executives and bank details', link: '/executives', color: 'from-slate-700 to-slate-600', icon: '👔', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Account Transaction', description: 'Record payments', link: '/transactions', color: 'from-slate-700 to-slate-600', icon: '💸', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'User Creation', description: 'Create and manage system users', link: '/users', color: 'from-slate-700 to-slate-600', icon: '🛡️', roles: ['The Boss'] },
+        { title: 'Customer Entry Modify', description: 'Update and view customer details', link: '/customer-status', color: 'from-slate-700 to-slate-600', icon: '📝', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'Party Ledger', description: 'View transaction history', link: '/party-ledger', color: 'from-slate-700 to-slate-600', icon: '📔', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'JV Entry', description: 'manage journal vouchers', link: '/jv-entry', color: 'from-slate-700 to-slate-600', icon: '📓', roles: ['Executive', 'Head Executive', 'The Boss'] },
       ]
     },
     {
       title: 'REPORT',
       cards: [
-        { title: 'Cash Book', description: 'Daily receipts & payments', link: '/report/cash-book', color: 'from-orange-600 to-orange-400', roles: ['The Boss', 'Head Executive'] },
-        { title: 'Customer Statement', description: 'Project & status wise summary', link: '/report/customer-statement', color: 'from-sky-700 to-sky-500', roles: ['The Boss', 'Head Executive'] },
-        { title: 'Sales Report', description: 'Detailed sales analytics', link: '/report/sales', color: 'from-rose-700 to-rose-500', roles: ['The Boss', 'Head Executive'] },
-        { title: 'Direct Statement', description: 'Individual customer ledger', link: '/report/direct-statement', color: 'from-blue-700 to-blue-500', roles: ['The Boss', 'Head Executive'] },
-        { title: 'Outstanding Report', description: 'Project wise pending dues', link: '/report/outstanding', color: 'from-amber-700 to-amber-500', roles: ['The Boss', 'Head Executive'] },
-        { title: 'Customer Dues', description: 'EMI & payment tracking', link: '/report/dues', color: 'from-indigo-700 to-indigo-500', roles: ['The Boss', 'Head Executive'] },
-        { title: 'Daily Collection', description: 'Detailed partner collection register', link: '/report/daily-collection', color: 'from-emerald-700 to-emerald-500', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Customer Statement', description: 'Project & status wise summary', link: '/report/customer-statement', color: 'from-slate-700 to-slate-600', icon: '📜', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Sales Report', description: 'Detailed sales analytics', link: '/report/sales', color: 'from-slate-700 to-slate-600', icon: '📈', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Executive Sales Report', description: 'Executive business statement', link: '/report/executive-sales', color: 'from-slate-700 to-slate-600', icon: '👔', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Direct Customer Report', description: 'Individual customer ledger', link: '/report/direct-statement', color: 'from-slate-700 to-slate-600', icon: '🧾', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Customer Outstanding', description: 'Project wise pending dues', link: '/report/outstanding', color: 'from-slate-700 to-slate-600', icon: '⚠️', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Customer Dues Summary', description: 'EMI & payment tracking', link: '/report/dues', color: 'from-slate-700 to-slate-600', icon: '📅', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Cash Book', description: 'Daily receipts & payments', link: '/report/cash-book', color: 'from-slate-700 to-slate-600', icon: '📖', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Daily Collection Register', description: 'Detailed partner collection register', link: '/report/daily-collection', color: 'from-slate-700 to-slate-600', icon: '💵', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Monthly EMI Reminder', description: 'Monthly EMI due reminders', link: '/report/monthly-emi-reminder', color: 'from-slate-700 to-slate-600', icon: '🔔', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Customers Token by Exe', description: 'Token customers by executive', link: '/report/token-by-executive', color: 'from-slate-700 to-slate-600', icon: '🎟️', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Executive/Customer Reminder', description: 'Upcoming EMI follow-ups', link: '/report/executive-reminder', color: 'from-slate-700 to-slate-600', icon: '⏰', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Unit Calculation', description: 'Project-wise unit & area stats', link: '/report/unit-calculation', color: 'from-slate-700 to-slate-600', icon: '📐', roles: ['The Boss', 'Head Executive'] },
+        { title: 'User Daily Collection', description: 'Executive-wise daily collection', link: '/report/user-daily-collection', color: 'from-slate-700 to-slate-600', icon: '👤', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Customer EMI Dues', description: 'Overdue EMI recovery tracker', link: '/report/customer-emi-dues', color: 'from-slate-700 to-slate-600', icon: '🚨', roles: ['The Boss', 'Head Executive'] },
+      ]
+    },
+    {
+      title: 'CRM',
+      cards: [
+        { title: 'New CRM Client', description: 'Onboard potential leads', link: '/crm', color: 'from-slate-700 to-slate-600', icon: '🆕', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'Follow-up(Leads)', description: 'Manage client communications', link: '/crm', color: 'from-slate-700 to-slate-600', icon: '📞', roles: ['Executive', 'Head Executive', 'The Boss'] },
+        { title: 'Import Excel Data', description: 'Bulk lead ingestion', link: '/crm', color: 'from-slate-700 to-slate-600', icon: '📥', roles: ['The Boss', 'Head Executive'] },
+      ]
+    },
+    {
+      title: 'COMMISSION',
+      cards: [
+        { title: 'Sales Agent Commission', description: 'Payout processing v1', link: '/commissions', color: 'from-slate-700 to-slate-600', icon: '💰', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Sale Agent Commission 2', description: 'Advanced payout system', link: '/commissions', color: 'from-slate-700 to-slate-600', icon: '💸', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Executive Login', description: 'Commission portal access', link: '/commissions', color: 'from-slate-700 to-slate-600', icon: '🔑', roles: ['The Boss', 'Head Executive', 'Executive'] },
+        { title: 'Agent Summary', description: 'Gross agent performance', link: '/commissions', color: 'from-slate-700 to-slate-600', icon: '📊', roles: ['The Boss', 'Head Executive'] },
+        { title: 'New Sales Agent Commission', description: 'Create new agent payouts', link: '/commissions', color: 'from-slate-700 to-slate-600', icon: '✨', roles: ['The Boss', 'Head Executive'] },
       ]
     }
   ];
@@ -153,114 +178,106 @@ const Dashboard = () => {
         </div>
 
         {/* KPI High-Level Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
-                <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-blue-50 rounded-2xl group-hover:bg-blue-500 group-hover:text-white transition-colors text-xl">📊</div>
-                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-lg">Target</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
+                <div className="flex justify-between items-center mb-1.5">
+                    <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors text-base">📊</div>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-1.5 py-0.5 rounded-md">Target</span>
                 </div>
-                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">₹{(totalSales / 10000000).toFixed(2)}Cr</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gross Sales Volume</p>
+                <h3 className="text-xl font-black text-slate-800 tracking-tighter">₹{(totalSales / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Gross Sales Volume</p>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
-                <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-emerald-50 rounded-2xl group-hover:bg-emerald-500 group-hover:text-white transition-colors text-xl">💰</div>
-                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">Inflow</span>
+            <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
+                <div className="flex justify-between items-center mb-1.5">
+                    <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors text-base">💰</div>
+                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-1.5 py-0.5 rounded-md">Inflow</span>
                 </div>
-                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">₹{(totalCollections / 10000000).toFixed(2)}Cr</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Collections</p>
+                <h3 className="text-xl font-black text-slate-800 tracking-tighter">₹{(totalCollections / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Total Collections</p>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
-                <div className="flex justify-between items-start mb-4">
-                    <div className="p-3 bg-rose-50 rounded-2xl group-hover:bg-rose-500 group-hover:text-white transition-colors text-xl">⚠️</div>
-                    <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest bg-rose-50 px-2 py-1 rounded-lg">Pending</span>
+            <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
+                <div className="flex justify-between items-center mb-1.5">
+                    <div className="p-2 bg-rose-50 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors text-base">⚠️</div>
+                    <span className="text-[8px] font-black text-rose-500 uppercase tracking-widest bg-rose-50 px-1.5 py-0.5 rounded-md">Pending</span>
                 </div>
-                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1">₹{(totalBalance / 10000000).toFixed(2)}Cr</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Outstanding Bal</p>
+                <h3 className="text-xl font-black text-slate-800 tracking-tighter">₹{(totalBalance / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Outstanding Bal</p>
             </div>
 
-            <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
-                <div className="flex justify-between items-start mb-4 relative z-10">
-                    <div className="p-3 bg-orange-50 rounded-2xl group-hover:bg-orange-500 group-hover:text-white transition-colors text-xl">💎</div>
-                    <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 px-2 py-1 rounded-lg">Liquid</span>
+            <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                <div className="flex justify-between items-center mb-1.5 relative z-10">
+                    <div className="p-2 bg-orange-50 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors text-base">💎</div>
+                    <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded-md">Liquid</span>
                 </div>
-                <h3 className="text-3xl font-black text-slate-800 tracking-tighter mb-1 relative z-10">₹{(liquidity / 100000).toFixed(2)}L</h3>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Cash + Bank Assets</p>
+                <h3 className="text-xl font-black text-slate-800 tracking-tighter relative z-10">₹{(liquidity / 100000).toFixed(2)}L</h3>
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Cash + Bank Assets</p>
             </div>
         </div>
 
         {/* Analytics Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Box 1: Project Summary */}
-            <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-slate-900 px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
-                    <span className="flex items-center gap-3"><span>📂</span> Project Summary</span>
-                    <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Live Matrix</span>
+            <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-xl">
+                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[10px] uppercase tracking-[0.3em] flex justify-between items-center">
+                    <span className="flex items-center gap-2"><span>📂</span> Project Summary</span>
+                    <span className="text-[7px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Live</span>
                 </div>
-                <div className="p-8 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
+                <div className="p-5 bg-slate-50/50 flex-1">
+                    <div className="overflow-x-auto text-[11px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
-                                    <th className="pb-4 text-left">Strategic Venture</th>
-                                    <th className="pb-4 text-right">Gross Sales</th>
-                                    <th className="pb-4 text-right">Inflow</th>
-                                    <th className="pb-4 text-right">Delta (Bal)</th>
+                                    <th className="pb-3 text-left">Venture</th>
+                                    <th className="pb-3 text-right">Sales</th>
+                                    <th className="pb-3 text-right">Inflow</th>
+                                    <th className="pb-3 text-right">Bal</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {summaries.project.map((p, i) => (
                                     <tr key={i} className="group/row cursor-pointer hover:bg-white transition-colors" onClick={() => navigate(`/report/outstanding?projectId=${p._id}`)}>
-                                        <td className="py-4 text-slate-800 group-hover/row:text-[#F38C32] transition-colors">{p.projectName}</td>
-                                        <td className="py-4 text-right font-mono">₹{p.totalSale.toLocaleString('en-IN')}</td>
-                                        <td className="py-4 text-right font-mono text-emerald-600">₹{p.totalReceived.toLocaleString('en-IN')}</td>
-                                        <td className="py-4 text-right font-mono text-rose-500 italic">₹{p.balance.toLocaleString('en-IN')}</td>
+                                        <td className="py-2.5 text-slate-700 group-hover/row:text-[#F38C32] transition-colors">{p.projectName}</td>
+                                        <td className="py-2.5 text-right font-mono">₹{p.totalSale.toLocaleString('en-IN')}</td>
+                                        <td className="py-2.5 text-right font-mono text-emerald-600">₹{p.totalReceived.toLocaleString('en-IN')}</td>
+                                        <td className="py-2.5 text-right font-mono text-rose-500">₹{p.balance.toLocaleString('en-IN')}</td>
                                     </tr>
                                 ))}
                             </tbody>
-                            <tfoot>
-                                <tr className="border-t-2 border-[#1B315A] text-slate-900">
-                                    <td className="pt-4 font-black">Consolidated Metrics :</td>
-                                    <td className="pt-4 text-right font-mono">₹{summaries.project.reduce((acc, p) => acc + p.totalSale, 0).toLocaleString('en-IN')}</td>
-                                    <td className="pt-4 text-right font-mono">₹{summaries.project.reduce((acc, p) => acc + p.totalReceived, 0).toLocaleString('en-IN')}</td>
-                                    <td className="pt-4 text-right font-mono text-rose-600">₹{summaries.project.reduce((acc, p) => acc + p.balance, 0).toLocaleString('en-IN')}</td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
             </div>
 
             {/* Box 2: Sales Position */}
-            <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-slate-900 px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
-                    <span className="flex items-center gap-3"><span>💹</span> Sales Position</span>
-                    <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Market Sync</span>
+            <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-xl">
+                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[10px] uppercase tracking-[0.3em] flex justify-between items-center">
+                    <span className="flex items-center gap-2"><span>💹</span> Sales Position</span>
+                    <span className="text-[7px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Market</span>
                 </div>
-                <div className="p-8 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
+                <div className="p-5 bg-slate-50/50 flex-1">
+                    <div className="overflow-x-auto text-[11px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
-                                    <th className="pb-4 text-left">Project Entity</th>
-                                    <th className="pb-4 text-center">Units</th>
-                                    <th className="pb-4 text-center">Agree.</th>
-                                    <th className="pb-4 text-center">Book.</th>
-                                    <th className="pb-4 text-center">Liquidity (BAL)</th>
+                                    <th className="pb-3 text-left">Project</th>
+                                    <th className="pb-3 text-center">Units</th>
+                                    <th className="pb-3 text-center">Agr.</th>
+                                    <th className="pb-3 text-center">Bk.</th>
+                                    <th className="pb-3 text-center">Avail</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {summaries.sales.map((s, i) => (
                                     <tr key={i} className="group/row cursor-pointer hover:bg-white transition-colors" onClick={() => navigate(`/report/sales-position/${s._id}?name=${s.projectName}`)}>
-                                        <td className="py-4 text-slate-800 group-hover/row:text-[#F38C32] transition-colors">{s.projectName}</td>
-                                        <td className="py-4 text-center font-mono">{s.totalPlots}</td>
-                                        <td className="py-4 text-center font-mono text-emerald-600">{s.sold}</td>
-                                        <td className="py-4 text-center font-mono text-blue-500">{s.booked}</td>
-                                        <td className="py-4 text-center font-mono text-rose-500">{s.available}</td>
+                                        <td className="py-2.5 text-slate-700 group-hover/row:text-[#F38C32] transition-colors">{s.projectName}</td>
+                                        <td className="py-2.5 text-center font-mono">{s.totalPlots}</td>
+                                        <td className="py-2.5 text-center font-mono text-emerald-600">{s.sold}</td>
+                                        <td className="py-2.5 text-center font-mono text-blue-500">{s.booked}</td>
+                                        <td className="py-2.5 text-center font-mono text-rose-500">{s.available}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -270,12 +287,12 @@ const Dashboard = () => {
             </div>
 
             {/* Box 3: Inventory Matrix (Chart) */}
-            <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-slate-900 px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
-                    <span className="flex items-center gap-3"><span>🏙️</span> Inventory Matrix</span>
+            <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-xl">
+                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[10px] uppercase tracking-[0.3em] flex justify-between items-center">
+                    <span className="flex items-center gap-2"><span>🏙️</span> Inventory Matrix</span>
                 </div>
-                <div className="p-8 flex items-center justify-around relative overflow-hidden h-80">
-                    <div className="w-56 h-56 relative z-10">
+                <div className="p-6 flex items-center justify-around relative overflow-hidden h-64">
+                    <div className="w-44 h-44 relative z-10">
                         <Doughnut 
                             data={inventoryData} 
                             options={{ 
@@ -286,31 +303,31 @@ const Dashboard = () => {
                         />
                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="text-center">
-                                <span className="block text-4xl font-black text-slate-800 tracking-tighter">{totalSold + totalBooked + totalAvailable}</span>
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Total Units</span>
+                                <span className="block text-2xl font-black text-slate-800 tracking-tighter">{totalSold + totalBooked + totalAvailable}</span>
+                                <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Units</span>
                             </div>
                         </div>
                     </div>
-                     <div className="space-y-6">
-                        <div className="flex items-center gap-3 group/item">
-                             <span className="w-3 h-3 rounded-full bg-emerald-500 group-hover/item:scale-125 transition-transform shadow-lg shadow-emerald-500/30"></span>
+                     <div className="space-y-4">
+                        <div className="flex items-center gap-2.5">
+                             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30"></span>
                              <div>
-                                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Sold</p>
-                                 <p className="text-xl font-black text-slate-800 tracking-tighter">{totalSold}</p>
+                                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Sold</p>
+                                 <p className="text-base font-black text-slate-800 tracking-tighter">{totalSold}</p>
                              </div>
                         </div>
-                        <div className="flex items-center gap-3 group/item">
-                             <span className="w-3 h-3 rounded-full bg-blue-500 group-hover/item:scale-125 transition-transform shadow-lg shadow-blue-500/30"></span>
+                        <div className="flex items-center gap-2.5">
+                             <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-lg shadow-blue-500/30"></span>
                              <div>
-                                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Booked</p>
-                                 <p className="text-xl font-black text-slate-800 tracking-tighter">{totalBooked}</p>
+                                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Booked</p>
+                                 <p className="text-base font-black text-slate-800 tracking-tighter">{totalBooked}</p>
                              </div>
                         </div>
-                         <div className="flex items-center gap-3 group/item">
-                             <span className="w-3 h-3 rounded-full bg-slate-200 group-hover/item:scale-125 transition-transform"></span>
+                         <div className="flex items-center gap-2.5">
+                             <span className="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
                              <div>
-                                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Avail</p>
-                                 <p className="text-xl font-black text-slate-800 tracking-tighter">{totalAvailable}</p>
+                                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Avail</p>
+                                 <p className="text-base font-black text-slate-800 tracking-tighter">{totalAvailable}</p>
                              </div>
                         </div>
                      </div>
@@ -318,37 +335,30 @@ const Dashboard = () => {
             </div>
 
             {/* Box 4: Project Receipts & Payments */}
-            <div className="group relative bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-2xl">
-                <div className="bg-slate-900 px-8 py-5 text-white font-black text-[12px] uppercase tracking-[0.4em] flex justify-between items-center">
-                    <span className="flex items-center gap-3"><span>🔄</span> Receipts & Disbursements</span>
-                    <span className="text-[8px] bg-white/10 px-2 py-1 rounded text-orange-400 font-bold">Delta Sync</span>
+            <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-xl">
+                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[10px] uppercase tracking-[0.3em] flex justify-between items-center">
+                    <span className="flex items-center gap-2"><span>🔄</span> Receipts & Pay</span>
+                    <span className="text-[7px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Sync</span>
                 </div>
-                <div className="p-8 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
+                <div className="p-5 bg-slate-50/50 flex-1">
+                    <div className="overflow-x-auto text-[11px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
-                                    <th className="pb-4 text-left">Venture Profile</th>
-                                    <th className="pb-4 text-right">Inflow (Rec)</th>
-                                    <th className="pb-4 text-right">Outflow (Pay)</th>
+                                    <th className="pb-3 text-left">Profile</th>
+                                    <th className="pb-3 text-right">In (Rec)</th>
+                                    <th className="pb-3 text-right">Out (Pay)</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {summaries.rp.map((r, i) => (
                                     <tr key={i} className="group/row cursor-pointer hover:bg-white transition-colors" onClick={() => navigate('/report/cash-book')}>
-                                        <td className="py-4 text-slate-800 group-hover/row:text-[#F38C32] transition-colors uppercase italic">{r.projectName}</td>
-                                        <td className="py-4 text-right font-mono text-emerald-600 italic">₹{r.totalReceipt.toLocaleString('en-IN')}</td>
-                                        <td className="py-4 text-right font-mono text-rose-500 italic">₹{r.totalPayment.toLocaleString('en-IN')}</td>
+                                        <td className="py-2.5 text-slate-700 group-hover/row:text-[#F38C32] transition-colors">{r.projectName}</td>
+                                        <td className="py-2.5 text-right font-mono text-emerald-600">₹{r.totalReceipt.toLocaleString('en-IN')}</td>
+                                        <td className="py-2.5 text-right font-mono text-rose-500">₹{r.totalPayment.toLocaleString('en-IN')}</td>
                                     </tr>
                                 ))}
                             </tbody>
-                            <tfoot>
-                                <tr className="border-t-2 border-[#1B315A] text-slate-900">
-                                    <td className="pt-4 font-black">Aggregate Flow :</td>
-                                    <td className="pt-4 text-right font-mono text-emerald-600">₹{summaries.rp.reduce((acc, r) => acc + r.totalReceipt, 0).toLocaleString('en-IN')}</td>
-                                    <td className="pt-4 text-right font-mono text-rose-600">₹{summaries.rp.reduce((acc, r) => acc + r.totalPayment, 0).toLocaleString('en-IN')}</td>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -356,34 +366,41 @@ const Dashboard = () => {
         </div>
 
         {/* Module Cards */}
-        <div className="space-y-12">
+        <div className="space-y-10 pb-20">
           {filteredSections.map((section, sIdx) => (
-            <div key={sIdx} className="space-y-6">
-              <div className="flex items-center gap-4">
-                <h2 className="text-[11px] font-black text-slate-900 uppercase tracking-[0.3em] whitespace-nowrap">{section.title}</h2>
-                <div className="h-px bg-slate-200 w-full"></div>
+            <div key={sIdx} className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="flex flex-col">
+                  <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">{section.title}</h2>
+                  <div className="h-0.5 w-8 bg-[#F38C32] mt-0.5 rounded-full"></div>
+                </div>
+                <div className="h-px bg-slate-100 flex-1"></div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {section.cards.map((card, index) => (
                   <Link
                     key={index}
                     to={card.link}
-                    className="group relative overflow-hidden p-6 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500"
+                    className="group relative overflow-hidden p-4 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
                   >
-                    <div className={`absolute top-0 right-0 -mr-4 -mt-4 w-20 h-20 bg-gradient-to-br ${card.color} opacity-5 rounded-full blur-2xl group-hover:opacity-20 transition-opacity duration-500`}></div>
+                    <div className="absolute top-0 right-0 -mr-3 -mt-3 w-16 h-16 bg-slate-900/5 rounded-full blur-2xl group-hover:bg-slate-900/10 transition-all duration-500"></div>
                     
-                    <div className="relative z-10">
-                        <div className={`w-12 h-12 bg-gradient-to-br ${card.color} rounded-2xl mb-4 flex items-center justify-center text-white text-xl shadow-lg shadow-blue-500/10 group-hover:scale-110 transition-transform`}>
-                            {index === 0 ? '👤' : index === 1 ? '🏢' : index === 2 ? '💎' : '🛠️'}
+                    <div className="relative z-10 flex flex-col h-full">
+                        <div className="w-10 h-10 bg-slate-50 rounded-lg mb-3 flex items-center justify-center text-slate-700 text-lg group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
+                            {card.icon}
                         </div>
-                        <h3 className="text-sm font-black text-slate-800 uppercase tracking-tighter mb-1 group-hover:text-[#1B315A] transition-colors">{card.title}</h3>
-                        <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest line-clamp-1">{card.description}</p>
-                    </div>
-                    
-                    <div className="mt-6 flex justify-between items-center relative z-10 border-t border-slate-50 pt-4">
-                        <span className="text-[9px] font-black uppercase tracking-widest text-[#F38C32]">Access Module</span>
-                        <span className="text-slate-300 group-hover:text-[#1B315A] group-hover:translate-x-1 transition-all">→</span>
+                        <div className="flex-1">
+                          <h3 className="text-[12px] font-black text-slate-900 uppercase tracking-tighter mb-0.5 leading-tight group-hover:text-blue-600 transition-colors">{card.title}</h3>
+                          <p className="text-slate-400 text-[8px] font-bold uppercase tracking-widest line-clamp-1 italic opacity-70 group-hover:opacity-100 transition-opacity">{card.description}</p>
+                        </div>
+                        
+                        <div className="mt-4 flex justify-between items-center border-t border-slate-50 pt-3">
+                            <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-300 group-hover:text-[#F38C32] transition-colors italic">Module</span>
+                            <div className="w-6 h-6 rounded-md bg-slate-50 flex items-center justify-center group-hover:bg-slate-950 group-hover:text-white transition-all">
+                                <span className="text-xs group-hover:translate-x-0.5 transition-transform">→</span>
+                            </div>
+                        </div>
                     </div>
                   </Link>
                 ))}

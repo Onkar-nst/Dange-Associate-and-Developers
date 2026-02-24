@@ -10,6 +10,7 @@ const DirectCustomerStatement = () => {
     const [selectedProject, setSelectedProject] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState('');
     const [ledgerData, setLedgerData] = useState([]);
+    const [partyInfo, setPartyInfo] = useState(null);
     const [loading, setLoading] = useState(false);
     const [summary, setSummary] = useState({ opening: 0, closing: 0 });
 
@@ -48,6 +49,7 @@ const DirectCustomerStatement = () => {
                 partyType: 'customer' 
             });
             setLedgerData(res.data.data || []);
+            setPartyInfo(res.data.partyInfo);
             setSummary({
                 opening: res.data.openingBalance,
                 closing: res.data.closingBalance
@@ -157,8 +159,8 @@ const DirectCustomerStatement = () => {
                         <div className="p-12 text-center border-b border-slate-50 relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-50"></div>
                             <div className="relative z-10 flex flex-col items-center gap-2">
-                                <img src={logo} alt="Logo" className="h-16 w-auto mb-4" />
-                                <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">Dange Associates & Developers</h1>
+                                <img src={logo} alt="Logo" className="h-24 w-auto mb-2" />
+                                <div className="h-px w-24 bg-slate-200 mb-4"></div>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4">Financial Liability Statement</p>
                                 <div className="px-8 py-3 bg-slate-50 border border-slate-100 rounded-2xl">
                                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Fiscal Record for</p>
@@ -166,6 +168,50 @@ const DirectCustomerStatement = () => {
                                         {customers.find(c => c._id === selectedCustomer)?.name}
                                     </h3>
                                 </div>
+
+                                {partyInfo && (
+                                    <div className="mt-8 w-full max-w-4xl space-y-4">
+                                        {/* Row 1: Asset Core */}
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-all">
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Plot No.</p>
+                                                <p className="text-sm font-black text-slate-800">{partyInfo.plotNo}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-all">
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Area Sqmtr</p>
+                                                <p className="text-sm font-black text-slate-800 tracking-tighter">{partyInfo.areaSqMtr || 'N/A'}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 group hover:border-blue-200 transition-all">
+                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-1">Area Sqft</p>
+                                                <p className="text-sm font-black text-slate-800 tracking-tighter">{partyInfo.areaSqFt}</p>
+                                            </div>
+                                            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 group hover:border-rose-200 transition-all">
+                                                <p className="text-[8px] font-bold text-rose-400 uppercase tracking-widest mb-1">EMI Amount</p>
+                                                <p className="text-sm font-black text-rose-600 tracking-tighter">₹{partyInfo.emiAmount?.toLocaleString('en-IN') || 0}/-</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 2: Regional/Legal Audit */}
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                            <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
+                                                <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Taluka</p>
+                                                <p className="text-[10px] font-black text-slate-600 uppercase italic">{partyInfo.taluka || 'N/A'}</p>
+                                            </div>
+                                            <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
+                                                <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">P.H.N.</p>
+                                                <p className="text-[10px] font-black text-slate-600 uppercase italic">{partyInfo.phn || 'N/A'}</p>
+                                            </div>
+                                            <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
+                                                <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">District</p>
+                                                <p className="text-[10px] font-black text-slate-600 uppercase italic">{partyInfo.district || 'N/A'}</p>
+                                            </div>
+                                            <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
+                                                <p className="text-[7px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Khasara</p>
+                                                <p className="text-[10px] font-black text-slate-600 uppercase italic">{partyInfo.khasara || 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

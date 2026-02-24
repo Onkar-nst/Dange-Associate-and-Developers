@@ -5,6 +5,7 @@ const {
     getCustomerTransactions,
     getAllTransactions,
     getTransaction,
+    updateTransaction,
     deactivateTransaction
 } = require('../controllers/transactionController');
 const { protect } = require('../middleware/auth');
@@ -17,6 +18,7 @@ router.route('/')
     .get(getAllTransactions);
 
 router.get('/single/:id', getTransaction);
+router.put('/single/:id', updateTransaction);
 router.delete('/single/:id', deactivateTransaction);
 router.get('/:customerId', getCustomerTransactions);
 

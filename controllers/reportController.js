@@ -4,6 +4,7 @@ const Ledger = require('../models/Ledger');
 const CommissionLedger = require('../models/CommissionLedger');
 const Project = require('../models/Project');
 const User = require('../models/User');
+const Executive = require('../models/Executive');
 const asyncHandler = require('../middleware/asyncHandler');
 const mongoose = require('mongoose');
 
@@ -260,9 +261,10 @@ exports.getDetailedCustomerStatement = asyncHandler(async (req, res, next) => {
     // Status filter: all, token, agreement, cancelled, registered
     if (status && status !== 'all') {
         if (status === 'token') query.transactionStatus = 'Token';
+        else if (status === 'agreement') query.transactionStatus = 'Agreement';
         else if (status === 'registered') query.transactionStatus = 'Registered';
         else if (status === 'cancelled') query.transactionStatus = 'Cancelled';
-        // Handle 'agreement' or other custom statuses if they exist
+        else if (status === 'booked') query.transactionStatus = 'Booked';
     }
 
     const customers = await Customer.find(query)
@@ -407,11 +409,31 @@ exports.getLedgerReport = asyncHandler(async (req, res, next) => {
         };
     });
 
+    let partyInfo = null;
+    if (partyType === 'customer') {
+        const customer = await Customer.findById(partyId)
+            .populate('projectId')
+            .populate('plotId');
+        if (customer) {
+            partyInfo = {
+                plotNo: customer.plotId?.plotNumber,
+                areaSqMtr: customer.sqMtr || customer.plotId?.sqMtr,
+                areaSqFt: customer.sqFt || customer.plotId?.size,
+                emiAmount: customer.emiAmount,
+                taluka: customer.projectId?.taluka,
+                district: customer.projectId?.district,
+                phn: customer.projectId?.phn,
+                khasara: customer.projectId?.khasara
+            };
+        }
+    }
+
     res.status(200).json({
         success: true,
         openingBalance,
         closingBalance: runningBalance,
         count: entries.length,
+        partyInfo,
         data: dataWithRunningBalance
     });
 });
@@ -600,32 +622,29 @@ exports.getProjectReceiptPaymentSummary = asyncHandler(async (req, res, next) =>
  * @route   GET /api/reports/daily-collection
  */
 exports.getDailyCollectionRegister = asyncHandler(async (req, res, next) => {
-    const { startDate, endDate, projectId, partnerId } = req.query;
+    const { startDate, endDate, projectId } = req.query;
 
-    const start = startDate ? new Date(startDate) : new Date(new Date().setHours(0, 0, 0, 0));
-    const end = endDate ? new Date(endDate) : new Date(new Date().setHours(23, 59, 59, 999));
+    const start = startDate ? new Date(new Date(startDate).setHours(0, 0, 0, 0)) : new Date(new Date().setHours(0, 0, 0, 0));
+    const end = endDate ? new Date(new Date(endDate).setHours(23, 59, 59, 999)) : new Date(new Date().setHours(23, 59, 59, 999));
 
-    let query = {
+    // Build transaction query
+    let txQuery = {
         active: true,
         transactionDate: { $gte: start, $lte: end }
     };
 
-    // Filter by project if provided (Ledger has partyId which could be Customer, and Customer has projectId)
-    // A more direct way is to find customers of that project first
-    let customerIds = [];
+    // Filter by project — find customers of that project first
     if (projectId) {
-        const customers = await Customer.find({ projectId, active: true }).select('_id');
-        customerIds = customers.map(c => c._id);
-        query.partyId = { $in: customerIds };
+        const projectCustomers = await Customer.find({ projectId, active: true }).select('_id');
+        txQuery.customerId = { $in: projectCustomers.map(c => c._id) };
     }
 
-    // Fetch transactions
-    const ledgers = await Ledger.find(query)
-        .populate('partyId', 'name firstName lastName')
+    // Fetch all transactions (both Cash and Bank) from Transaction model
+    const transactions = await Transaction.find(txQuery)
+        .populate('customerId', 'name phone')
+        .populate('projectId', 'projectName')
         .sort({ transactionDate: 1 });
 
-    // Group by Cash/Bank (Simplified: if debit > 0 it's receipt, if credit > 0 it's payment)
-    // We'll categorize based on the account type or description for now as per image
     const grouped = {
         cash: [],
         bank: [],
@@ -635,27 +654,27 @@ exports.getDailyCollectionRegister = asyncHandler(async (req, res, next) => {
         }
     };
 
-    ledgers.forEach(l => {
+    transactions.forEach(t => {
         const item = {
-            date: l.transactionDate,
-            recNo: l._id.toString().slice(-4).toUpperCase(),
-            customerName: l.partyId?.name || (l.partyId ? `${l.partyId.firstName} ${l.partyId.lastName}` : 'N/A'),
-            recType: l.referenceType || 'General',
-            particular: l.description,
-            received: l.debit,
-            payment: l.credit
+            date: t.transactionDate,
+            recNo: t.receiptNumber || t._id.toString().slice(-4).toUpperCase(),
+            customerName: t.customerId?.name || 'N/A',
+            recType: t.transactionType || 'General',
+            particular: t.narration || t.transactionType || '-',
+            received: t.entryType === 'Receipt' ? (t.amount || 0) : 0,
+            payment: t.entryType === 'Payment' ? (t.amount || 0) : 0,
         };
 
-        // Categorize by "Cash" or "Bank" based on description or account name in a real app
-        // Here we assume if debit is present it's a receipt
-        if (l.description.toLowerCase().includes('cash')) {
+        // Categorize by paymentMode field (Cash / Bank)
+        if ((t.paymentMode || '').toLowerCase() === 'cash') {
             grouped.cash.push(item);
-            grouped.summary.cashRec += l.debit;
-            grouped.summary.cashPay += l.credit;
+            grouped.summary.cashRec += item.received;
+            grouped.summary.cashPay += item.payment;
         } else {
+            // Bank or any other mode
             grouped.bank.push(item);
-            grouped.summary.bankRec += l.debit;
-            grouped.summary.bankPay += l.credit;
+            grouped.summary.bankRec += item.received;
+            grouped.summary.bankPay += item.payment;
         }
     });
 
@@ -680,6 +699,657 @@ exports.getDailyCollectionRegister = asyncHandler(async (req, res, next) => {
             project: t.projectId?.projectName,
             plotNo: t.plotId?.plotNumber,
             status: t.transactionStatus
+        })),
+        agreements: (await Customer.find({
+            active: true,
+            transactionStatus: 'Agreement',
+            bookingDate: { $gte: start, $lte: end },
+            ...(projectId && { projectId })
+        }).populate('projectId', 'projectName').populate('plotId', 'plotNumber')).map((t, idx) => ({
+            sr: idx + 1,
+            name: t.name || `${t.firstName} ${t.lastName}`,
+            project: t.projectId?.projectName,
+            plotNo: t.plotId?.plotNumber,
+            status: t.transactionStatus
+        })),
+        cancelled: (await Customer.find({
+            active: true,
+            transactionStatus: 'Cancelled',
+            bookingDate: { $gte: start, $lte: end },
+            ...(projectId && { projectId })
+        }).populate('projectId', 'projectName').populate('plotId', 'plotNumber')).map((t, idx) => ({
+            sr: idx + 1,
+            name: t.name || `${t.firstName} ${t.lastName}`,
+            project: t.projectId?.projectName,
+            plotNo: t.plotId?.plotNumber,
+            status: t.transactionStatus
         }))
+    });
+});
+
+/**
+ * @desc    Monthly EMI Reminder - Customers whose EMI is due in the selected month
+ * @route   GET /api/reports/monthly-emi-reminder
+ */
+exports.getMonthlyEMIReminder = asyncHandler(async (req, res, next) => {
+    const { date, projectId } = req.query;
+
+    const targetDate = date ? new Date(date) : new Date();
+    const targetDay = targetDate.getDate();
+
+    let query = { active: true, balanceAmount: { $gt: 0 }, emiStartDate: { $exists: true, $ne: null } };
+    if (projectId) query.projectId = new mongoose.Types.ObjectId(projectId);
+
+    const customers = await Customer.find(query)
+        .populate('projectId', 'projectName')
+        .populate('plotId', 'plotNumber size')
+        .populate('assignedExecutive', 'name')
+        .sort({ name: 1 });
+
+    const data = customers.filter(c => {
+        if (!c.emiStartDate) return false;
+        // Check if the EMI falls on the target day of the month
+        return c.emiStartDate.getDate() === targetDay;
+    }).map((c, index) => ({
+        sr: index + 1,
+        name: c.name,
+        phone: c.phone || 'N/A',
+        project: c.projectId?.projectName || 'N/A',
+        plotNo: c.plotId?.plotNumber || 'N/A',
+        emiAmount: c.emiAmount || 0,
+        emiDate: c.emiStartDate,
+        emiDay: c.emiStartDate ? c.emiStartDate.getDate() : 'N/A',
+        dealValue: c.dealValue,
+        paidAmount: c.paidAmount,
+        balanceAmount: c.balanceAmount,
+        tenure: c.tenure || 0,
+        agent: c.assignedExecutive?.name || 'N/A',
+        status: c.transactionStatus,
+        month: targetMonth,
+        year: targetYear
+    }));
+
+    res.status(200).json({
+        success: true,
+        count: data.length,
+        month: targetMonth,
+        year: targetYear,
+        data
+    });
+});
+
+/**
+ * @desc    Customers Token by Executive - Token customers grouped by executive
+ * @route   GET /api/reports/token-by-executive
+ */
+exports.getTokenByExecutive = asyncHandler(async (req, res, next) => {
+    const { projectId, executiveId, startDate, endDate } = req.query;
+
+    let query = { active: true, transactionStatus: 'Token' };
+    if (projectId) query.projectId = new mongoose.Types.ObjectId(projectId);
+    if (executiveId) query.assignedExecutive = new mongoose.Types.ObjectId(executiveId);
+    if (startDate || endDate) {
+        query.bookingDate = {};
+        if (startDate) query.bookingDate.$gte = new Date(startDate);
+        if (endDate) query.bookingDate.$lte = new Date(endDate);
+    }
+
+    const customers = await Customer.find(query)
+        .populate('projectId', 'projectName')
+        .populate('plotId', 'plotNumber')
+        .populate('assignedExecutive', 'name userId')
+        .sort({ assignedExecutive: 1, bookingDate: -1 });
+
+    // Group by executive
+    const grouped = {};
+    customers.forEach(c => {
+        const exeName = c.assignedExecutive?.name || 'Unassigned';
+        const exeId = c.assignedExecutive?._id?.toString() || 'unassigned';
+        if (!grouped[exeId]) {
+            grouped[exeId] = { executiveName: exeName, customers: [], totalTokenValue: 0, totalPaid: 0 };
+        }
+        grouped[exeId].customers.push({
+            name: c.name,
+            phone: c.phone,
+            project: c.projectId?.projectName || 'N/A',
+            plotNo: c.plotId?.plotNumber || 'N/A',
+            dealValue: c.dealValue,
+            paidAmount: c.paidAmount,
+            balanceAmount: c.balanceAmount,
+            bookingDate: c.bookingDate
+        });
+        grouped[exeId].totalTokenValue += c.dealValue;
+        grouped[exeId].totalPaid += c.paidAmount;
+    });
+
+    res.status(200).json({
+        success: true,
+        totalTokens: customers.length,
+        data: Object.values(grouped)
+    });
+});
+
+/**
+ * @desc    Executive/Customer Reminder - Upcoming EMIs & follow-ups
+ * @route   GET /api/reports/executive-reminder
+ */
+exports.getExecutiveCustomerReminder = asyncHandler(async (req, res, next) => {
+    const { executiveId, days } = req.query;
+    const reminderDays = days ? parseInt(days) : 7;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const futureDate = new Date(today);
+    futureDate.setDate(futureDate.getDate() + reminderDays);
+
+    let query = { active: true, balanceAmount: { $gt: 0 } };
+    if (executiveId) query.assignedExecutive = new mongoose.Types.ObjectId(executiveId);
+
+    const customers = await Customer.find(query)
+        .populate('projectId', 'projectName')
+        .populate('plotId', 'plotNumber')
+        .populate('assignedExecutive', 'name userId')
+        .sort({ emiStartDate: 1 });
+
+    // Find customers whose EMI day falls within the reminder window
+    const reminders = customers.filter(c => {
+        if (!c.emiStartDate) return false;
+        const emiDay = c.emiStartDate.getDate();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const nextEmiDate = new Date(currentYear, currentMonth, emiDay);
+        if (nextEmiDate < today) nextEmiDate.setMonth(nextEmiDate.getMonth() + 1);
+        return nextEmiDate >= today && nextEmiDate <= futureDate;
+    }).map((c, index) => {
+        const emiDay = c.emiStartDate.getDate();
+        const currentMonth = today.getMonth();
+        const currentYear = today.getFullYear();
+        const nextEmiDate = new Date(currentYear, currentMonth, emiDay);
+        if (nextEmiDate < today) nextEmiDate.setMonth(nextEmiDate.getMonth() + 1);
+
+        return {
+            sr: index + 1,
+            name: c.name,
+            phone: c.phone,
+            project: c.projectId?.projectName || 'N/A',
+            plotNo: c.plotId?.plotNumber || 'N/A',
+            emiAmount: c.emiAmount || 0,
+            nextEmiDate,
+            daysLeft: Math.ceil((nextEmiDate - today) / (1000 * 60 * 60 * 24)),
+            balanceAmount: c.balanceAmount,
+            agent: c.assignedExecutive?.name || 'N/A',
+            agentId: c.assignedExecutive?.userId || 'N/A',
+            status: c.transactionStatus
+        };
+    });
+
+    // Group by executive
+    const grouped = {};
+    reminders.forEach(r => {
+        const key = r.agent;
+        if (!grouped[key]) grouped[key] = { executiveName: key, reminders: [], count: 0 };
+        grouped[key].reminders.push(r);
+        grouped[key].count++;
+    });
+
+    res.status(200).json({
+        success: true,
+        totalReminders: reminders.length,
+        reminderDays,
+        data: Object.values(grouped),
+        flat: reminders
+    });
+});
+
+/**
+ * @desc    Unit Calculation - Project-wise plot/unit statistics with area & value
+ * @route   GET /api/reports/unit-calculation
+ */
+exports.getUnitCalculation = asyncHandler(async (req, res, next) => {
+    const { projectId } = req.query;
+
+    let matchStage = { active: true };
+    if (projectId) matchStage._id = new mongoose.Types.ObjectId(projectId);
+
+    const data = await Project.aggregate([
+        { $match: matchStage },
+        {
+            $lookup: {
+                from: 'plots',
+                localField: '_id',
+                foreignField: 'projectId',
+                as: 'plots'
+            }
+        },
+        {
+            $lookup: {
+                from: 'customers',
+                localField: '_id',
+                foreignField: 'projectId',
+                as: 'customers'
+            }
+        },
+        {
+            $project: {
+                projectName: 1,
+                totalPlots: { $size: '$plots' },
+                totalArea: { $sum: '$plots.size' },
+                soldPlots: {
+                    $size: {
+                        $filter: { input: '$plots', as: 'p', cond: { $eq: ['$$p.status', 'sold'] } }
+                    }
+                },
+                bookedPlots: {
+                    $size: {
+                        $filter: { input: '$plots', as: 'p', cond: { $eq: ['$$p.status', 'booked'] } }
+                    }
+                },
+                availablePlots: {
+                    $size: {
+                        $filter: { input: '$plots', as: 'p', cond: { $eq: ['$$p.status', 'available'] } }
+                    }
+                },
+                soldArea: {
+                    $sum: {
+                        $map: {
+                            input: { $filter: { input: '$plots', as: 'p', cond: { $ne: ['$$p.status', 'available'] } } },
+                            as: 'sp',
+                            in: '$$sp.size'
+                        }
+                    }
+                },
+                availableArea: {
+                    $sum: {
+                        $map: {
+                            input: { $filter: { input: '$plots', as: 'p', cond: { $eq: ['$$p.status', 'available'] } } },
+                            as: 'ap',
+                            in: '$$ap.size'
+                        }
+                    }
+                },
+                totalValue: { $sum: '$plots.totalValue' },
+                totalDealValue: { $sum: '$customers.dealValue' },
+                totalReceived: { $sum: '$customers.paidAmount' },
+                totalOutstanding: { $sum: '$customers.balanceAmount' }
+            }
+        }
+    ]);
+
+    res.status(200).json({
+        success: true,
+        count: data.length,
+        data
+    });
+});
+
+/**
+ * @desc    User Daily Collection - Collection by individual user/executive on a date
+ * @route   GET /api/reports/user-daily-collection
+ */
+exports.getUserDailyCollection = asyncHandler(async (req, res, next) => {
+    const { date, executiveId } = req.query;
+
+    const targetDate = date ? new Date(date) : new Date();
+    const start = new Date(targetDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(targetDate);
+    end.setHours(23, 59, 59, 999);
+
+    // Get all transactions for the date
+    let txQuery = { active: true, transactionDate: { $gte: start, $lte: end } };
+
+    const transactions = await Transaction.find(txQuery)
+        .populate('customerId', 'name phone projectId assignedExecutive')
+        .populate({ path: 'customerId', populate: [{ path: 'projectId', select: 'projectName' }, { path: 'assignedExecutive', select: 'name userId' }] })
+        .sort({ transactionDate: 1 });
+
+    // Group by executive (via customer's assignedExecutive)
+    const grouped = {};
+    transactions.forEach(t => {
+        const exec = t.customerId?.assignedExecutive;
+        const exeName = exec?.name || 'Unassigned';
+        const exeId = exec?._id?.toString() || 'unassigned';
+
+        if (executiveId && exeId !== executiveId) return;
+
+        if (!grouped[exeId]) {
+            grouped[exeId] = { executiveName: exeName, collections: [], totalAmount: 0 };
+        }
+        grouped[exeId].collections.push({
+            customerName: t.customerId?.name || 'N/A',
+            phone: t.customerId?.phone || 'N/A',
+            project: t.customerId?.projectId?.projectName || 'N/A',
+            amount: t.amount,
+            paymentMode: t.paymentMode,
+            receiptNo: t.receiptNo || 'N/A',
+            time: t.transactionDate
+        });
+        grouped[exeId].totalAmount += t.amount;
+    });
+
+    const grandTotal = Object.values(grouped).reduce((sum, g) => sum + g.totalAmount, 0);
+
+    res.status(200).json({
+        success: true,
+        date: targetDate.toISOString().split('T')[0],
+        grandTotal,
+        data: Object.values(grouped)
+    });
+});
+
+/**
+ * @desc    Customer EMI Dues - Customers with overdue EMIs
+ * @route   GET /api/reports/customer-emi-dues
+ */
+exports.getCustomerEMIDues = asyncHandler(async (req, res, next) => {
+    const { projectId, executiveId, searchDate, monthsEnter } = req.query;
+
+    const reportDate = searchDate ? new Date(searchDate) : new Date();
+    reportDate.setHours(23, 59, 59, 999);
+
+    const minMonths = monthsEnter ? parseInt(monthsEnter) : 0;
+
+    let query = { active: true, balanceAmount: { $gt: 0 }, emiStartDate: { $exists: true, $ne: null } };
+    if (projectId) query.projectId = new mongoose.Types.ObjectId(projectId);
+    if (executiveId) query.assignedExecutive = new mongoose.Types.ObjectId(executiveId);
+
+    const customers = await Customer.find(query)
+        .populate('projectId', 'projectName')
+        .populate('plotId', 'plotNumber size')
+        .populate('assignedExecutive', 'name')
+        .sort({ name: 1 });
+
+    const data = customers.map((c, index) => {
+        const emiStart = new Date(c.emiStartDate);
+        // Calculate months between emiStart and reportDate
+        const monthsSinceStart = Math.max(0, (reportDate.getFullYear() - emiStart.getFullYear()) * 12 + (reportDate.getMonth() - emiStart.getMonth()));
+        const expectedPaid = Math.min(monthsSinceStart + 1, c.tenure || 0) * (c.emiAmount || 0); // +1 because first month is usually due at start
+        const actualPaid = c.paidAmount;
+        const overdue = Math.max(0, expectedPaid - actualPaid);
+        const overdueMonths = c.emiAmount > 0 ? Math.floor(overdue / c.emiAmount) : 0;
+
+        return {
+            sr: index + 1,
+            name: c.name,
+            phone: c.phone,
+            project: c.projectId?.projectName || 'N/A',
+            plotNo: c.plotId?.plotNumber || 'N/A',
+            area: c.plotId?.size || c.sqFt || 0,
+            emiAmount: c.emiAmount || 0,
+            cost: c.dealValue || 0,
+            paidAmount: c.paidAmount || 0,
+            balance: c.balanceAmount || 0,
+            dpPaid: c.paidAmount || 0, // In this context, it might be the total paid towards the plot
+            agreementDate: c.agreementDate,
+            noEmi: c.tenure || 0,
+            overdue,
+            overdueMonths,
+            agent: c.assignedExecutive?.name || 'N/A',
+            id: c._id
+        };
+    }).filter(c => c.overdueMonths >= minMonths);
+
+    const totalOverdue = data.reduce((sum, d) => sum + d.overdue, 0);
+
+    res.status(200).json({
+        success: true,
+        count: data.length,
+        totalOverdue,
+        data
+    });
+});
+/**
+ * @desc    Get Detailed Customer Ledger for Individual Statement
+ * @route   GET /api/reports/customer-ledger/:id
+ */
+exports.getCustomerDetailedLedger = asyncHandler(async (req, res, next) => {
+    const customer = await Customer.findById(req.params.id)
+        .populate('projectId')
+        .populate('plotId')
+        .populate('assignedExecutive', 'name userId');
+
+    if (!customer) {
+        return res.status(404).json({
+            success: false,
+            error: 'Customer not found'
+        });
+    }
+
+    // Get all ledger entries for this customer
+    const ledgerEntries = await Ledger.find({
+        partyId: customer._id,
+        partyType: 'customer',
+        active: true
+    }).sort({ transactionDate: 1 });
+
+    // Format the data as requested
+    const formattedLedger = ledgerEntries.map(entry => ({
+        date: entry.transactionDate,
+        trNo: entry.voucherNo || 'N/A',
+        particular: entry.particulars,
+        debit: entry.debit,
+        credit: entry.credit
+    }));
+
+    // Calculate running balance
+    let balance = 0;
+    const dataWithBalance = formattedLedger.map(item => {
+        balance += (item.debit - item.credit);
+        return {
+            ...item,
+            balance: balance
+        };
+    });
+
+    res.status(200).json({
+        success: true,
+        customerInfo: {
+            name: customer.name,
+            address: customer.address,
+            phone: customer.phone,
+            project: customer.projectId?.projectName,
+            mauza: customer.projectId?.mauza,
+            phn: customer.projectId?.phn,
+            taluka: customer.projectId?.taluka,
+            district: customer.projectId?.district,
+            khasara: customer.projectId?.khasara,
+            plotNo: customer.plotId?.plotNumber,
+            area: customer.plotId?.size || customer.sqFt,
+            rate: customer.rate,
+            dealValue: customer.dealValue,
+            emiAmount: customer.emiAmount,
+            emiStartDate: customer.emiStartDate,
+            agreementDate: customer.agreementDate,
+            lastDate: customer.emiStartDate ? new Date(new Date(customer.emiStartDate).setMonth(new Date(customer.emiStartDate).getMonth() + (customer.tenure || 0))) : null,
+            executive: customer.assignedExecutive?.name || 'N/A',
+            executiveId: customer.assignedExecutive?.userId || 'N/A',
+            remark: customer.remarks
+        },
+        ledger: dataWithBalance,
+        totalDebit: dataWithBalance.reduce((acc, curr) => acc + curr.debit, 0),
+        totalCredit: dataWithBalance.reduce((acc, curr) => acc + curr.credit, 0)
+    });
+});
+
+/**
+ * @desc    Executive Business Statement - Personal and Group sales
+ * @route   GET /api/reports/executive-business
+ */
+exports.getExecutiveBusinessReport = asyncHandler(async (req, res, next) => {
+    const { executiveId, startDate, endDate } = req.query;
+
+    if (!executiveId) {
+        return res.status(400).json({ success: false, error: 'Please provide executive ID' });
+    }
+
+    const executive = await Executive.findById(executiveId);
+    if (!executive) {
+        return res.status(404).json({ success: false, error: 'Executive not found' });
+    }
+
+    // Filters
+    const dateQuery = {};
+    if (startDate) dateQuery.$gte = new Date(startDate);
+    if (endDate) dateQuery.$lte = new Date(endDate);
+
+    // 1. Personal Business
+    const personalQuery = { assignedExecutive: executive._id, active: true };
+    if (startDate || endDate) personalQuery.bookingDate = dateQuery;
+
+    const personalCustomers = await Customer.find(personalQuery)
+        .select('name dealValue paidAmount')
+        .sort({ name: 1 });
+
+    const personalBusiness = personalCustomers.map(c => ({
+        name: c.name,
+        saleAmount: c.dealValue || 0,
+        recAmount: c.paidAmount || 0
+    }));
+
+    // 2. Group Business (Direct subordinates)
+    const subordinates = await Executive.find({ senior: executive._id, active: true });
+
+    const groupBusinessPromises = subordinates.map(async (sub) => {
+        const subQuery = { assignedExecutive: sub._id, active: true };
+        if (startDate || endDate) subQuery.bookingDate = dateQuery;
+
+        const results = await Customer.aggregate([
+            { $match: subQuery },
+            {
+                $group: {
+                    _id: null,
+                    totalSale: { $sum: '$dealValue' },
+                    totalRec: { $sum: '$paidAmount' }
+                }
+            }
+        ]);
+
+        return {
+            name: sub.name,
+            saleAmount: results.length > 0 ? results[0].totalSale : 0,
+            recAmount: results.length > 0 ? results[0].totalRec : 0
+        };
+    });
+
+    const groupBusiness = await Promise.all(groupBusinessPromises);
+
+    res.status(200).json({
+        success: true,
+        executiveInfo: {
+            name: executive.name,
+            phone: executive.phone,
+            pan: executive.panCard
+        },
+        personalBusiness,
+        groupBusiness,
+        personalTotal: {
+            sale: personalBusiness.reduce((sum, item) => sum + item.saleAmount, 0),
+            rec: personalBusiness.reduce((sum, item) => sum + item.recAmount, 0)
+        },
+        groupTotal: {
+            sale: groupBusiness.reduce((sum, item) => sum + item.saleAmount, 0),
+            rec: groupBusiness.reduce((sum, item) => sum + item.recAmount, 0)
+        }
+    });
+});
+/**
+ * @desc    Get Birthday/Anniversary Reminders
+ * @route   GET /api/reports/birthday-reminders
+ */
+exports.getBirthdayAnniversaryReminders = asyncHandler(async (req, res, next) => {
+    const { date, type, reminderType } = req.query;
+
+    const searchDate = date ? new Date(date) : new Date();
+    const day = searchDate.getDate();
+    const month = searchDate.getMonth() + 1;
+
+    let results = [];
+
+    if (type === 'Customer') {
+        const queryField = reminderType === 'Marriage Anniversary' ? 'marriageDate' : 'birthDate';
+
+        results = await Customer.aggregate([
+            {
+                $project: {
+                    name: 1,
+                    phone: 1,
+                    birthDate: 1,
+                    marriageDate: 1,
+                    plotId: 1,
+                    assignedExecutive: 1,
+                    day: { $dayOfMonth: `$${queryField}` },
+                    month: { $month: `$${queryField}` }
+                }
+            },
+            {
+                $match: {
+                    day: day,
+                    month: month
+                }
+            },
+            {
+                $lookup: {
+                    from: 'plots',
+                    localField: 'plotId',
+                    foreignField: '_id',
+                    as: 'plotInfo'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'executives',
+                    localField: 'assignedExecutive',
+                    foreignField: '_id',
+                    as: 'exeInfo'
+                }
+            },
+            {
+                $unwind: { path: '$plotInfo', preserveNullAndEmptyArrays: true }
+            },
+            {
+                $unwind: { path: '$exeInfo', preserveNullAndEmptyArrays: true }
+            }
+        ]);
+
+        results = results.map(r => ({
+            name: r.name,
+            phone: r.phone,
+            plotNo: r.plotInfo?.plotNumber || 'N/A',
+            exeCode: r.exeInfo?.code || 'N/A',
+            dob: r[queryField] ? new Date(r[queryField]).toLocaleDateString('en-GB') : 'N/A'
+        }));
+
+    } else {
+        results = await Executive.aggregate([
+            {
+                $project: {
+                    name: 1,
+                    phone: 1,
+                    birthDate: 1,
+                    code: 1,
+                    day: { $dayOfMonth: '$birthDate' },
+                    month: { $month: '$birthDate' }
+                }
+            },
+            {
+                $match: {
+                    day: day,
+                    month: month
+                }
+            }
+        ]);
+
+        results = results.map(r => ({
+            name: r.name,
+            phone: r.phone,
+            plotNo: 'N/A',
+            exeCode: r.code,
+            dob: r.birthDate ? new Date(r.birthDate).toLocaleDateString('en-GB') : 'N/A'
+        }));
+    }
+
+    res.status(200).json({
+        success: true,
+        data: results
     });
 });

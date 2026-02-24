@@ -103,12 +103,19 @@ const Customers = () => {
       const plot = plots.find(p => p._id === formData.plotId);
       setSelectedPlot(plot);
       if (plot) {
+        const dealVal = (plot.size * plot.rate) || 0;
+        const paid = parseFloat(formData.paidAmount) || 0;
+        const balance = dealVal - paid;
+        const tenure = parseFloat(formData.tenure) || 0;
         setFormData(prev => ({
           ...prev,
+          measurement: plot.measurement || '',
+          sqMtr: plot.sqMtr || '',
           sqFt: plot.size || '',
           rate: plot.rate || '',
-          dealValue: (plot.size * plot.rate) || 0,
-          balanceAmount: (plot.size * plot.rate) - (parseFloat(prev.paidAmount) || 0)
+          dealValue: dealVal,
+          balanceAmount: balance,
+          emiAmount: tenure > 0 ? (balance / tenure).toFixed(2) : '0'
         }));
       }
     } else {
@@ -121,13 +128,26 @@ const Customers = () => {
     const rate = parseFloat(formData.rate) || 0;
     const total = sqFt * rate;
     const paid = parseFloat(formData.paidAmount) || 0;
+    const balance = total - paid;
+    const tenure = parseFloat(formData.tenure) || 0;
     
     setFormData(prev => ({
       ...prev,
       dealValue: total,
-      balanceAmount: total - paid
+      balanceAmount: balance,
+      emiAmount: tenure > 0 ? (balance / tenure).toFixed(2) : prev.emiAmount
     }));
   }, [formData.sqFt, formData.rate, formData.paidAmount]);
+
+  // Recalculate EMI when tenure changes
+  useEffect(() => {
+    const tenure = parseFloat(formData.tenure) || 0;
+    const balance = parseFloat(formData.balanceAmount) || 0;
+    setFormData(prev => ({
+      ...prev,
+      emiAmount: tenure > 0 ? (balance / tenure).toFixed(2) : '0'
+    }));
+  }, [formData.tenure]);
 
   const fetchInitialData = async () => {
     try {
@@ -478,10 +498,15 @@ const Customers = () => {
                         <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest text-right">Tenure</label>
                         <input type="number" name="tenure" value={formData.tenure} onChange={handleChange} className="modern-input !py-2.5 font-black text-[11px]" />
                       </div>
-                      <div className="grid grid-cols-[1fr_2fr] items-center gap-4">
-                        <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest text-right">EMI Amount</label>
-                        <div className="modern-input !py-2.5 bg-slate-50 font-black text-slate-800 italic text-[11px]">₹{formData.emiAmount || 0}</div>
-                      </div>
+                       <div className="grid grid-cols-[1fr_2fr] items-center gap-4">
+                         <label className="text-[10px] font-black text-slate-700 uppercase tracking-widest text-right">EMI Amount</label>
+                         <div className="modern-input !py-2.5 bg-amber-50 border-amber-200 font-black text-amber-700 italic text-[11px]">
+                           ₹{parseFloat(formData.emiAmount) > 0 ? parseFloat(formData.emiAmount).toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '0'}
+                           {parseFloat(formData.tenure) > 0 && parseFloat(formData.balanceAmount) > 0 && (
+                             <span className="text-[8px] text-amber-500 ml-1">/month</span>
+                           )}
+                         </div>
+                       </div>
                     </div>
 
                     <div className="space-y-4">

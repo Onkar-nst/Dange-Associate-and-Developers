@@ -122,8 +122,17 @@ exports.getPlots = asyncHandler(async (req, res, next) => {
 
     const plots = await Plot.find(query)
         .populate('projectId', 'projectName location')
-        .populate('createdBy', 'name')
-        .sort({ plotNumber: 1 });
+        .populate('createdBy', 'name');
+
+    // Sort by plotNumber numerically (ascending) so 1,2,3...10,11 instead of 1,10,11,2,3
+    plots.sort((a, b) => {
+        const numA = parseFloat(a.plotNumber);
+        const numB = parseFloat(b.plotNumber);
+        // If both are valid numbers, compare numerically
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        // Otherwise compare as strings
+        return String(a.plotNumber).localeCompare(String(b.plotNumber));
+    });
 
     res.status(200).json({
         success: true,
@@ -230,7 +239,7 @@ exports.updatePlot = asyncHandler(async (req, res, next) => {
  * @access  Private
  */
 exports.deactivatePlot = asyncHandler(async (req, res, next) => {
-    let plot = await Plot.findById(req.params.id);
+    const plot = await Plot.findById(req.params.id);
 
     if (!plot) {
         return res.status(404).json({
@@ -239,17 +248,13 @@ exports.deactivatePlot = asyncHandler(async (req, res, next) => {
         });
     }
 
-    // Soft delete
-    plot = await Plot.findByIdAndUpdate(
-        req.params.id,
-        { active: false },
-        { new: true }
-    );
+    // Hard delete - permanently remove from database
+    await Plot.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
         success: true,
-        message: 'Plot deactivated successfully',
-        data: plot
+        message: 'Plot deleted permanently',
+        data: {}
     });
 });
 

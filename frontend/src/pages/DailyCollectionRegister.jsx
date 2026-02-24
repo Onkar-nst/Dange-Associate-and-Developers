@@ -1,33 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { reportAPI, projectAPI, userAPI } from '../api/services';
-import Layout from '../components/Layout';
+import { reportAPI, projectAPI, userAPI, ledgerAPI, executiveAPI } from '../api/services';
 import logo from '../assets/logo.png';
 
 const DailyCollectionRegister = () => {
     const [data, setData] = useState({ cash: [], bank: [], summary: {} });
     const [tokens, setTokens] = useState([]);
+    const [agreements, setAgreements] = useState([]);
+    const [cancelled, setCancelled] = useState([]);
     const [projects, setProjects] = useState([]);
-    const [partners, setPartners] = useState([]);
+    const [executives, setExecutives] = useState([]);
+    const [banks, setBanks] = useState([]);
     const [loading, setLoading] = useState(false);
+    
     const [filters, setFilters] = useState({
         startDate: new Date().toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         projectId: '',
-        partnerId: ''
+        executiveId: '',
+        bankId: '',
+        allFilter: 'All',
+        purchasePercent: 0,
+        executivePercent: 0,
+        otherPercent: 0
     });
 
     useEffect(() => {
-        fetchInitial();
+        fetchInitialData();
     }, []);
 
-    const fetchInitial = async () => {
+    const fetchInitialData = async () => {
         try {
-            const [pRes, uRes] = await Promise.all([
+            const [pRes, eRes, bRes] = await Promise.all([
                 projectAPI.getAll(),
-                userAPI.getList()
+                executiveAPI.getAll(),
+                ledgerAPI.getAll()
             ]);
             setProjects(pRes.data.data || []);
-            setPartners((uRes.data.data || []).filter(u => ['The Boss', 'Head Executive'].includes(u.role)));
+            setExecutives(eRes.data.data || []);
+            setBanks((bRes.data.data || []).filter(l => l.type === 'Bank'));
         } catch (err) { console.error(err); }
     };
 
@@ -37,6 +47,8 @@ const DailyCollectionRegister = () => {
             const res = await reportAPI.getDailyCollection(filters);
             setData(res.data.data || { cash: [], bank: [], summary: {} });
             setTokens(res.data.tokens || []);
+            setAgreements(res.data.agreements || []);
+            setCancelled(res.data.cancelled || []);
         } catch (err) {
             console.error(err);
         } finally {
@@ -44,261 +56,364 @@ const DailyCollectionRegister = () => {
         }
     };
 
-    const handleChange = (e) => setFilters({ ...filters, [e.target.name]: e.target.value });
-
-    const handlePrint = () => {
-        window.print();
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
     };
 
-    const TableHeader = ({ title, icon, color }) => (
-        <div className={`inline-flex items-center gap-3 px-6 py-3 rounded-2xl mb-6 shadow-sm border ${color === 'emerald' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : color === 'orange' ? 'bg-amber-50 border-amber-100 text-amber-800' : 'bg-slate-50 border-slate-100 text-slate-800'}`}>
-            <span className="text-xl">{icon}</span>
-            <span className="text-[11px] font-black uppercase tracking-[0.2em]">{title}</span>
-        </div>
-    );
+    const handlePrint = () => window.print();
 
-    const Label = ({ children }) => <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1 mb-2 block">{children}</label>;
-
-    if (loading && !data.summary.cashRec) return <div className="flex items-center justify-center min-h-[400px] font-black text-slate-300 uppercase tracking-widest animate-pulse">Syncing Collection Register...</div>;
+    // Summary Calculations
+    const totalRecieved = (data.summary.cashRec || 0) + (data.summary.bankRec || 0);
+    const purchaseCost = (totalRecieved * (filters.purchasePercent || 0)) / 100;
+    const commissionCost = (totalRecieved * (filters.executivePercent || 0)) / 100;
+    const otherCost = (totalRecieved * (filters.otherPercent || 0)) / 100;
+    const actualExp = purchaseCost + commissionCost + otherCost;
+    const finalBalance = totalRecieved - actualExp;
 
     return (
-        <>
-        <div className="max-w-7xl mx-auto space-y-10 animate-fade-in px-4 print:p-0">
-                
-                {/* Header Filter Bar (Glassmorphism) */}
-                <div className="bg-slate-900 rounded-[3rem] p-10 shadow-2xl shadow-blue-900/20 text-white relative overflow-hidden group print:hidden">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -mr-32 -mt-32"></div>
-                    <div className="relative z-10 grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
-                        <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                            <div>
-                                <Label>📅 Start Date</Label>
-                                <input type="date" name="startDate" value={filters.startDate} onChange={handleChange} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none font-black text-xs text-white transition-all focus:bg-white/10" />
-                            </div>
-                            <div>
-                                <Label>📅 End Date</Label>
-                                <input type="date" name="endDate" value={filters.endDate} onChange={handleChange} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none font-black text-xs text-white transition-all focus:bg-white/10" />
-                            </div>
-                        </div>
-                        <div>
-                            <Label>🏢 Venture</Label>
-                            <select name="projectId" value={filters.projectId} onChange={handleChange} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none font-black text-[10px] uppercase transition-all focus:bg-white/10">
-                                <option value="" className="text-slate-800">ALL VENTURES</option>
-                                {projects.map(p => <option key={p._id} value={p._id} className="text-slate-800">{p.projectName}</option>)}
-                            </select>
-                        </div>
-                        <div>
-                            <Label>💼 Partner</Label>
-                            <select name="partnerId" value={filters.partnerId} onChange={handleChange} className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl outline-none font-black text-[10px] uppercase transition-all focus:bg-white/10">
-                                <option value="" className="text-slate-800">ALL PARTNERS</option>
-                                {partners.map(p => <option key={p._id} value={p._id} className="text-slate-800">{p.name}</option>)}
-                            </select>
-                        </div>
-                        <div className="flex gap-2">
-                            <button onClick={fetchReport} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95">📡 Sync</button>
-                            <button onClick={handlePrint} className="w-12 bg-white/10 hover:bg-white/20 text-white rounded-xl flex items-center justify-center transition-all">🖨️</button>
-                        </div>
-                    </div>
-                </div>
+        <div className="max-w-[100%] mx-auto space-y-4 font-sans text-xs pb-20 px-2 print:p-0">
+            <style>
+                {`
+                    @media print {
+                        @page { margin: 0.5cm; size: landscape; }
+                        
+                        /* Hide everything by default */
+                        body * {
+                            visibility: hidden !important;
+                        }
 
-                {/* Main Content Area */}
-                <div className="bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden min-h-[800px] flex flex-col print:border-none print:shadow-none">
+                        /* Show ONLY the print container and its contents */
+                        .print-container, 
+                        .print-container * {
+                            visibility: visible !important;
+                        }
+
+                        /* Position the container at the very top of the printed page */
+                        .print-container {
+                            position: absolute !important;
+                            top: 0 !important;
+                            left: 0 !important;
+                            width: 100% !important;
+                            height: auto !important;
+                            background: white !important;
+                            padding: 0 !important;
+                            margin: 0 !important;
+                            display: block !important;
+                            z-index: 99999 !important;
+                            border: none !important;
+                        }
+
+                        .no-print { display: none !important; }
+                    }
+                    .reg-table th, .reg-table td {
+                        border: 1px solid #777;
+                        padding: 4px;
+                        text-align: center;
+                    }
+                    .reg-table th { background-color: #f5f5f5; font-weight: bold; }
+                    .reg-table .text-left { text-align: left; }
+                `}
+            </style>
+
+            {/* Filter Bar (Premium Slate Gradient) */}
+            <div className="bg-gradient-to-r from-slate-800 to-slate-700 p-6 rounded-2xl space-y-5 no-print shadow-xl border border-slate-600/30">
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">START DATE</label>
+                        <input type="date" name="startDate" value={filters.startDate} onChange={handleChange} className="px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-900/50 text-white text-xs outline-none focus:border-emerald-500 transition-all font-bold" />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">END DATE</label>
+                        <input type="date" name="endDate" value={filters.endDate} onChange={handleChange} className="px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-900/50 text-white text-xs outline-none focus:border-emerald-500 transition-all font-bold" />
+                    </div>
                     
-                    {/* Report Corporate Header */}
-                    <div className="p-12 text-center border-b border-slate-50 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-40"></div>
-                        <div className="relative z-10 flex flex-col items-center gap-2">
-                            <img src={logo} alt="Logo" className="h-16 w-auto mb-4" />
-                            <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter">Dange Associates & Developers</h1>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em] mb-4">Daily Collection Register Audit</p>
-                            <div className="px-6 py-2 bg-emerald-50 border border-emerald-100 rounded-full">
-                                <p className="text-[9px] font-black text-emerald-800 uppercase tracking-widest">Period: {filters.startDate} <span className="opacity-30">➔</span> {filters.endDate}</p>
-                            </div>
-                        </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">PROJECT SCOPE</label>
+                        <select name="projectId" value={filters.projectId} onChange={handleChange} className="px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-900/50 text-white text-xs outline-none focus:border-emerald-500 transition-all font-bold min-w-[200px]">
+                            <option value="" className="bg-slate-800">GLOBAL AGGREGATE</option>
+                            {projects.map(p => <option key={p._id} value={p._id} className="bg-slate-800">{p.projectName}</option>)}
+                        </select>
                     </div>
 
-                    <div className="p-10 space-y-16">
-                        {/* CASH SECTION */}
-                        <section>
-                            <TableHeader title="Cash in Hand Archive" icon="💵" color="emerald" />
-                            <table className="modern-table border !border-slate-50">
-                                <thead>
-                                    <tr>
-                                        <th className="w-12">#</th>
-                                        <th>Date & Ref</th>
-                                        <th>Customer Portfolio</th>
-                                        <th>Type</th>
-                                        <th>Audit Remarks</th>
-                                        <th className="text-right">Receipt (+)</th>
-                                        <th className="text-right">Payment (-)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.cash.map((c, i) => (
-                                        <tr key={i} className="group hover:bg-emerald-50/30 transition-colors border-b border-slate-50">
-                                            <td className="text-center font-bold text-slate-300">{i + 1}</td>
-                                            <td>
-                                                <div className="font-bold text-slate-700">{new Date(c.date).toLocaleDateString()}</div>
-                                                <div className="text-[8px] font-black text-slate-300 uppercase tracking-widest">#R-{c.recNo}</div>
-                                            </td>
-                                            <td>
-                                                <div className="font-black text-slate-800 uppercase tracking-tighter text-[11px]">{c.customerName}</div>
-                                                <div className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Verified Account</div>
-                                            </td>
-                                            <td><span className="text-[9px] font-black uppercase text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{c.recType}</span></td>
-                                            <td className="text-slate-400 italic font-medium">{c.particular}</td>
-                                            <td className="text-right font-black text-emerald-600 bg-emerald-50/10">₹{c.received.toLocaleString('en-IN')}</td>
-                                            <td className="text-right font-black text-rose-500">₹{c.payment.toLocaleString('en-IN')}</td>
-                                        </tr>
-                                    ))}
-                                    <tr className="bg-emerald-50 font-black">
-                                        <td colSpan="5" className="text-right uppercase tracking-[0.2em] text-[9px] pr-4">Nett Cash Movements:</td>
-                                        <td className="text-right text-emerald-700 py-4">₹{data.summary.cashRec?.toLocaleString('en-IN')}</td>
-                                        <td className="text-right text-rose-600 py-4">₹{data.summary.cashPay?.toLocaleString('en-IN')}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </section>
-
-                        {/* BANK SECTION */}
-                        <section>
-                            <TableHeader title="Bank Transaction Audit" icon="🏦" color="emerald" />
-                            <table className="modern-table border !border-slate-50">
-                                <thead>
-                                    <tr>
-                                        <th className="w-12">#</th>
-                                        <th>Date & Ref</th>
-                                        <th>Customer Portfolio</th>
-                                        <th>Type</th>
-                                        <th>Audit Remarks</th>
-                                        <th className="text-right">Receipt (+)</th>
-                                        <th className="text-right">Payment (-)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {data.bank.map((c, i) => (
-                                        <tr key={i} className="group hover:bg-emerald-50/30 transition-colors border-b border-slate-50">
-                                            <td className="text-center font-bold text-slate-300">{i + 1}</td>
-                                            <td>
-                                                <div className="font-bold text-slate-700">{new Date(c.date).toLocaleDateString()}</div>
-                                                <div className="text-[8px] font-black text-slate-300 uppercase tracking-widest">#R-{c.recNo}</div>
-                                            </td>
-                                            <td>
-                                                <div className="font-black text-slate-800 uppercase tracking-tighter text-[11px]">{c.customerName}</div>
-                                            </td>
-                                            <td><span className="text-[9px] font-black uppercase text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">{c.recType}</span></td>
-                                            <td className="text-slate-400 italic font-medium">{c.particular}</td>
-                                            <td className="text-right font-black text-emerald-600 bg-emerald-50/10">₹{c.received.toLocaleString('en-IN')}</td>
-                                            <td className="text-right font-black text-rose-500">₹{c.payment.toLocaleString('en-IN')}</td>
-                                        </tr>
-                                    ))}
-                                    <tr className="bg-emerald-50 font-black">
-                                        <td colSpan="5" className="text-right uppercase tracking-[0.2em] text-[9px] pr-4">Nett Bank Movements:</td>
-                                        <td className="text-right text-emerald-700 py-4">₹{data.summary.bankRec?.toLocaleString('en-IN')}</td>
-                                        <td className="text-right text-rose-600 py-4">₹{data.summary.bankPay?.toLocaleString('en-IN')}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </section>
-
-                        {/* Combined Summary & Tokens */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-                            {/* Combined Summary */}
-                            <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-blue-900/10 border border-white/5 order-2 lg:order-1">
-                                <h3 className="text-xs font-black uppercase tracking-[0.4em] mb-8 text-blue-400 flex items-center gap-3">
-                                    <span>📊</span> Fiscal Convergence
-                                </h3>
-                                <div className="space-y-6">
-                                    <div className="flex justify-between items-center py-4 border-b border-white/5">
-                                        <div>
-                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Cash Liquidity</p>
-                                            <p className="text-sm font-black uppercase">Nett Flow</p>
-                                        </div>
-                                        <p className="text-xl font-black text-emerald-400">₹{(data.summary.cashRec - data.summary.cashPay)?.toLocaleString('en-IN')}</p>
-                                    </div>
-                                    <div className="flex justify-between items-center py-4 border-b border-white/5">
-                                        <div>
-                                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Banking Assets</p>
-                                            <p className="text-sm font-black uppercase">Nett Flow</p>
-                                        </div>
-                                        <p className="text-xl font-black text-emerald-400">₹{(data.summary.bankRec - data.summary.bankPay)?.toLocaleString('en-IN')}</p>
-                                    </div>
-                                    <div className="pt-6">
-                                        <div className="bg-blue-600 p-8 rounded-[2rem] flex flex-col items-center gap-2 shadow-2xl shadow-blue-500/20">
-                                            <p className="text-[10px] font-black text-blue-200 uppercase tracking-[0.4em]">Combined Daily Balance</p>
-                                            <p className="text-4xl font-black tracking-tighter">₹{(data.summary.cashRec + data.summary.bankRec - (data.summary.cashPay + data.summary.bankPay))?.toLocaleString('en-IN')}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Token Registry */}
-                            <div className="space-y-6 order-1 lg:order-2">
-                                <TableHeader title={`Active Token Registry (${tokens.length})`} icon="🎟️" color="orange" />
-                                <div className="bg-white rounded-[2.5rem] border border-amber-100 overflow-hidden shadow-sm">
-                                    <table className="modern-table">
-                                        <thead className="!bg-amber-50">
-                                            <tr>
-                                                <th className="w-12 !text-amber-800">#</th>
-                                                <th className="!text-amber-800">Client</th>
-                                                <th className="!text-amber-800 text-center">Unit No.</th>
-                                                <th className="text-right !text-amber-800">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {tokens.map((t, idx) => (
-                                                <tr key={idx} className="hover:bg-amber-50/20 transition-colors border-b border-amber-50/50">
-                                                    <td className="text-center font-bold text-amber-300">{idx + 1}</td>
-                                                    <td>
-                                                        <div className="font-black text-slate-800 uppercase text-[10px] tracking-tight">{t.name}</div>
-                                                        <div className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{t.project}</div>
-                                                    </td>
-                                                    <td className="text-center font-black text-slate-900">{t.plotNo}</td>
-                                                    <td className="text-right">
-                                                        <span className="bg-amber-600 text-white px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-widest leading-none block w-fit ml-auto">
-                                                            {t.status}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {tokens.length === 0 && (
-                                                <tr>
-                                                    <td colSpan="4" className="py-20 text-center opacity-30 font-black text-[10px] uppercase tracking-widest">No Token Deployments Found</td>
-                                                </tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">EXECUTIVE</label>
+                        <select name="executiveId" value={filters.executiveId} onChange={handleChange} className="px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-900/50 text-white text-xs outline-none focus:border-emerald-500 transition-all font-bold min-w-[140px]">
+                            <option value="All" className="bg-slate-800">ALL PERSONNEL</option>
+                            {executives.map(e => <option key={e._id} value={e._id} className="bg-slate-800">{e.name}</option>)}
+                        </select>
                     </div>
 
-                    {/* Report Footer Signature */}
-                    <div className="hidden print:flex justify-between items-end p-20 mt-10 border-t border-slate-100">
-                        <div className="text-center w-64 border-t-2 border-slate-800 pt-4">
-                            <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">Internal Auditor</p>
-                            <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">Dange Associates</p>
-                        </div>
-                        <div className="text-center w-64 border-t-2 border-slate-800 pt-4">
-                            <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">Authorized Signatory</p>
-                            <p className="text-[8px] font-bold text-slate-400 uppercase mt-1">Verification Required</p>
+                    <div className="flex flex-col gap-1">
+                        <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest ml-1">FINANCIAL ENTITY</label>
+                        <select name="bankId" value={filters.bankId} onChange={handleChange} className="px-3 py-1.5 rounded-lg border border-slate-600 bg-slate-900/50 text-white text-xs outline-none focus:border-emerald-500 transition-all font-bold min-w-[160px]">
+                            <option value="" className="bg-slate-800">PRIMARY ACCOUNT</option>
+                            {banks.map(b => <option key={b._id} value={b._id} className="bg-slate-800">{b.name}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col gap-1 self-end">
+                        <div className="flex items-center gap-2">
+                            <button onClick={fetchReport} className="bg-emerald-600 text-white px-8 py-1.5 rounded-lg font-black uppercase text-[10px] tracking-widest hover:bg-emerald-500 transition-all shadow-lg shadow-emerald-900/20 active:scale-95 border border-emerald-500/50">Show Report</button>
+                            <button onClick={handlePrint} className="p-1.5 bg-slate-900/50 border border-slate-600 rounded-lg text-white hover:bg-white hover:text-slate-900 transition-all" title="Print Archive">🖨️</button>
                         </div>
                     </div>
                 </div>
 
-                <p className="text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.5em] pb-10">Secure Financial Infrastructure © 2026 Dange Associates</p>
+                <div className="flex flex-wrap items-center gap-8 pt-2 border-t border-slate-600/30">
+                    <div className="flex items-center gap-3">
+                        <label className="font-black text-[9px] text-slate-400 uppercase tracking-[0.2em]">Purchase Cost %</label>
+                        <input type="number" name="purchasePercent" value={filters.purchasePercent} onChange={handleChange} className="w-16 px-2 py-1 rounded bg-slate-900/50 border border-slate-600 text-emerald-400 font-bold text-xs outline-none focus:border-emerald-500" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <label className="font-black text-[9px] text-slate-400 uppercase tracking-[0.2em]">Executive Comm %</label>
+                        <input type="number" name="executivePercent" value={filters.executivePercent} onChange={handleChange} className="w-16 px-2 py-1 rounded bg-slate-900/50 border border-slate-600 text-emerald-400 font-bold text-xs outline-none focus:border-emerald-500" />
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <label className="font-black text-[9px] text-slate-400 uppercase tracking-[0.2em]">Other Overheads %</label>
+                        <input type="number" name="otherPercent" value={filters.otherPercent} onChange={handleChange} className="w-16 px-2 py-1 rounded bg-slate-900/50 border border-slate-600 text-emerald-400 font-bold text-xs outline-none focus:border-emerald-500" />
+                    </div>
+                </div>
             </div>
 
-            <style dangerouslySetInnerHTML={{ __html: `
-                @media print {
-                    body * { visibility: hidden; background: white !important; }
-                    .print-area, .print-area *, .max-w-7xl, .max-w-7xl * { visibility: visible; }
-                    .max-w-7xl { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; }
-                    header, footer, nav, aside, button, .print\\:hidden { display: none !important; }
-                    .bg-slate-900 { background: #0f172a !important; color: white !important; -webkit-print-color-adjust: exact; }
-                    .bg-blue-600 { background: #2563eb !important; -webkit-print-color-adjust: exact; }
-                }
-            `}} />
-        </>
+            {/* Report Document */}
+            <div className="bg-white p-6 border border-slate-300 rounded print-container">
+                {/* Document Header */}
+                <div className="flex flex-col items-center mb-6">
+                    <img src={logo} alt="Dange Associates & Developers" className="h-16 w-auto mb-2" />
+                    <p className="font-bold text-[10px] italic uppercase text-slate-600">Block No.7 Khadi Gram Sankul, Beside ICICI Bank, Kalmeshwar</p>
+                    <p className="font-black text-[11px] mt-2 border-b border-black inline-block pb-1">
+                        Daily Collection Register from {new Date(filters.startDate).toLocaleDateString()} To {new Date(filters.endDate).toLocaleDateString()}
+                    </p>
+                </div>
+
+                {/* Main Table */}
+                <table className="w-full reg-table border-collapse mb-8">
+                    <thead>
+                        <tr>
+                            <th className="w-10">Sr.</th>
+                            <th className="w-24">Date</th>
+                            <th className="w-24">Rec.No.</th>
+                            <th className="text-left py-2 px-3">Customer Name</th>
+                            <th className="w-24 px-3">Rec.Type</th>
+                            <th className="text-left px-3">Particular</th>
+                            <th className="w-24 px-3">Recieved</th>
+                            <th className="w-24 px-3">Payment</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {/* Cash Section */}
+                        <tr>
+                            <td colSpan="8" className="bg-[#f0f0f0] text-left font-black py-2 px-3 uppercase tracking-tighter">CASH IN HAND</td>
+                        </tr>
+                        {data.cash.map((c, i) => (
+                            <tr key={i}>
+                                <td>{i + 1}</td>
+                                <td>{new Date(c.date).toLocaleDateString()}</td>
+                                <td>{c.recNo}</td>
+                                <td className="text-left font-bold uppercase">{c.customerName}</td>
+                                <td className="uppercase">{c.recType}</td>
+                                <td className="text-left italic text-slate-500">{c.particular}</td>
+                                <td className="text-right">{c.received.toFixed(2)}</td>
+                                <td className="text-right">{c.payment.toFixed(2)}</td>
+                            </tr>
+                        ))}
+                        <tr className="font-bold bg-[#fafafa]">
+                            <td colSpan="6" className="text-right pr-4">Total :</td>
+                            <td className="text-right">{data.summary.cashRec?.toFixed(2)}</td>
+                            <td className="text-right">{data.summary.cashPay?.toFixed(2)}</td>
+                        </tr>
+
+                        {/* Our Bank Section */}
+                        <tr>
+                            <td colSpan="8" className="bg-[#f0f0f0] text-left font-black py-2 px-3 uppercase tracking-tighter">OUR BANK</td>
+                        </tr>
+                        {data.bank.map((c, i) => (
+                            <tr key={i}>
+                                <td>{i + 1}</td>
+                                <td>{new Date(c.date).toLocaleDateString()}</td>
+                                <td>{c.recNo}</td>
+                                <td className="text-left font-bold uppercase">{c.customerName}</td>
+                                <td className="uppercase">{c.recType}</td>
+                                <td className="text-left italic text-slate-500">{c.particular}</td>
+                                <td className="text-right">{c.received.toFixed(2)}</td>
+                                <td className="text-right">{c.payment.toFixed(2)}</td>
+                            </tr>
+                        ))}
+                        <tr className="font-bold bg-[#fafafa]">
+                            <td colSpan="6" className="text-right pr-4">Total :</td>
+                            <td className="text-right">{data.summary.bankRec?.toFixed(2)}</td>
+                            <td className="text-right">{data.summary.bankPay?.toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                {/* Summaries & Stats Container */}
+                <div className="space-y-8 flex flex-col items-center">
+                    
+                    {/* Financial Summary Table */}
+                    <div className="w-[80%] max-w-4xl overflow-x-auto">
+                        <table className="w-full reg-table border-collapse">
+                            <thead>
+                                <tr className="bg-[#689F38] text-white">
+                                    <th className="bg-[#689F38] text-white border-white"></th>
+                                    <th className="bg-[#689F38] text-white border-white uppercase">Recieved</th>
+                                    <th className="bg-[#689F38] text-white border-white uppercase">Payment</th>
+                                    <th className="bg-[#689F38] text-white border-white uppercase">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td className="font-bold uppercase">Cash</td>
+                                    <td>{data.summary.cashRec?.toLocaleString()}</td>
+                                    <td>{data.summary.cashPay?.toLocaleString()}</td>
+                                    <td className="font-bold">{(data.summary.cashRec - data.summary.cashPay)?.toLocaleString()}</td>
+                                </tr>
+                                <tr>
+                                    <td className="font-bold uppercase">Bank</td>
+                                    <td>{data.summary.bankRec?.toLocaleString()}</td>
+                                    <td>{data.summary.bankPay?.toLocaleString()}</td>
+                                    <td className="font-bold">{(data.summary.bankRec - data.summary.bankPay)?.toLocaleString()}</td>
+                                </tr>
+                                <tr className="bg-[#f0f0f0] font-black text-blue-600">
+                                    <td className="uppercase">Total</td>
+                                    <td>{(data.summary.cashRec + data.summary.bankRec)?.toLocaleString()}</td>
+                                    <td>{(data.summary.cashPay + data.summary.bankPay)?.toLocaleString()}</td>
+                                    <td>{(data.summary.cashRec + data.summary.bankRec - (data.summary.cashPay + data.summary.bankPay))?.toLocaleString()}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Expense Calculation Table */}
+                    <div className="w-[80%] max-w-4xl overflow-x-auto">
+                        <table className="w-full reg-table border-collapse">
+                            <thead>
+                                <tr className="bg-[#EF9A9A] text-slate-800">
+                                    <th className="bg-[#EF9A9A] uppercase px-4">Recieved</th>
+                                    <th className="bg-[#EF9A9A] uppercase px-4">Actual Exp.</th>
+                                    <th className="bg-[#EF9A9A] uppercase px-4 whitespace-nowrap">Purchase Cost {filters.purchasePercent}%</th>
+                                    <th className="bg-[#EF9A9A] uppercase px-4 whitespace-nowrap">Commission{filters.executivePercent}%</th>
+                                    <th className="bg-[#EF9A9A] uppercase px-4 whitespace-nowrap">Other Exp.{filters.otherPercent}%</th>
+                                    <th className="bg-[#EF9A9A] uppercase px-4">Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="font-black">
+                                    <td>{totalRecieved.toLocaleString()}</td>
+                                    <td>{actualExp.toLocaleString()}</td>
+                                    <td>{purchaseCost.toLocaleString()}</td>
+                                    <td>{commissionCost.toLocaleString()}</td>
+                                    <td>{otherCost.toLocaleString()}</td>
+                                    <td>{finalBalance.toLocaleString()}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Categorized Token/Agreement Tables */}
+                    <div className="w-full space-y-6">
+                        
+                        {/* Token Section */}
+                        <div className="space-y-1">
+                            <div className="bg-[#FFCC80] py-1 border border-black font-black text-center text-[10px] uppercase">
+                                No. of Token : {tokens.length}
+                            </div>
+                            <table className="w-full reg-table border-collapse">
+                                <thead className="bg-[#FFCC80]">
+                                    <tr className="bg-[#FFCC80]">
+                                        <th className="w-12 bg-[#FFCC80]">Sr.</th>
+                                        <th className="bg-[#FFCC80] px-4 text-left">Name of Customer</th>
+                                        <th className="bg-[#FFCC80] px-4 text-left">Project Name</th>
+                                        <th className="w-32 bg-[#FFCC80]">Plot No.</th>
+                                        <th className="w-32 bg-[#FFCC80]">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tokens.map((t, idx) => (
+                                        <tr key={idx}>
+                                            <td>{idx + 1}</td>
+                                            <td className="text-left px-4 font-bold uppercase">{t.name}</td>
+                                            <td className="text-left px-4">{t.project}</td>
+                                            <td>{t.plotNo}</td>
+                                            <td>{t.status}</td>
+                                        </tr>
+                                    ))}
+                                    {tokens.length === 0 && (
+                                        <tr><td colSpan="5" className="py-2 italic opacity-50">Empty Archive</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Agreement Section */}
+                        <div className="space-y-1">
+                            <div className="bg-[#AEEA00] py-1 border border-black font-black text-center text-[10px] uppercase">
+                                No. of Agreement : {agreements.length}
+                            </div>
+                            <table className="w-full reg-table border-collapse">
+                                <thead className="bg-[#AEEA00]">
+                                    <tr className="bg-[#AEEA00]">
+                                        <th className="w-12 bg-[#AEEA00]">Sr.</th>
+                                        <th className="bg-[#AEEA00] px-4 text-left">Name of Customer</th>
+                                        <th className="bg-[#AEEA00] px-4 text-left">Project Name</th>
+                                        <th className="w-32 bg-[#AEEA00]">Plot No.</th>
+                                        <th className="w-32 bg-[#AEEA00]">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {agreements.map((t, idx) => (
+                                        <tr key={idx}>
+                                            <td>{idx + 1}</td>
+                                            <td className="text-left px-4 font-bold uppercase">{t.name}</td>
+                                            <td className="text-left px-4">{t.project}</td>
+                                            <td>{t.plotNo}</td>
+                                            <td>{t.status}</td>
+                                        </tr>
+                                    ))}
+                                    {agreements.length === 0 && (
+                                        <tr><td colSpan="5" className="py-2 italic opacity-50">Empty Archive</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Cancelled Section */}
+                        <div className="space-y-1">
+                            <div className="bg-[#E0E0E0] py-1 border border-black font-black text-center text-[10px] uppercase">
+                                No. of Cancelled : {cancelled.length}
+                            </div>
+                            <table className="w-full reg-table border-collapse">
+                                <thead className="bg-[#E0E0E0]">
+                                    <tr className="bg-[#E0E0E0]">
+                                        <th className="w-12 bg-[#E0E0E0]">Sr.</th>
+                                        <th className="bg-[#E0E0E0] px-4 text-left">Name of Customer</th>
+                                        <th className="bg-[#E0E0E0] px-4 text-left">Project Name</th>
+                                        <th className="w-32 bg-[#E0E0E0]">Plot No.</th>
+                                        <th className="w-32 bg-[#E0E0E0]">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {cancelled.map((t, idx) => (
+                                        <tr key={idx}>
+                                            <td>{idx + 1}</td>
+                                            <td className="text-left px-4 font-bold uppercase">{t.name}</td>
+                                            <td className="text-left px-4">{t.project}</td>
+                                            <td>{t.plotNo}</td>
+                                            <td>{t.status}</td>
+                                        </tr>
+                                    ))}
+                                    {cancelled.length === 0 && (
+                                        <tr><td colSpan="5" className="py-2 italic opacity-50">Empty Archive</td></tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };
 

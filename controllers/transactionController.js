@@ -252,6 +252,39 @@ exports.getTransaction = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @desc    Update transaction (editable fields only)
+ * @route   PUT /api/transactions/single/:id
+ * @access  Private
+ */
+exports.updateTransaction = asyncHandler(async (req, res, next) => {
+    const transaction = await Transaction.findById(req.params.id);
+
+    if (!transaction) {
+        return res.status(404).json({ success: false, error: 'Transaction not found' });
+    }
+
+    if (!transaction.active) {
+        return res.status(400).json({ success: false, error: 'Cannot edit a deleted transaction' });
+    }
+
+    // Only allow editing these safe fields (amount changes would break balance)
+    const { transactionDate, receiptNumber, narration, remarks, paymentMode, bankName, referenceNumber, transactionType } = req.body;
+    const updateData = {};
+    if (transactionDate !== undefined) updateData.transactionDate = transactionDate;
+    if (receiptNumber !== undefined) updateData.receiptNumber = receiptNumber;
+    if (narration !== undefined) updateData.narration = narration;
+    if (remarks !== undefined) updateData.remarks = remarks;
+    if (paymentMode !== undefined) updateData.paymentMode = paymentMode;
+    if (bankName !== undefined) updateData.bankName = bankName;
+    if (referenceNumber !== undefined) updateData.referenceNumber = referenceNumber;
+    if (transactionType !== undefined) updateData.transactionType = transactionType;
+
+    const updated = await Transaction.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
+
+    res.status(200).json({ success: true, message: 'Transaction updated successfully', data: updated });
+});
+
+/**
  * @desc    Deactivate transaction (soft delete) - reverses ledger
  * @route   DELETE /api/transactions/:id
  * @access  Private

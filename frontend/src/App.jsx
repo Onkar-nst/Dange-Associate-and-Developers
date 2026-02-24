@@ -18,6 +18,7 @@ import PartyLedger from './pages/PartyLedger';
 import JVEntry from './pages/JVEntry';
 import CustomerStatementReport from './pages/CustomerStatementReport';
 import SalesReportDetailed from './pages/SalesReportDetailed';
+import ExecutiveSalesReport from './pages/ExecutiveSalesReport';
 import DirectCustomerStatement from './pages/DirectCustomerStatement';
 import CustomerOutstandingReport from './pages/CustomerOutstandingReport';
 import CustomerDuesReport from './pages/CustomerDuesReport';
@@ -29,6 +30,13 @@ import ProjectStatus from './pages/ProjectStatus';
 import Explore from './pages/Explore';
 import PublicProjectStatus from './pages/PublicProjectStatus';
 import AIChatbot from './pages/AIChatbot';
+import MonthlyEMIReminder from './pages/MonthlyEMIReminder';
+import TokenByExecutive from './pages/TokenByExecutive';
+import ExecutiveCustomerReminder from './pages/ExecutiveCustomerReminder';
+import ProjectSummary from './pages/ProjectSummary';
+import UnitCalculation from './pages/UnitCalculation';
+import UserDailyCollection from './pages/UserDailyCollection';
+import CustomerEMIDues from './pages/CustomerEMIDues';
 
 const RootRedirect = () => {
   const { user, loading } = useAuth();
@@ -74,12 +82,20 @@ function App() {
             <Route path="/jv-entry" element={<JVEntry />} />
             <Route path="/report/customer-statement" element={<CustomerStatementReport />} />
             <Route path="/report/sales" element={<SalesReportDetailed />} />
+            <Route path="/report/executive-sales" element={<ExecutiveSalesReport />} />
             <Route path="/report/direct-statement" element={<DirectCustomerStatement />} />
             <Route path="/report/outstanding" element={<CustomerOutstandingReport />} />
             <Route path="/report/dues" element={<CustomerDuesReport />} />
             <Route path="/report/cash-book" element={<CashBook />} />
             <Route path="/report/daily-collection" element={<DailyCollectionRegister />} />
             <Route path="/report/sales-position/:projectId" element={<SalesPositionDetailed />} />
+            <Route path="/report/monthly-emi-reminder" element={<MonthlyEMIReminder />} />
+            <Route path="/report/token-by-executive" element={<TokenByExecutive />} />
+            <Route path="/report/executive-reminder" element={<ExecutiveCustomerReminder />} />
+            <Route path="/report/project-summary" element={<ProjectSummary />} />
+            <Route path="/report/unit-calculation" element={<UnitCalculation />} />
+            <Route path="/report/user-daily-collection" element={<UserDailyCollection />} />
+            <Route path="/report/customer-emi-dues" element={<CustomerEMIDues />} />
             <Route path="/ai-assistant" element={<AIChatbot />} />
             
             {/* Restricted Routes */}

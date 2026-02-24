@@ -23,6 +23,7 @@ export const plotAPI = {
     create: (data) => axiosInstance.post('/plots', data),
     bulkCreate: (data) => axiosInstance.post('/plots/bulk', data),
     update: (id, data) => axiosInstance.put(`/plots/${id}`, data),
+    deactivate: (id) => axiosInstance.delete(`/plots/${id}`),
 };
 
 // Customers
@@ -40,6 +41,8 @@ export const transactionAPI = {
     getAll: (params) => axiosInstance.get('/transactions', { params }),
     getByCustomer: (customerId) => axiosInstance.get(`/transactions/${customerId}`),
     create: (data) => axiosInstance.post('/transactions', data),
+    update: (id, data) => axiosInstance.put(`/transactions/single/${id}`, data),
+    delete: (id) => axiosInstance.delete(`/transactions/single/${id}`),
 };
 
 // Executives
@@ -96,6 +99,15 @@ export const reportAPI = {
     getSalesPosition: () => axiosInstance.get('/reports/dashboard-sales-position'),
     getRPSummary: () => axiosInstance.get('/reports/dashboard-rp-summary'),
     getDailyCollection: (params) => axiosInstance.get('/reports/daily-collection', { params }),
+    getMonthlyEMIReminder: (params) => axiosInstance.get('/reports/monthly-emi-reminder', { params }),
+    getTokenByExecutive: (params) => axiosInstance.get('/reports/token-by-executive', { params }),
+    getExecutiveReminder: (params) => axiosInstance.get('/reports/executive-reminder', { params }),
+    getUnitCalculation: (params) => axiosInstance.get('/reports/unit-calculation', { params }),
+    getUserDailyCollection: (params) => axiosInstance.get('/reports/user-daily-collection', { params }),
+    getCustomerEMIDues: (params) => axiosInstance.get('/reports/customer-emi-dues', { params }),
+    getCustomerDetailedLedger: (id) => axiosInstance.get(`/reports/customer-ledger/${id}`),
+    getExecutiveBusiness: (params) => axiosInstance.get('/reports/executive-business', { params }),
+    getBirthdayReminders: (params) => axiosInstance.get('/reports/birthday-reminders', { params }),
 };
 
 // JV Entry
