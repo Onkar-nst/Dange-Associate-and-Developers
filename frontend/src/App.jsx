@@ -37,6 +37,7 @@ import ProjectSummary from './pages/ProjectSummary';
 import UnitCalculation from './pages/UnitCalculation';
 import UserDailyCollection from './pages/UserDailyCollection';
 import CustomerEMIDues from './pages/CustomerEMIDues';
+import ExecutiveTree from './pages/ExecutiveTree';
 
 const RootRedirect = () => {
   const { user, loading } = useAuth();
@@ -96,6 +97,7 @@ function App() {
             <Route path="/report/unit-calculation" element={<UnitCalculation />} />
             <Route path="/report/user-daily-collection" element={<UserDailyCollection />} />
             <Route path="/report/customer-emi-dues" element={<CustomerEMIDues />} />
+            <Route path="/report/executive-tree" element={<ExecutiveTree />} />
             <Route path="/ai-assistant" element={<AIChatbot />} />
             
             {/* Restricted Routes */}

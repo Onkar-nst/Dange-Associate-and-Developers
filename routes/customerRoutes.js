@@ -6,7 +6,8 @@ const {
     getCustomer,
     updateCustomer,
     deactivateCustomer,
-    getCustomerSummary
+    getCustomerSummary,
+    cancelCustomer
 } = require('../controllers/customerController');
 const { protect } = require('../middleware/auth');
 
@@ -23,5 +24,6 @@ router.route('/:id')
     .delete(deactivateCustomer);
 
 router.get('/:id/summary', getCustomerSummary);
+router.post('/:id/cancel', cancelCustomer);
 
 module.exports = router;

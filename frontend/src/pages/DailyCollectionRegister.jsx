@@ -234,7 +234,10 @@ const DailyCollectionRegister = () => {
                                 <td>{new Date(c.date).toLocaleDateString()}</td>
                                 <td>{c.recNo}</td>
                                 <td className="text-left font-bold uppercase">{c.customerName}</td>
-                                <td className="uppercase">{c.recType}</td>
+                                <td className="uppercase text-[10px]">
+                                    {c.recType}
+                                    <div className="text-[9px] font-black text-blue-600 leading-tight mt-0.5">{c.bankName}</div>
+                                </td>
                                 <td className="text-left italic text-slate-500">{c.particular}</td>
                                 <td className="text-right">{c.received.toFixed(2)}</td>
                                 <td className="text-right">{c.payment.toFixed(2)}</td>

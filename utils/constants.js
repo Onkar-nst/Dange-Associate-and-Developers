@@ -74,6 +74,8 @@ const COMMISSION_STATUS = {
     PENDING: 'pending'  // Waiting for some condition (optional, but requested)
 };
 
+const TDS_RATE = 5; // 5% TDS for non-cash payments
+
 module.exports = {
     ROLES,
     ALL_ROLES,
@@ -86,5 +88,6 @@ module.exports = {
     COMMISSION_TYPES,
     COMMISSION_TRIGGERS,
     COMMISSION_BASIS,
-    COMMISSION_STATUS
+    COMMISSION_STATUS,
+    TDS_RATE
 };

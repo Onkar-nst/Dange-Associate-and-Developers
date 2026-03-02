@@ -21,7 +21,8 @@ const {
     getCustomerEMIDues,
     getCustomerDetailedLedger,
     getExecutiveBusinessReport,
-    getBirthdayAnniversaryReminders
+    getBirthdayAnniversaryReminders,
+    getExecutiveTree
 } = require('../controllers/reportController');
 const { protect, authorize } = require('../middleware/auth');
 const { ROLES } = require('../utils/constants');
@@ -51,6 +52,7 @@ router.get('/customer-emi-dues', getCustomerEMIDues);
 router.get('/customer-ledger/:id', getCustomerDetailedLedger);
 router.get('/executive-business', getExecutiveBusinessReport);
 router.get('/birthday-reminders', getBirthdayAnniversaryReminders);
+router.get('/executive-tree', getExecutiveTree);
 
 module.exports = router;
 

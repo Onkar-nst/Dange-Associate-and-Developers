@@ -250,7 +250,7 @@ exports.updateCustomer = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc    Deactivate customer (soft delete)
+ * @desc    Deactivate customer (soft delete) & Vacant the plot
  * @route   DELETE /api/customers/:id
  * @access  Private
  */
@@ -271,12 +271,64 @@ exports.deactivateCustomer = asyncHandler(async (req, res, next) => {
         { new: true }
     );
 
-    // Note: We do NOT change plot status back to available
-    // This is a business decision - sold plots remain sold
+    // Reset plot status to vacant so it can be re-sold
+    if (customer.plotId) {
+        await Plot.findByIdAndUpdate(customer.plotId, { status: PLOT_STATUS.VACANT });
+    }
 
     res.status(200).json({
         success: true,
-        message: 'Customer deactivated successfully',
+        message: 'Customer deactivated and plot is now vacant.',
+        data: customer
+    });
+});
+
+/**
+ * @desc    Cancel customer booking formally
+ * @route   POST /api/customers/:id/cancel
+ * @access  Private
+ */
+exports.cancelCustomer = asyncHandler(async (req, res, next) => {
+    let customer = await Customer.findById(req.params.id);
+
+    if (!customer) {
+        return res.status(404).json({
+            success: false,
+            error: 'Customer not found'
+        });
+    }
+
+    // Update customer status to Cancelled and deactivate
+    customer = await Customer.findByIdAndUpdate(
+        req.params.id,
+        {
+            transactionStatus: 'Cancelled',
+            active: false
+        },
+        { new: true }
+    );
+
+    // Reset plot status to vacant
+    if (customer.plotId) {
+        await Plot.findByIdAndUpdate(customer.plotId, { status: PLOT_STATUS.VACANT });
+    }
+
+    // Create a ledger entry for cancellation record
+    await Ledger.create({
+        partyType: PARTY_TYPES.CUSTOMER,
+        partyId: customer._id,
+        debit: 0,
+        credit: 0,
+        balance: customer.balanceAmount,
+        description: `Booking Cancelled - Plot ${customer.plotId} is now available`,
+        referenceType: 'adjustment',
+        referenceId: customer._id,
+        enteredBy: req.user.id
+    });
+
+    res.status(200).json({
+        success: true,
+        message: 'Booking cancelled successfully. Plot is now available.',
         data: customer
     });
 });

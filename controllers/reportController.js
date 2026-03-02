@@ -88,7 +88,7 @@ exports.getCollectionReport = asyncHandler(async (req, res, next) => {
 
     // If projectId filter is applied, we need to filter transactions by customers of that project
     if (projectId) {
-        const customersInProject = await Customer.find({ projectId }).select('_id');
+        const customersInProject = await Customer.find({ projectId, active: true }).select('_id');
         const customerIds = customersInProject.map(c => c._id);
         query.customerId = { $in: customerIds };
     }
@@ -449,7 +449,8 @@ exports.getCashBook = asyncHandler(async (req, res, next) => {
     const end = endDate ? new Date(endDate) : new Date(new Date().setHours(23, 59, 59, 999));
 
     // 1. Calculate combined opening balance before startDate
-    // For Cash Book, we typically look at Cash/Bank ledger accounts
+    // For Cash Book, we typically look at Cash/Bank side of things
+    // Business Rule: For Party Ledgers, Credit means Receipt (Money In) and Debit means Payment (Money Out)
     const historical = await Ledger.aggregate([
         {
             $match: {
@@ -466,7 +467,8 @@ exports.getCashBook = asyncHandler(async (req, res, next) => {
         }
     ]);
 
-    let runningBalance = historical.length > 0 ? (historical[0].totalDebit - historical[0].totalCredit) : 0;
+    // Cash Balance = sum(Credits) - sum(Debits) based on party ledger perspective
+    let runningBalance = historical.length > 0 ? (historical[0].totalCredit - historical[0].totalDebit) : 0;
 
     // 2. Get all transactions in range
     const transactions = await Ledger.find({
@@ -492,9 +494,10 @@ exports.getCashBook = asyncHandler(async (req, res, next) => {
         }
 
         grouped[dateStr].items.push(t);
-        grouped[dateStr].totalReceipt += t.debit;
-        grouped[dateStr].totalPayment += t.credit;
-        tempBalance += (t.debit - t.credit);
+        // Swap polarity for Cash Book view: Credit is Cash IN (Receipt), Debit is Cash OUT (Payment)
+        grouped[dateStr].totalReceipt += (t.credit || 0);
+        grouped[dateStr].totalPayment += (t.debit || 0);
+        tempBalance += ((t.credit || 0) - (t.debit || 0));
         grouped[dateStr].closingBalance = tempBalance;
     });
 
@@ -515,8 +518,15 @@ exports.getProjectSummary = asyncHandler(async (req, res, next) => {
         {
             $lookup: {
                 from: 'customers',
-                localField: '_id',
-                foreignField: 'projectId',
+                let: { projectId: '$_id' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ['$projectId', '$$projectId'] },
+                            active: true
+                        }
+                    }
+                ],
                 as: 'customers'
             }
         },
@@ -663,6 +673,7 @@ exports.getDailyCollectionRegister = asyncHandler(async (req, res, next) => {
             particular: t.narration || t.transactionType || '-',
             received: t.entryType === 'Receipt' ? (t.amount || 0) : 0,
             payment: t.entryType === 'Payment' ? (t.amount || 0) : 0,
+            bankName: t.bankName || '-'
         };
 
         // Categorize by paymentMode field (Cash / Bank)
@@ -1283,6 +1294,7 @@ exports.getBirthdayAnniversaryReminders = asyncHandler(async (req, res, next) =>
             },
             {
                 $match: {
+                    active: true,
                     day: day,
                     month: month
                 }
@@ -1351,5 +1363,84 @@ exports.getBirthdayAnniversaryReminders = asyncHandler(async (req, res, next) =>
     res.status(200).json({
         success: true,
         data: results
+    });
+});
+
+/**
+ * @desc    Executive Tree Report - Hierarchy and commission summary
+ * @route   GET /api/reports/executive-tree
+ * @access  Private (Boss, Head Executive)
+ */
+exports.getExecutiveTree = asyncHandler(async (req, res, next) => {
+    // 1. Get all active executives with their User reference
+    // Note: Commission is tracked in CommissionLedger by executiveId (which is User._id)
+    const executives = await Executive.find({ active: true })
+        .select('name code senior designation userId phone percentage')
+        .lean();
+
+    // 2. Get commission summary for all users who are executives
+    const userIds = executives.map(e => e.userId).filter(id => id);
+
+    // Aggregating for all relevant executives in one go
+    const commissionStats = await CommissionLedger.aggregate([
+        {
+            $match: {
+                executiveId: { $in: userIds }
+            }
+        },
+        {
+            $group: {
+                _id: '$executiveId',
+                earned: {
+                    $sum: { $cond: [{ $in: ['$status', ['earned', 'paid']] }, '$amount', 0] }
+                },
+                paid: {
+                    $sum: { $cond: [{ $eq: ['$status', 'paid'] }, '$amount', 0] }
+                },
+                pending: {
+                    $sum: { $cond: [{ $eq: ['$status', 'pending'] }, '$amount', 0] }
+                }
+            }
+        }
+    ]);
+
+    // 3. Create a mapping for quick lookup by User ID
+    const statsByUserId = {};
+    commissionStats.forEach(s => {
+        statsByUserId[s._id.toString()] = {
+            earned: s.earned,
+            paid: s.paid,
+            pending: s.pending,
+            balance: s.earned - s.paid
+        };
+    });
+
+    // 4. Attach stats to executive objects and build a map of executives by their own Executive _id
+    const execNodes = {};
+    executives.forEach(exec => {
+        const stats = statsByUserId[exec.userId?.toString()] || { earned: 0, paid: 0, pending: 0, balance: 0 };
+        execNodes[exec._id.toString()] = {
+            ...exec,
+            id: exec._id.toString(),
+            label: exec.name,
+            stats,
+            children: []
+        };
+    });
+
+    // 5. Build the hierarchical tree (connecting Child -> Senior)
+    const rootNodes = [];
+    Object.values(execNodes).forEach(node => {
+        if (node.senior && execNodes[node.senior.toString()]) {
+            execNodes[node.senior.toString()].children.push(node);
+        } else {
+            // No senior, or senior is NOT in active list - treat as a Root
+            rootNodes.push(node);
+        }
+    });
+
+    res.status(200).json({
+        success: true,
+        data: rootNodes
     });
 });

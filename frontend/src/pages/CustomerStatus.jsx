@@ -27,6 +27,15 @@ const CustomerStatus = () => {
     const [selectedExecToAdd, setSelectedExecToAdd] = useState('');
     const [customerRate, setCustomerRate] = useState(0);
 
+    // Basic Modify Modal
+    const [showModifyModal, setShowModifyModal] = useState(false);
+    const [modifyForm, setModifyForm] = useState({
+        name: '',
+        phone: '',
+        occupation: '',
+        address: ''
+    });
+
     useEffect(() => {
         fetchInitialData();
     }, []);
@@ -119,6 +128,38 @@ const CustomerStatus = () => {
             fetchInitialData();
         } catch (err) {
             setError('Failed to persist synchronization changes');
+        }
+    };
+
+    const handleOpenModify = (customer) => {
+        setEditingCustomer(customer);
+        setModifyForm({
+            name: customer.name || '',
+            phone: customer.phone || '',
+            occupation: customer.occupation || '',
+            address: customer.address || ''
+        });
+        setShowModifyModal(true);
+    };
+
+    const handleSaveModify = async () => {
+        try {
+            await customerAPI.update(editingCustomer._id, modifyForm);
+            setShowModifyModal(false);
+            fetchInitialData();
+        } catch (err) {
+            setError('Failed to update customer details');
+        }
+    };
+
+    const handleCancelBooking = async (id) => {
+        if (!window.confirm('Are you sure you want to CANCEL this booking? The plot will become VACANT but history will remain.')) return;
+        try {
+            await customerAPI.cancel(id);
+            fetchInitialData();
+            alert('Booking cancelled successfully. Plot is now vacant.');
+        } catch (err) {
+            setError('Cancellation protocol failed');
         }
     };
 
@@ -460,8 +501,20 @@ const CustomerStatus = () => {
                                     </td>
                                     <td className="text-right pr-10 py-4">
                                         <div className="flex justify-end gap-3">
-                                            <button className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:bg-blue-600 shadow-sm active:scale-95">Update Log</button>
-                                            <button onClick={() => handleDeleteCustomer(c._id)} className="w-10 h-10 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all flex items-center justify-center shadow-sm">🗑️</button>
+                                            <button 
+                                                onClick={() => handleOpenModify(c)}
+                                                className="px-4 py-2 bg-slate-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest transition-all hover:bg-blue-600 shadow-sm active:scale-95"
+                                            >
+                                                Update Log
+                                            </button>
+                                            <button 
+                                                onClick={() => handleCancelBooking(c._id)} 
+                                                title="Cancel Booking"
+                                                className="w-10 h-10 bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white rounded-xl transition-all flex items-center justify-center shadow-sm"
+                                            >
+                                                ❌
+                                            </button>
+                                            <button onClick={() => handleDeleteCustomer(c._id)} className="w-10 h-10 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all flex items-center justify-center shadow-sm" title="Archive">🗑️</button>
                                         </div>
                                     </td>
                                 </tr>
@@ -644,6 +697,61 @@ const CustomerStatus = () => {
                                 <div className="p-6 bg-white border-t border-slate-100 flex gap-4 sticky bottom-0 z-20">
                                     <button onClick={() => setShowEditModal(false)} className="px-8 py-4 bg-white text-slate-500 font-bold rounded-xl border border-slate-200 uppercase text-[10px] tracking-widest hover:bg-slate-50 transition-all">Cancel</button>
                                     <button onClick={handleSaveEditChanges} className="flex-1 py-4 bg-blue-600 text-white font-black rounded-xl shadow-xl shadow-blue-500/20 uppercase text-[10px] tracking-[0.2em] hover:bg-blue-500 active:scale-95 transition-all">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Basic Modify Modal */}
+                {showModifyModal && (
+                    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-md flex items-center justify-center z-[110] p-4 animate-in fade-in duration-200">
+                        <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+                            <div className="bg-[#0F172A] p-6 text-white flex justify-between items-center">
+                                <div>
+                                    <h3 className="text-sm font-black uppercase tracking-widest">Update Customer Profile</h3>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">Direct Record Modification</p>
+                                </div>
+                                <button onClick={() => setShowModifyModal(false)} className="text-slate-400 hover:text-white transition-colors">✕</button>
+                            </div>
+                            <div className="p-8 space-y-5">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
+                                    <input 
+                                        type="text" 
+                                        value={modifyForm.name}
+                                        onChange={(e) => setModifyForm({...modifyForm, name: e.target.value})}
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Phone Number</label>
+                                    <input 
+                                        type="text" 
+                                        value={modifyForm.phone}
+                                        onChange={(e) => setModifyForm({...modifyForm, phone: e.target.value})}
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold outline-none focus:border-blue-500 transition-all font-mono"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Occupation</label>
+                                    <input 
+                                        type="text" 
+                                        value={modifyForm.occupation}
+                                        onChange={(e) => setModifyForm({...modifyForm, occupation: e.target.value})}
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Address</label>
+                                    <textarea 
+                                        value={modifyForm.address}
+                                        onChange={(e) => setModifyForm({...modifyForm, address: e.target.value})}
+                                        className="w-full h-24 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none focus:border-blue-500 transition-all resize-none"
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-4">
+                                    <button onClick={() => setShowModifyModal(false)} className="flex-1 h-12 border border-slate-200 text-slate-500 font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-slate-50 transition-all">Cancel</button>
+                                    <button onClick={handleSaveModify} className="flex-1 h-12 bg-blue-600 text-white font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-500/20 active:scale-95 transition-all">Save Changes</button>
                                 </div>
                             </div>
                         </div>

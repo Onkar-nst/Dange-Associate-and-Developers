@@ -104,10 +104,17 @@ const Transactions = () => {
             return;
         }
 
-        // Resolve actual customerId - strip prefix
+        // Resolve actual customerId and accountType - strip prefix
         const [accType, accId] = formData.customerId.split('_');
+        const accountType = accType === 'ledger' ? 'LedgerAccount' : 'Customer';
         const finalBankName = formData.bankName === 'Custom' ? customBankName : formData.bankName;
-        const submitData = { ...formData, customerId: accId, bankName: finalBankName };
+        
+        const submitData = { 
+            ...formData, 
+            customerId: accId, 
+            accountType, 
+            bankName: finalBankName 
+        };
 
         try {
             if (mode === 'add') {
@@ -328,10 +335,14 @@ const Transactions = () => {
                                                 onChange={handleChange}
                                                 className="border border-blue-300 p-1 rounded outline-none text-[11px] font-bold"
                                             >
-                                                <option value="">-- Select Bank --</option>
-                                                {BANK_OPTIONS.map(b => (
-                                                    <option key={b} value={b}>{b}</option>
+                                                <option value="">-- Select Bank Account --</option>
+                                                {/* Show Ledger Accounts of type Bank or in Bank groups */}
+                                                {ledgerAccounts.filter(a => a.group.includes('BANK')).map(a => (
+                                                    <option key={a._id} value={`${a.accountName}${a.accountNumber ? ' (' + a.accountNumber + ')' : ''}`}>
+                                                        {a.accountName} {a.accountNumber ? `(${a.accountNumber})` : ''}
+                                                    </option>
                                                 ))}
+                                                <option value="Custom">-- Custom Bank --</option>
                                             </select>
                                             {formData.bankName === 'Custom' && (
                                                 <input

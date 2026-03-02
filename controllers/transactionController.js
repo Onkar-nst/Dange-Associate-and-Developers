@@ -1,6 +1,7 @@
 const Transaction = require('../models/Transaction');
 const Customer = require('../models/Customer');
 const Ledger = require('../models/Ledger');
+const LedgerAccount = require('../models/LedgerAccount');
 const asyncHandler = require('../middleware/asyncHandler');
 const { PARTY_TYPES, COMMISSION_TRIGGERS } = require('../utils/constants');
 const { processCommission } = require('./commissionController');
@@ -13,48 +14,57 @@ const { createNotification } = require('./notificationController');
  * @business Updates customer paidAmount and balance, creates ledger entry
  */
 exports.createTransaction = asyncHandler(async (req, res, next) => {
-    let {
-        customerId, amount, paymentMode,
-        referenceNumber, bankName, remarks, transactionDate,
-        entryType, transactionType, projectId, narration, receiptNumber
+    const {
+        customerId,
+        amount,
+        paymentMode,
+        referenceNumber,
+        bankName,
+        remarks,
+        entryType,
+        transactionType,
+        narration,
+        receiptNumber,
+        transactionDate,
+        accountType,
+        projectId
     } = req.body;
-    amount = Number(amount);
 
-    // Validate required fields
-    if (!customerId || amount === undefined || !paymentMode) {
-        return res.status(400).json({
-            success: false,
-            error: 'Please provide customerId, amount, and paymentMode'
-        });
+    // Check if account exists (Customer or LedgerAccount)
+    let account = null;
+    if (accountType === 'LedgerAccount') {
+        account = await LedgerAccount.findById(customerId);
+    } else {
+        account = await Customer.findById(customerId);
     }
 
-    // Check if customer exists
-    const customer = await Customer.findById(customerId);
-    if (!customer) {
+    if (!account) {
         return res.status(404).json({
             success: false,
-            error: 'Customer not found'
+            error: `${accountType || 'Customer'} not found`
         });
     }
 
-    // BUSINESS RULE: Update customer paidAmount and balanceAmount
-    // If Receipt: paidAmount increases, balanceAmount decreases
-    // If Payment: paidAmount decreases, balanceAmount increases (unlikely for customer but handled)
-    let newPaidAmount = customer.paidAmount;
-    if (entryType === 'Receipt') {
-        newPaidAmount += Number(amount);
-    } else if (entryType === 'Payment') {
-        newPaidAmount -= Number(amount);
-    } else {
-        newPaidAmount += Number(amount); // Default to Receipt behavior
-    }
+    // BUSINESS RULE: Update balances if it's a customer
+    let newPaidAmount = account.paidAmount || 0;
+    let newBalanceAmount = account.balanceAmount || 0;
 
-    const newBalanceAmount = customer.dealValue - newPaidAmount;
+    if (accountType !== 'LedgerAccount') {
+        if (entryType === 'Receipt') {
+            newPaidAmount += Number(amount);
+        } else if (entryType === 'Payment') {
+            newPaidAmount -= Number(amount);
+        } else {
+            newPaidAmount += Number(amount); // Default to Receipt behavior
+        }
+        newBalanceAmount = account.dealValue - newPaidAmount;
+    }
 
     // Create transaction
     const transaction = await Transaction.create({
         customerId,
-        projectId: projectId || customer.projectId,
+        accountType: accountType || 'Customer',
+        projectId: projectId || account.projectId,
         amount,
         paymentMode,
         referenceNumber,
@@ -64,23 +74,25 @@ exports.createTransaction = asyncHandler(async (req, res, next) => {
         transactionType: transactionType || 'Select Type',
         narration,
         receiptNumber,
-        balanceAtTime: newBalanceAmount,
+        balanceAtTime: accountType !== 'LedgerAccount' ? newBalanceAmount : undefined,
         transactionDate: transactionDate || Date.now(),
         enteredBy: req.user.id
     });
 
-    await Customer.findByIdAndUpdate(customerId, {
-        paidAmount: newPaidAmount,
-        balanceAmount: newBalanceAmount
-    });
+    if (accountType !== 'LedgerAccount') {
+        await Customer.findByIdAndUpdate(customerId, {
+            paidAmount: newPaidAmount,
+            balanceAmount: newBalanceAmount
+        });
+    }
 
     // BUSINESS RULE: Create ledger entry
     await Ledger.create({
-        partyType: PARTY_TYPES.CUSTOMER,
+        partyType: accountType === 'LedgerAccount' ? PARTY_TYPES.LEDGER_ACCOUNT : PARTY_TYPES.CUSTOMER,
         partyId: customerId,
         credit: entryType === 'Receipt' ? amount : 0,
         debit: entryType === 'Payment' ? amount : 0,
-        balance: newBalanceAmount,
+        balance: accountType !== 'LedgerAccount' ? newBalanceAmount : 0,
         description: narration || `${transactionType} via ${paymentMode}`,
         referenceType: 'transaction',
         referenceId: transaction._id,
@@ -88,15 +100,16 @@ exports.createTransaction = asyncHandler(async (req, res, next) => {
         enteredBy: req.user.id
     });
 
-    // BUSINESS RULE: Process commissions if it's a receipt
-    if (entryType === 'Receipt') {
+    // BUSINESS RULE: Process commissions only for CUSTOMERS and only for receipts
+    if (accountType !== 'LedgerAccount' && entryType === 'Receipt') {
         await processCommission(COMMISSION_TRIGGERS.PAYMENT_RECEIVED, {
-            executiveId: customer.assignedExecutive,
-            projectId: customer.projectId,
-            plotId: customer.plotId,
-            customerId: customer._id,
+            executiveId: account.assignedExecutive,
+            projectId: account.projectId,
+            plotId: account.plotId,
+            customerId: account._id,
             amount: amount,
-            transactionId: transaction._id
+            transactionId: transaction._id,
+            paymentMode: transaction.paymentMode
         });
     }
 
@@ -110,7 +123,7 @@ exports.createTransaction = asyncHandler(async (req, res, next) => {
     await createNotification({
         type: 'payment_received',
         title: `${entryType || 'Receipt'} Recorded`,
-        message: `₹${amount.toLocaleString('en-IN')} ${entryType || 'Receipt'} from ${customer.firstName} ${customer.lastName} via ${paymentMode}`,
+        message: `₹${amount.toLocaleString('en-IN')} ${entryType || 'Receipt'} from ${account.name || 'Account'} via ${paymentMode}`,
         icon: entryType === 'Payment' ? '💸' : '💰',
         referenceId: transaction._id.toString(),
         referenceType: 'transaction'
@@ -137,12 +150,16 @@ exports.createTransaction = asyncHandler(async (req, res, next) => {
 exports.getCustomerTransactions = asyncHandler(async (req, res, next) => {
     const { customerId } = req.params;
 
-    // Check if customer exists
-    const customer = await Customer.findById(customerId);
-    if (!customer) {
+    // Check if account exists (Customer or LedgerAccount)
+    let account = await Customer.findById(customerId);
+    if (!account) {
+        account = await LedgerAccount.findById(customerId);
+    }
+
+    if (!account) {
         return res.status(404).json({
             success: false,
-            error: 'Customer not found'
+            error: 'Account not found'
         });
     }
 
@@ -151,7 +168,7 @@ exports.getCustomerTransactions = asyncHandler(async (req, res, next) => {
         active: true
     })
         .populate('enteredBy', 'name')
-        .sort({ transactionDate: -1 });
+        .sort({ transactionDate: 1, createdAt: 1 }); // ASCENDING order with creation sequence for history
 
     // Calculate totals
     const totalPaid = transactions.reduce((sum, t) => sum + t.amount, 0);
@@ -160,11 +177,11 @@ exports.getCustomerTransactions = asyncHandler(async (req, res, next) => {
         success: true,
         count: transactions.length,
         customer: {
-            name: customer.name,
-            phone: customer.phone,
-            dealValue: customer.dealValue,
-            paidAmount: customer.paidAmount,
-            balanceAmount: customer.balanceAmount
+            name: account.name || account.accountName,
+            phone: account.phone || '-',
+            dealValue: account.dealValue || 0,
+            paidAmount: account.paidAmount || 0,
+            balanceAmount: account.balanceAmount || 0
         },
         totalPaid,
         data: transactions
@@ -206,7 +223,7 @@ exports.getAllTransactions = asyncHandler(async (req, res, next) => {
     const transactions = await Transaction.find(query)
         .populate('customerId', 'name phone')
         .populate('enteredBy', 'name')
-        .sort({ transactionDate: -1 });
+        .sort({ transactionDate: -1, createdAt: -1 });
 
     // Calculate totals by payment mode
     const totals = await Transaction.aggregate([

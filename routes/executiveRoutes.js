@@ -5,7 +5,7 @@ const {
     getExecutives,
     getExecutive,
     updateExecutive,
-    deactivateExecutive
+    deleteExecutive
 } = require('../controllers/executiveController');
 const { protect } = require('../middleware/auth');
 
@@ -19,6 +19,6 @@ router.route('/')
 router.route('/:id')
     .get(getExecutive)
     .put(updateExecutive)
-    .delete(deactivateExecutive);
+    .delete(deleteExecutive);
 
 module.exports = router;

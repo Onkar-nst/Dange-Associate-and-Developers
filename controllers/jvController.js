@@ -118,6 +118,104 @@ exports.getJVs = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @desc    Update Journal Voucher (JV)
+ * @route   PUT /api/jv/:id
+ * @access  Private
+ */
+exports.updateJV = asyncHandler(async (req, res, next) => {
+    let { branch, transactionDate, debitAccount, creditAccount, amount, narration } = req.body;
+    amount = Number(amount);
+
+    const jv = await JournalVoucher.findById(req.params.id);
+    if (!jv) {
+        return res.status(404).json({
+            success: false,
+            error: 'JV not found'
+        });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        // 1. Deactivate old ledger entries associated with this JV
+        await Ledger.updateMany({ referenceId: req.params.id }, { active: false }).session(session);
+
+        // 2. Update the Journal Voucher document
+        const updatedJv = await JournalVoucher.findByIdAndUpdate(req.params.id, {
+            branch,
+            transactionDate: transactionDate || jv.transactionDate,
+            debitAccount,
+            creditAccount,
+            amount,
+            narration,
+            enteredBy: req.user.id
+        }, { new: true, session });
+
+        // 3. Create NEW Ledger entries with updated information
+
+        // Debit side
+        const lastDebitLedger = await Ledger.findOne({
+            partyType: debitAccount.partyType,
+            partyId: debitAccount.partyId,
+            active: true
+        }).sort({ transactionDate: -1, createdAt: -1 }).session(session);
+
+        const prevDebitBalance = lastDebitLedger ? lastDebitLedger.balance : 0;
+
+        await Ledger.create([{
+            partyType: debitAccount.partyType,
+            partyId: debitAccount.partyId,
+            debit: amount,
+            credit: 0,
+            balance: prevDebitBalance + amount,
+            description: `JV Updated: ${updatedJv.jvNumber} - ${narration}`,
+            referenceType: 'other',
+            referenceId: updatedJv._id,
+            transactionDate: transactionDate || updatedJv.transactionDate,
+            enteredBy: req.user.id
+        }], { session });
+
+        // Credit side
+        const lastCreditLedger = await Ledger.findOne({
+            partyType: creditAccount.partyType,
+            partyId: creditAccount.partyId,
+            active: true
+        }).sort({ transactionDate: -1, createdAt: -1 }).session(session);
+
+        const prevCreditBalance = lastCreditLedger ? lastCreditLedger.balance : 0;
+
+        await Ledger.create([{
+            partyType: creditAccount.partyType,
+            partyId: creditAccount.partyId,
+            debit: 0,
+            credit: amount,
+            balance: prevCreditBalance - amount,
+            description: `JV Updated: ${updatedJv.jvNumber} - ${narration}`,
+            referenceType: 'other',
+            referenceId: updatedJv._id,
+            transactionDate: transactionDate || updatedJv.transactionDate,
+            enteredBy: req.user.id
+        }], { session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({
+            success: true,
+            data: updatedJv
+        });
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
  * @desc    Deactivate a JV (Soft delete)
  * @route   DELETE /api/jv/:id
  * @access  Private

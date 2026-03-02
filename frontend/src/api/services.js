@@ -33,6 +33,7 @@ export const customerAPI = {
     getSummary: (id) => axiosInstance.get(`/customers/${id}/summary`),
     create: (data) => axiosInstance.post('/customers', data),
     update: (id, data) => axiosInstance.put(`/customers/${id}`, data),
+    cancel: (id) => axiosInstance.post(`/customers/${id}/cancel`),
     delete: (id) => axiosInstance.delete(`/customers/${id}`),
 };
 
@@ -108,12 +109,14 @@ export const reportAPI = {
     getCustomerDetailedLedger: (id) => axiosInstance.get(`/reports/customer-ledger/${id}`),
     getExecutiveBusiness: (params) => axiosInstance.get('/reports/executive-business', { params }),
     getBirthdayReminders: (params) => axiosInstance.get('/reports/birthday-reminders', { params }),
+    getExecutiveTree: () => axiosInstance.get('/reports/executive-tree'),
 };
 
 // JV Entry
 export const jvAPI = {
     getAll: () => axiosInstance.get('/jv'),
     create: (data) => axiosInstance.post('/jv', data),
+    update: (id, data) => axiosInstance.put(`/jv/${id}`, data),
     delete: (id) => axiosInstance.delete(`/jv/${id}`),
 };
 

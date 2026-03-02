@@ -3,12 +3,15 @@ const CommissionLedger = require('../models/CommissionLedger');
 const User = require('../models/User');
 const Customer = require('../models/Customer');
 const Transaction = require('../models/Transaction');
+const Plot = require('../models/Plot');
 const {
     COMMISSION_TYPES,
     COMMISSION_TRIGGERS,
     COMMISSION_BASIS,
     COMMISSION_STATUS,
-    ROLES
+    ROLES,
+    TDS_RATE,
+    PAYMENT_MODES
 } = require('../utils/constants');
 
 // @desc    Create a new commission rule
@@ -239,10 +242,42 @@ exports.payCommission = async (req, res) => {
  */
 exports.processCommission = async (triggerEvent, data) => {
     try {
-        const { executiveId, projectId, customerId, amount, transactionId } = data;
+        const { executiveId, projectId, customerId, amount, transactionId, paymentMode } = data;
 
         const customer = await Customer.findById(customerId).populate('assignedExecutives.executiveId');
         if (!customer) return;
+
+        const plot = await Plot.findById(customer.plotId);
+        if (!plot) return;
+
+        // RATE VARIANCE DEDUCTION: If sold below standard rate, deduct from commission
+        const plotStandardRate = plot.rate || 0;
+        const customerSoldRate = customer.rate || 0;
+        const shortagePerUnit = plotStandardRate - customerSoldRate;
+
+        if (triggerEvent === COMMISSION_TRIGGERS.DEAL_CLOSED && shortagePerUnit > 0) {
+            const totalShortage = shortagePerUnit * (customer.sqFt || customer.size || 0);
+
+            if (totalShortage > 0 && customer.assignedExecutives && customer.assignedExecutives.length > 0) {
+                const totalCommPercentage = customer.assignedExecutives.reduce((sum, item) => sum + (item.percentage || 0), 0);
+
+                for (const item of customer.assignedExecutives) {
+                    const exec = item.executiveId;
+                    if (!exec || !item.percentage) continue;
+
+                    // Executive's share of the shortage based on their commission share
+                    const execShortageShare = (totalShortage * item.percentage) / (totalCommPercentage || 100);
+
+                    await CommissionLedger.create({
+                        executiveId: exec._id,
+                        customerId,
+                        amount: -execShortageShare, // Negative amount for deduction
+                        status: COMMISSION_STATUS.EARNED,
+                        description: `Rate Shortage Deduction: Sold at ${customerSoldRate} (Std: ${plotStandardRate}) [Loss: ₹${totalShortage.toFixed(2)}]`
+                    });
+                }
+            }
+        }
 
         // NEW LOGIC: Check for customer-specific executive percentages first
         if (customer.assignedExecutives && customer.assignedExecutives.length > 0) {
@@ -253,13 +288,22 @@ exports.processCommission = async (triggerEvent, data) => {
                 let commissionAmount = (amount * item.percentage) / 100;
 
                 if (commissionAmount > 0) {
+                    let description = `Customer Specific Commission (${item.percentage}%)`;
+
+                    // TDS Logic: Deduct if not cash
+                    if (paymentMode && paymentMode.toLowerCase() !== PAYMENT_MODES.CASH.toLowerCase()) {
+                        const tds = (commissionAmount * TDS_RATE) / 100;
+                        commissionAmount -= tds;
+                        description += ` [Less ${TDS_RATE}% TDS: ₹${tds.toFixed(2)}]`;
+                    }
+
                     await CommissionLedger.create({
                         executiveId: exec._id,
                         customerId,
                         amount: commissionAmount,
                         status: COMMISSION_STATUS.EARNED,
                         referenceTransactionId: transactionId,
-                        description: `Customer Specific Commission (${item.percentage}%)`
+                        description
                     });
                 }
             }
@@ -288,6 +332,15 @@ exports.processCommission = async (triggerEvent, data) => {
 
             // Generate Ledger Entry
             if (commissionAmount > 0) {
+                let description = `Commission for ${rule.name} (${rule.type}: ${rule.value})`;
+
+                // TDS Logic: Deduct if not cash
+                if (paymentMode && paymentMode.toLowerCase() !== PAYMENT_MODES.CASH.toLowerCase()) {
+                    const tds = (commissionAmount * TDS_RATE) / 100;
+                    commissionAmount -= tds;
+                    description += ` [Less ${TDS_RATE}% TDS: ₹${tds.toFixed(2)}]`;
+                }
+
                 await CommissionLedger.create({
                     executiveId: user._id,
                     commissionRuleId: rule._id,
@@ -295,7 +348,7 @@ exports.processCommission = async (triggerEvent, data) => {
                     amount: commissionAmount,
                     status: COMMISSION_STATUS.EARNED, // Default to earned
                     referenceTransactionId: transactionId,
-                    description: `Commission for ${rule.name} (${rule.type}: ${rule.value})`
+                    description
                 });
             }
         }

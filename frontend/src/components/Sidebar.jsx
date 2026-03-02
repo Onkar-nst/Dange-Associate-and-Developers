@@ -61,23 +61,23 @@ const Sidebar = () => {
     return (
         <div className="w-72 bg-slate-900 h-full flex flex-col border-r border-slate-800 shadow-2xl shadow-slate-900/20 z-50">
             {/* Branding Header */}
-            <div className="p-8 border-b border-white/5 flex justify-center">
-                <div className="flex flex-col items-center gap-2">
-                    <div className="bg-white p-4 rounded-xl shadow-lg shadow-white/5">
-                        <img src={logo} alt="Logo" className="h-16 w-auto" />
+            <div className="p-4 border-b border-white/5 flex justify-center">
+                <div className="flex flex-col items-center gap-1.5">
+                    <div className="bg-white p-2.5 rounded-xl shadow-lg shadow-white/5">
+                        <img src={logo} alt="Logo" className="h-12 w-auto" />
                     </div>
-                    <div className="text-center mt-2">
+                    <div className="text-center mt-1">
                         <h1 className="text-[10px] font-black text-white tracking-tighter uppercase leading-none">Dange Associates</h1>
-                        <p className="text-[8px] font-bold text-[#F38C32] uppercase tracking-[0.3em] mt-1 italic">Connecting Your Dreams</p>
+                        <p className="text-[8px] font-bold text-[#F38C32] uppercase tracking-[0.3em] mt-0.5 italic">Connecting Your Dreams</p>
                     </div>
                 </div>
             </div>
             
             {/* Navigation Scroll Area */}
-            <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-8 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 space-y-4 scrollbar-hide">
                 {menuGroups.map((group, gIdx) => (
                     <div key={gIdx}>
-                        <div className="px-4 text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 flex items-center gap-3">
+                        <div className="px-3 text-[8px] font-black text-slate-500 uppercase tracking-[0.3em] mb-2 flex items-center gap-2">
                             <span className="h-px bg-white/5 flex-1"></span>
                             {group.title}
                             <span className="h-px bg-white/5 flex-1"></span>
@@ -89,7 +89,7 @@ const Sidebar = () => {
                                     <li key={iIdx}>
                                         <Link 
                                             to={item.link}
-                                            className={`group flex items-center gap-4 px-4 py-3.5 rounded-2xl text-[11px] font-black uppercase tracking-tight transition-all duration-300 ${
+                                            className={`group flex items-center gap-3 px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-tight transition-all duration-300 ${
                                                 isActive 
                                                 ? 'bg-[#F38C32] text-white shadow-lg shadow-orange-500/20 translate-x-1' 
                                                 : 'text-slate-400 hover:bg-white/5 hover:text-white hover:translate-x-1'
@@ -112,9 +112,9 @@ const Sidebar = () => {
             </div>
 
             {/* User Footer Context */}
-            <div className="p-6 border-t border-white/5 mt-auto bg-slate-900/50 backdrop-blur-md">
-                <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 shadow-sm">
-                    <div className="w-8 h-8 rounded-lg bg-[#F38C32] text-white flex items-center justify-center font-black text-xs uppercase">
+            <div className="p-3 border-t border-white/5 mt-auto bg-slate-900/50 backdrop-blur-md">
+                <div className="flex items-center gap-3 bg-white/5 p-2.5 rounded-xl border border-white/5 shadow-sm">
+                    <div className="w-7 h-7 rounded-lg bg-[#F38C32] text-white flex items-center justify-center font-black text-[10px] uppercase">
                         {user?.userId?.[0] || 'U'}
                     </div>
                     <div className="flex-1 min-w-0">

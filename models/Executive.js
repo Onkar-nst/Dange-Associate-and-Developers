@@ -27,7 +27,6 @@ const ExecutiveSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: [true, 'Please add phone number'],
         match: [/^[0-9]{10}$/, 'Please add a valid 10-digit phone number']
     },
     email: {

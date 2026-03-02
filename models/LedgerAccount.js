@@ -16,6 +16,10 @@ const LedgerAccountSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
+    accountNumber: {
+        type: String,
+        trim: true
+    },
     address: {
         type: String,
         trim: true

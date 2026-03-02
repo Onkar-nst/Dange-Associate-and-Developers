@@ -14,11 +14,11 @@ exports.createExecutive = asyncHandler(async (req, res, next) => {
         panCard, designation, password, bankDetails
     } = req.body;
 
-    // Validate required fields
-    if (!code || !name || !phone) {
+    // Validate required fields (only code and name are mandatory)
+    if (!code || !name) {
         return res.status(400).json({
             success: false,
-            error: 'Please provide code, name and phone number'
+            error: 'Please provide code and name'
         });
     }
 
@@ -31,12 +31,25 @@ exports.createExecutive = asyncHandler(async (req, res, next) => {
         });
     }
 
-    // Create executive
-    const executive = await Executive.create({
-        code, name, senior, rexPerSqFt, phone, email, userId, role,
-        branch, address, percentage, rsPerSqFt, joiningDate, birthDate,
-        panCard, designation, password, bankDetails
+    // Sanitize: convert empty strings to null/undefined for ObjectId and Date fields
+    const sanitizedData = {
+        code, name, rexPerSqFt, email, role,
+        branch, address, percentage, rsPerSqFt,
+        panCard, designation, password, bankDetails,
+        senior: senior || null,
+        userId: userId || null,
+        phone: phone || undefined,
+        joiningDate: joiningDate || undefined,
+        birthDate: birthDate || undefined,
+    };
+
+    // Remove undefined keys so mongoose defaults work
+    Object.keys(sanitizedData).forEach(key => {
+        if (sanitizedData[key] === undefined) delete sanitizedData[key];
     });
+
+    // Create executive
+    const executive = await Executive.create(sanitizedData);
 
     res.status(201).json({
         success: true,
@@ -127,12 +140,13 @@ exports.updateExecutive = asyncHandler(async (req, res, next) => {
     if (branch !== undefined) executive.branch = branch;
     if (address !== undefined) executive.address = address;
     if (active !== undefined) executive.active = active;
-    if (senior !== undefined) executive.senior = senior;
+    // Sanitize ObjectId fields: empty string -> null
+    if (senior !== undefined) executive.senior = senior || null;
     if (rexPerSqFt !== undefined) executive.rexPerSqFt = rexPerSqFt;
     if (percentage !== undefined) executive.percentage = percentage;
     if (rsPerSqFt !== undefined) executive.rsPerSqFt = rsPerSqFt;
-    if (joiningDate !== undefined) executive.joiningDate = joiningDate;
-    if (birthDate !== undefined) executive.birthDate = birthDate;
+    if (joiningDate !== undefined) executive.joiningDate = joiningDate || null;
+    if (birthDate !== undefined) executive.birthDate = birthDate || null;
     if (panCard !== undefined) executive.panCard = panCard;
     if (designation !== undefined) executive.designation = designation;
     if (password !== undefined) executive.password = password;
@@ -152,12 +166,12 @@ exports.updateExecutive = asyncHandler(async (req, res, next) => {
 });
 
 /**
- * @desc    Deactivate executive (soft delete)
+ * @desc    Delete executive (hard delete)
  * @route   DELETE /api/executives/:id
  * @access  Private
  */
-exports.deactivateExecutive = asyncHandler(async (req, res, next) => {
-    let executive = await Executive.findById(req.params.id);
+exports.deleteExecutive = asyncHandler(async (req, res, next) => {
+    const executive = await Executive.findById(req.params.id);
 
     if (!executive) {
         return res.status(404).json({
@@ -166,16 +180,17 @@ exports.deactivateExecutive = asyncHandler(async (req, res, next) => {
         });
     }
 
-    // Soft delete
-    executive = await Executive.findByIdAndUpdate(
-        req.params.id,
-        { active: false },
-        { new: true }
-    );
+    // Hard delete from database
+    await Executive.findByIdAndDelete(req.params.id);
+
+    // Also delete associated User if it exists (optional but cleaner if they are 1:1)
+    if (executive.userId) {
+        await User.findByIdAndDelete(executive.userId);
+    }
 
     res.status(200).json({
         success: true,
-        message: 'Executive deactivated successfully',
-        data: executive
+        message: 'Executive and associated user deleted successfully',
+        data: {}
     });
 });

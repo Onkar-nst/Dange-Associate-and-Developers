@@ -11,6 +11,8 @@ const JVEntry = () => {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [mode, setMode] = useState('add');
+    const [selectedId, setSelectedId] = useState(null);
 
     const initialFormState = {
         branch: 'MAIN BRANCH',
@@ -111,15 +113,45 @@ const JVEntry = () => {
                 }
             };
 
-            await jvAPI.create(payload);
-            setSuccess('Protocol Success: JV Ledger Posting Complete');
+            if (mode === 'edit') {
+                await jvAPI.update(selectedId, payload);
+                setSuccess('Protocol Success: JV Ledger Posting Updated');
+            } else {
+                await jvAPI.create(payload);
+                setSuccess('Protocol Success: JV Ledger Posting Complete');
+            }
+
             setFormData(initialFormState);
+            setMode('add');
+            setSelectedId(null);
             fetchJVs();
         } catch (err) {
             setError(err.response?.data?.error || 'System Error: Ledger Posting Failed');
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleEdit = (jv) => {
+        setMode('edit');
+        setSelectedId(jv._id);
+        setFormData({
+            branch: jv.branch,
+            transactionDate: new Date(jv.transactionDate).toISOString().split('T')[0],
+            debitAccount: jv.debitAccount.partyId,
+            creditAccount: jv.creditAccount.partyId,
+            amount: jv.amount,
+            narration: jv.narration
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const handleCancel = () => {
+        setMode('add');
+        setSelectedId(null);
+        setFormData(initialFormState);
+        setError('');
+        setSuccess('');
     };
 
     const handleDelete = async (id) => {
@@ -133,7 +165,7 @@ const JVEntry = () => {
     };
 
     const Label = ({ children, icon }) => (
-        <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1 mb-2 block flex items-center gap-2">
+        <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest ml-1 mb-1 block flex items-center gap-2">
             <span>{icon}</span> {children}
         </label>
     );
@@ -146,32 +178,33 @@ const JVEntry = () => {
                 {/* Protocol Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
                     <div>
-                        <h1 className="text-3xl font-black text-slate-800 tracking-tighter uppercase flex items-center gap-4">
+                        <h1 className="text-2xl font-black text-slate-800 tracking-tighter uppercase flex items-center gap-4">
                             <span>📓</span> Journal Voucher Entry
                         </h1>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Double-Entry Fiscal Integrity & Internal Multi-Entity Transfers</p>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
                     {/* Entry Form Section */}
-                    <div className="lg:col-span-5 space-y-8">
-                        <div className="bg-slate-900 rounded-[3rem] p-10 shadow-2xl shadow-blue-900/10 text-white relative overflow-hidden group">
+                    <div className="lg:col-span-4 space-y-4">
+                        <div className="bg-white rounded-[2rem] p-5 border border-slate-200 shadow-xl shadow-slate-200/50 relative overflow-hidden group">
+                            <div className="absolute top-0 left-0 w-full h-1.5 bg-blue-600"></div>
                             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
                             
-                            <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
-                                <div className="grid grid-cols-2 gap-6">
+                            <form onSubmit={handleSubmit} className="relative z-10 space-y-5">
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <Label icon="🏢">Operational Branch</Label>
                                         <select 
                                             name="branch"
                                             value={formData.branch}
                                             onChange={handleChange}
-                                            className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-[10px] uppercase"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 font-bold text-[11px] uppercase text-slate-700 focus:border-blue-500 focus:bg-white transition-all outline-none"
                                         >
-                                            <option value="MAIN BRANCH" className="text-slate-800">CENTRAL HUB</option>
-                                            <option value="SUB BRANCH" className="text-slate-800">REGIONAL UNIT</option>
+                                            <option value="MAIN BRANCH">CENTRAL HUB</option>
+                                            <option value="SUB BRANCH">REGIONAL UNIT</option>
                                         </select>
                                     </div>
                                     <div>
@@ -181,14 +214,13 @@ const JVEntry = () => {
                                             name="transactionDate"
                                             value={formData.transactionDate}
                                             onChange={handleChange}
-                                            className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-[10px]"
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 font-bold text-[11px] text-slate-700 focus:border-blue-500 focus:bg-white transition-all outline-none"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="space-y-6">
-                                    <div className="bg-white/5 p-8 rounded-[2rem] border border-white/5 space-y-6 relative overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
+                                <div className="space-y-4">
+                                    <div className="p-4 rounded-[1.5rem] bg-blue-50/30 border border-blue-100/50 space-y-3 relative overflow-hidden">
                                         <div>
                                             <Label icon="➖">Debit Account (From)</Label>
                                             <select 
@@ -196,29 +228,28 @@ const JVEntry = () => {
                                                 value={formData.debitAccount}
                                                 onChange={handleChange}
                                                 required
-                                                className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-[11px] uppercase"
+                                                className="w-full bg-white border border-blue-200 rounded-xl px-4 py-2 font-bold text-[11px] uppercase text-slate-700 focus:border-blue-600 transition-all outline-none shadow-sm"
                                             >
-                                                <option value="" className="text-slate-800">-- SELECT SOURCE ENTITY --</option>
+                                                <option value="">-- SELECT SOURCE --</option>
                                                 {combinedAccounts.map(a => (
-                                                    <option key={a.id} value={a.id} className="text-slate-800">{a.icon} {a.name} ({a.code})</option>
+                                                    <option key={a.id} value={a.id}>{a.icon} {a.name} ({a.code})</option>
                                                 ))}
                                             </select>
                                         </div>
                                         <div>
-                                            <Label icon="💎">Transaction Amount (₹)</Label>
+                                            <Label icon="💎">Amount (₹)</Label>
                                             <input 
                                                 type="number"
                                                 name="amount"
                                                 value={formData.amount}
                                                 onChange={handleChange}
-                                                className="w-full bg-transparent border-b-2 border-white/10 py-4 text-4xl font-black text-blue-400 outline-none focus:border-blue-500 transition-all placeholder:text-white/5"
+                                                className="w-full bg-transparent border-b border-blue-200 py-1 text-2xl font-black text-blue-600 outline-none focus:border-blue-600 transition-all placeholder:text-blue-200"
                                                 placeholder="0.00"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="bg-white/5 p-8 rounded-[2rem] border border-white/5 space-y-6 relative overflow-hidden">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+                                    <div className="p-4 rounded-[1.5rem] bg-rose-50/30 border border-rose-100/50 space-y-3 relative overflow-hidden">
                                         <div>
                                             <Label icon="➕">Credit Account (To)</Label>
                                             <select 
@@ -226,42 +257,42 @@ const JVEntry = () => {
                                                 value={formData.creditAccount}
                                                 onChange={handleChange}
                                                 required
-                                                className="modern-input !bg-white/5 !border-white/10 !text-white !py-4 font-black text-[11px] uppercase"
+                                                className="w-full bg-white border border-rose-200 rounded-xl px-4 py-2 font-bold text-[11px] uppercase text-slate-700 focus:border-rose-600 transition-all outline-none shadow-sm"
                                             >
-                                                <option value="" className="text-slate-800">-- SELECT TARGET ENTITY --</option>
+                                                <option value="">-- SELECT TARGET --</option>
                                                 {combinedAccounts.map(a => (
-                                                    <option key={a.id} value={a.id} className="text-slate-800">{a.icon} {a.name} ({a.code})</option>
+                                                    <option key={a.id} value={a.id}>{a.icon} {a.name} ({a.code})</option>
                                                 ))}
                                             </select>
                                         </div>
                                         <div>
-                                            <Label icon="✍️">Audit Narration</Label>
+                                            <Label icon="✍️">Narration</Label>
                                             <input 
                                                 type="text"
                                                 name="narration"
                                                 value={formData.narration}
                                                 onChange={handleChange}
-                                                className="w-full bg-transparent border-b border-white/10 py-2 text-sm font-bold text-slate-300 outline-none focus:border-blue-500 transition-all placeholder:text-slate-600"
-                                                placeholder="Explain transaction purpose..."
+                                                className="w-full bg-transparent border-b border-rose-200 py-1 text-xs font-bold text-slate-600 outline-none focus:border-rose-600 transition-all placeholder:text-rose-200"
+                                                placeholder="Explain purpose..."
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex gap-4 pt-4">
+                                <div className="flex gap-2 pt-1">
                                     <button 
                                         type="submit"
                                         disabled={submitting}
-                                        className="flex-1 bg-white text-slate-900 py-5 rounded-[2rem] font-black uppercase tracking-[0.3em] text-[11px] shadow-2xl hover:bg-blue-600 hover:text-white transition-all active:scale-95 disabled:opacity-30"
+                                        className={`flex-1 ${mode === 'edit' ? 'bg-blue-600' : 'bg-[#1B315A]'} text-white py-3 rounded-lg font-black uppercase tracking-[0.1em] text-[10px] shadow-lg hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-30`}
                                     >
-                                        {submitting ? 'Post-Post...' : 'Post Entry'}
+                                        {submitting ? 'Post...' : (mode === 'edit' ? 'Update' : 'Post Entry')}
                                     </button>
                                     <button 
                                         type="button"
-                                        onClick={() => setFormData(initialFormState)}
-                                        className="px-10 bg-white/5 border border-white/10 text-white py-5 rounded-[2rem] font-black uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all"
+                                        onClick={handleCancel}
+                                        className="px-6 bg-slate-100 text-slate-500 py-3 rounded-lg font-black uppercase tracking-widest text-[9px] hover:bg-slate-200 transition-all"
                                     >
-                                        Abort
+                                        {mode === 'edit' ? 'Cancel' : 'Clear'}
                                     </button>
                                 </div>
 
@@ -272,64 +303,69 @@ const JVEntry = () => {
                     </div>
 
                     {/* JV Audit Table Section */}
-                    <div className="lg:col-span-7 space-y-8">
+                    <div className="lg:col-span-8 space-y-8">
                         <div className="bg-white rounded-[3rem] shadow-sm border border-slate-100 overflow-hidden flex flex-col min-h-[800px]">
-                            <div className="p-8 border-b border-slate-50 flex justify-between items-center">
-                                <h2 className="text-xs font-black uppercase tracking-[0.4em] text-slate-400 flex items-center gap-3">
-                                    <span>🔍</span> JV Audit Registry
-                                </h2>
-                                <div className="text-[10px] font-black text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full uppercase">
-                                    Records Managed: {filteredJVs.length}
-                                </div>
+                            <div className="bg-[#5BC0DE] px-6 py-2 text-white">
+                                <h2 className="text-base font-bold">JV Detail</h2>
                             </div>
                             
-                            <div className="overflow-x-auto flex-1">
-                                <table className="modern-table border-none">
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse border border-slate-200">
                                     <thead>
-                                        <tr className="!bg-slate-50/50">
-                                            <th className="w-16 pl-8">Admin</th>
-                                            <th>Date & Sync ID</th>
-                                            <th className="text-center">Protocol</th>
-                                            <th>Account Entity</th>
-                                            <th className="text-right pr-8">Fiscal Flow</th>
+                                        <tr className="bg-white border-b border-slate-200">
+                                            <th className="border-r border-slate-200 p-2 text-left font-bold text-slate-800 text-[11px]">Del</th>
+                                            <th className="border-r border-slate-200 p-2 text-left font-bold text-slate-800 text-[11px]">Date</th>
+                                            <th className="border-r border-slate-200 p-2 text-left font-bold text-slate-800 text-[11px]">Dr/Cr</th>
+                                            <th className="border-r border-slate-200 p-2 text-left font-bold text-slate-800 text-[11px]">Tr.No.</th>
+                                            <th className="border-r border-slate-200 p-2 text-left font-bold text-slate-800 text-[11px]">Account</th>
+                                            <th className="p-2 text-right font-bold text-slate-800 text-[11px]">Amount</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    <tbody className="bg-white">
                                         {filteredJVs.map((jv) => (
                                             <React.Fragment key={jv._id}>
                                                 {/* Debit Row */}
-                                                <tr className="border-b border-slate-50/50 group hover:bg-slate-50/30 transition-colors">
-                                                    <td className="pl-8 py-6" rowSpan="2">
-                                                        <button 
-                                                            onClick={() => handleDelete(jv._id)}
-                                                            className="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all shadow-sm"
-                                                        >
-                                                            🗑️
-                                                        </button>
+                                                <tr className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                                    <td className="border-r border-slate-200 p-2 text-center" rowSpan="2">
+                                                        <div className="flex flex-col gap-1 items-center">
+                                                            <button 
+                                                                onClick={() => handleDelete(jv._id)}
+                                                                className="px-2 py-1 bg-[#5BC0DE] text-white text-[10px] font-bold rounded shadow-sm hover:brightness-95 active:scale-95 transition-all"
+                                                            >
+                                                                Del
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleEdit(jv)}
+                                                                className="text-[#5BC0DE] hover:text-[#46b8da] transition-colors"
+                                                            >
+                                                                <span className="text-[9px] font-bold uppercase tracking-tight">Edit</span>
+                                                            </button>
+                                                        </div>
                                                     </td>
-                                                    <td className="py-6" rowSpan="2">
-                                                        <div className="font-black text-slate-800 uppercase text-[11px] tracking-tight">{new Date(jv.transactionDate).toLocaleDateString('en-GB')}</div>
-                                                        <div className="text-[8px] font-bold text-slate-300 uppercase tracking-widest mt-1">#JV-{jv.jvNumber}</div>
+                                                    <td className="border-r border-slate-200 p-2 text-[#333] font-medium text-[11px]" rowSpan="2">
+                                                        {new Date(jv.transactionDate).toISOString().split('T')[0]}
                                                     </td>
-                                                    <td className="text-center py-4">
-                                                        <span className="px-2 py-1 bg-blue-50 text-blue-600 rounded text-[9px] font-black uppercase italic tracking-tighter shadow-sm border border-blue-100">DR (➖)</span>
+                                                    <td className="border-r border-slate-200 p-2 text-center text-[#555] font-bold text-[11px]">D</td>
+                                                    <td className="border-r border-slate-200 p-2 text-[#555] font-medium text-[11px]" rowSpan="2">
+                                                        {jv.jvNumber}
                                                     </td>
-                                                    <td className="py-4">
-                                                        <div className="font-black text-slate-700 uppercase tracking-tighter text-[11px]">{jv.debitAccount.accountName}</div>
-                                                        <div className="text-[8px] font-bold text-slate-300 uppercase italic mt-0.5 max-w-[150px] truncate">{jv.narration}</div>
+                                                    <td className="border-r border-slate-200 p-2 text-[#333] font-bold text-[11px]">
+                                                        {jv.debitAccount.accountName}
                                                     </td>
-                                                    <td className="text-right pr-8 font-black text-blue-600 text-base">₹{jv.amount.toLocaleString('en-IN')}</td>
+                                                    <td className="p-2 text-right font-bold text-slate-800 text-[11px]">
+                                                        {jv.amount.toLocaleString('en-IN')}
+                                                    </td>
                                                 </tr>
                                                 {/* Credit Row */}
-                                                <tr className="border-b border-slate-50 group-hover:bg-slate-50/30 transition-colors">
-                                                    <td className="text-center py-4">
-                                                        <span className="px-2 py-1 bg-rose-50 text-rose-500 rounded text-[9px] font-black uppercase italic tracking-tighter shadow-sm border border-rose-100">CR (➕)</span>
+                                                <tr className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
+                                                    <td className="border-r border-slate-200 p-2 text-center text-[#555] font-bold text-[11px]">C</td>
+                                                    <td className="border-r border-slate-200 p-2 text-[#333] italic font-medium text-[11px]">
+                                                        {jv.creditAccount.accountName}
+                                                        <div className="text-[8px] text-slate-400 mt-0.5">{jv.narration}</div>
                                                     </td>
-                                                    <td className="py-4">
-                                                        <div className="font-black text-slate-500 uppercase tracking-tighter text-[11px] italic">{jv.creditAccount.accountName}</div>
-                                                        <div className="text-[8px] font-black text-slate-200 uppercase tracking-[0.2em] mt-0.5">Automated Double Entry Post</div>
+                                                    <td className="p-2 text-right font-bold text-slate-400 italic text-[11px]">
+                                                        {jv.amount.toLocaleString('en-IN')}
                                                     </td>
-                                                    <td className="text-right pr-8 font-black text-slate-300">₹{jv.amount.toLocaleString('en-IN')}</td>
                                                 </tr>
                                             </React.Fragment>
                                         ))}

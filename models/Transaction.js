@@ -9,8 +9,14 @@ const { ALL_PAYMENT_MODES, PAYMENT_MODES } = require('../utils/constants');
 const TransactionSchema = new mongoose.Schema({
     customerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Customer',
-        required: [true, 'Please add customer reference']
+        required: [true, 'Please add account reference'],
+        refPath: 'accountType'
+    },
+    accountType: {
+        type: String,
+        required: true,
+        enum: ['Customer', 'LedgerAccount'],
+        default: 'Customer'
     },
     projectId: {
         type: mongoose.Schema.Types.ObjectId,

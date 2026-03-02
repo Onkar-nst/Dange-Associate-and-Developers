@@ -84,6 +84,7 @@ const Dashboard = () => {
         { title: 'Unit Calculation', description: 'Project-wise unit & area stats', link: '/report/unit-calculation', color: 'from-slate-700 to-slate-600', icon: '📐', roles: ['The Boss', 'Head Executive'] },
         { title: 'User Daily Collection', description: 'Executive-wise daily collection', link: '/report/user-daily-collection', color: 'from-slate-700 to-slate-600', icon: '👤', roles: ['The Boss', 'Head Executive'] },
         { title: 'Customer EMI Dues', description: 'Overdue EMI recovery tracker', link: '/report/customer-emi-dues', color: 'from-slate-700 to-slate-600', icon: '🚨', roles: ['The Boss', 'Head Executive'] },
+        { title: 'Executive Tree', description: 'Visual hierarchy & commissions', link: '/report/executive-tree', color: 'from-slate-700 to-slate-600', icon: '🌳', roles: ['The Boss', 'Head Executive'] },
       ]
     },
     {
@@ -141,7 +142,7 @@ const Dashboard = () => {
             <div className="absolute top-0 right-0 w-64 h-64 bg-[#F38C32]/10 rounded-full blur-[80px] -mr-32 -mt-32"></div>
             <div className="relative z-10">
                 <h1 className="text-4xl font-black tracking-tighter">Welcome back, {user?.name}!</h1>
-                <p className="text-[#F38C32] text-xs font-black uppercase tracking-[0.4em] mt-2">Dange Associates Enterprise Protocol | {user?.role}</p>
+                <p className="text-[#F38C32] text-sm font-black uppercase tracking-[0.4em] mt-2">Dange Associates Enterprise Protocol | {user?.role}</p>
                 
                 <div className="mt-8 relative max-w-2xl">
                     <div className="flex gap-4">
@@ -182,38 +183,38 @@ const Dashboard = () => {
             <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
                 <div className="flex justify-between items-center mb-1.5">
                     <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors text-base">📊</div>
-                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-1.5 py-0.5 rounded-md">Target</span>
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-1.5 py-0.5 rounded-md">Target</span>
                 </div>
-                <h3 className="text-xl font-black text-slate-800 tracking-tighter">₹{(totalSales / 10000000).toFixed(2)}Cr</h3>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Gross Sales Volume</p>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tighter">₹{(totalSales / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Gross Sales Volume</p>
             </div>
 
             <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
                 <div className="flex justify-between items-center mb-1.5">
                     <div className="p-2 bg-emerald-50 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors text-base">💰</div>
-                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-1.5 py-0.5 rounded-md">Inflow</span>
+                    <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-50 px-1.5 py-0.5 rounded-md">Inflow</span>
                 </div>
-                <h3 className="text-xl font-black text-slate-800 tracking-tighter">₹{(totalCollections / 10000000).toFixed(2)}Cr</h3>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Total Collections</p>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tighter">₹{(totalCollections / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Collections</p>
             </div>
 
             <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group">
                 <div className="flex justify-between items-center mb-1.5">
                     <div className="p-2 bg-rose-50 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors text-base">⚠️</div>
-                    <span className="text-[8px] font-black text-rose-500 uppercase tracking-widest bg-rose-50 px-1.5 py-0.5 rounded-md">Pending</span>
+                    <span className="text-[10px] font-black text-rose-500 uppercase tracking-widest bg-rose-50 px-1.5 py-0.5 rounded-md">Pending</span>
                 </div>
-                <h3 className="text-xl font-black text-slate-800 tracking-tighter">₹{(totalBalance / 10000000).toFixed(2)}Cr</h3>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Outstanding Bal</p>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tighter">₹{(totalBalance / 10000000).toFixed(2)}Cr</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Outstanding Bal</p>
             </div>
 
             <div className="bg-white p-3.5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-orange-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                 <div className="flex justify-between items-center mb-1.5 relative z-10">
                     <div className="p-2 bg-orange-50 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors text-base">💎</div>
-                    <span className="text-[8px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded-md">Liquid</span>
+                    <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest bg-orange-50 px-1.5 py-0.5 rounded-md">Liquid</span>
                 </div>
-                <h3 className="text-xl font-black text-slate-800 tracking-tighter relative z-10">₹{(liquidity / 100000).toFixed(2)}L</h3>
-                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Cash + Bank Assets</p>
+                <h3 className="text-2xl font-black text-slate-800 tracking-tighter relative z-10">₹{(liquidity / 100000).toFixed(2)}L</h3>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest relative z-10">Cash + Bank Assets</p>
             </div>
         </div>
 
@@ -222,12 +223,12 @@ const Dashboard = () => {
             
             {/* Box 1: Project Summary */}
             <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-xl">
-                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[10px] uppercase tracking-[0.3em] flex justify-between items-center">
+                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[12px] uppercase tracking-[0.3em] flex justify-between items-center">
                     <span className="flex items-center gap-2"><span>📂</span> Project Summary</span>
-                    <span className="text-[7px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Live</span>
+                    <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Live</span>
                 </div>
                 <div className="p-5 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[11px] uppercase font-black text-slate-500 tracking-tighter">
+                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
@@ -254,12 +255,12 @@ const Dashboard = () => {
 
             {/* Box 2: Sales Position */}
             <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-xl">
-                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[10px] uppercase tracking-[0.3em] flex justify-between items-center">
+                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[12px] uppercase tracking-[0.3em] flex justify-between items-center">
                     <span className="flex items-center gap-2"><span>💹</span> Sales Position</span>
-                    <span className="text-[7px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Market</span>
+                    <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Market</span>
                 </div>
                 <div className="p-5 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[11px] uppercase font-black text-slate-500 tracking-tighter">
+                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
@@ -288,7 +289,7 @@ const Dashboard = () => {
 
             {/* Box 3: Inventory Matrix (Chart) */}
             <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-xl">
-                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[10px] uppercase tracking-[0.3em] flex justify-between items-center">
+                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[12px] uppercase tracking-[0.3em] flex justify-between items-center">
                     <span className="flex items-center gap-2"><span>🏙️</span> Inventory Matrix</span>
                 </div>
                 <div className="p-6 flex items-center justify-around relative overflow-hidden h-64">
@@ -303,8 +304,8 @@ const Dashboard = () => {
                         />
                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                             <div className="text-center">
-                                <span className="block text-2xl font-black text-slate-800 tracking-tighter">{totalSold + totalBooked + totalAvailable}</span>
-                                <span className="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Units</span>
+                                <span className="block text-3xl font-black text-slate-800 tracking-tighter">{totalSold + totalBooked + totalAvailable}</span>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Units</span>
                             </div>
                         </div>
                     </div>
@@ -312,22 +313,22 @@ const Dashboard = () => {
                         <div className="flex items-center gap-2.5">
                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/30"></span>
                              <div>
-                                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Sold</p>
-                                 <p className="text-base font-black text-slate-800 tracking-tighter">{totalSold}</p>
+                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Sold</p>
+                                 <p className="text-lg font-black text-slate-800 tracking-tighter">{totalSold}</p>
                              </div>
                         </div>
                         <div className="flex items-center gap-2.5">
                              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-lg shadow-blue-500/30"></span>
                              <div>
-                                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Booked</p>
-                                 <p className="text-base font-black text-slate-800 tracking-tighter">{totalBooked}</p>
+                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Booked</p>
+                                 <p className="text-lg font-black text-slate-800 tracking-tighter">{totalBooked}</p>
                              </div>
                         </div>
                          <div className="flex items-center gap-2.5">
                              <span className="w-2.5 h-2.5 rounded-full bg-slate-200"></span>
                              <div>
-                                 <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Avail</p>
-                                 <p className="text-base font-black text-slate-800 tracking-tighter">{totalAvailable}</p>
+                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Avail</p>
+                                 <p className="text-lg font-black text-slate-800 tracking-tighter">{totalAvailable}</p>
                              </div>
                         </div>
                      </div>
@@ -336,12 +337,12 @@ const Dashboard = () => {
 
             {/* Box 4: Project Receipts & Payments */}
             <div className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col transition-all duration-500 hover:shadow-xl">
-                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[10px] uppercase tracking-[0.3em] flex justify-between items-center">
+                <div className="bg-slate-900 px-6 py-3.5 text-white font-black text-[12px] uppercase tracking-[0.3em] flex justify-between items-center">
                     <span className="flex items-center gap-2"><span>🔄</span> Receipts & Pay</span>
-                    <span className="text-[7px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Sync</span>
+                    <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-orange-400 font-bold">Sync</span>
                 </div>
                 <div className="p-5 bg-slate-50/50 flex-1">
-                    <div className="overflow-x-auto text-[11px] uppercase font-black text-slate-500 tracking-tighter">
+                    <div className="overflow-x-auto text-[13px] uppercase font-black text-slate-500 tracking-tighter">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-slate-200">
@@ -366,40 +367,36 @@ const Dashboard = () => {
         </div>
 
         {/* Module Cards */}
-        <div className="space-y-10 pb-20">
+        <div className="space-y-8 pb-16">
           {filteredSections.map((section, sIdx) => (
             <div key={sIdx} className="space-y-4">
               <div className="flex items-center gap-3">
                 <div className="flex flex-col">
-                  <h2 className="text-[10px] font-black text-slate-900 uppercase tracking-[0.3em]">{section.title}</h2>
-                  <div className="h-0.5 w-8 bg-[#F38C32] mt-0.5 rounded-full"></div>
+                    <h2 className="text-[13px] font-black text-slate-900 uppercase tracking-[0.3em]">{section.title}</h2>
+                    <div className="h-0.5 w-8 bg-[#F38C32] mt-0.5 rounded-full"></div>
                 </div>
                 <div className="h-px bg-slate-100 flex-1"></div>
               </div>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
                 {section.cards.map((card, index) => (
                   <Link
                     key={index}
                     to={card.link}
-                    className="group relative overflow-hidden p-4 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
+                    className="group relative overflow-hidden px-4 py-3.5 bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-slate-200 hover:-translate-y-0.5 transition-all duration-300"
                   >
-                    <div className="absolute top-0 right-0 -mr-3 -mt-3 w-16 h-16 bg-slate-900/5 rounded-full blur-2xl group-hover:bg-slate-900/10 transition-all duration-500"></div>
+                    <div className="absolute top-0 right-0 -mr-4 -mt-4 w-16 h-16 bg-slate-900/5 rounded-full blur-2xl group-hover:bg-[#F38C32]/15 transition-all duration-500"></div>
                     
-                    <div className="relative z-10 flex flex-col h-full">
-                        <div className="w-10 h-10 bg-slate-50 rounded-lg mb-3 flex items-center justify-center text-slate-700 text-lg group-hover:bg-slate-900 group-hover:text-white transition-all duration-500">
+                    <div className="relative z-10 flex items-center gap-3">
+                        <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-lg shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 shadow-sm">
                             {card.icon}
                         </div>
-                        <div className="flex-1">
-                          <h3 className="text-[12px] font-black text-slate-900 uppercase tracking-tighter mb-0.5 leading-tight group-hover:text-blue-600 transition-colors">{card.title}</h3>
-                          <p className="text-slate-400 text-[8px] font-bold uppercase tracking-widest line-clamp-1 italic opacity-70 group-hover:opacity-100 transition-opacity">{card.description}</p>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-[14px] font-extrabold text-slate-800 tracking-tight leading-tight group-hover:text-[#F38C32] transition-colors truncate">{card.title}</h3>
+                          <p className="text-slate-400 text-[11px] font-medium tracking-wide line-clamp-1 mt-1">{card.description}</p>
                         </div>
-                        
-                        <div className="mt-4 flex justify-between items-center border-t border-slate-50 pt-3">
-                            <span className="text-[7px] font-black uppercase tracking-[0.2em] text-slate-300 group-hover:text-[#F38C32] transition-colors italic">Module</span>
-                            <div className="w-6 h-6 rounded-md bg-slate-50 flex items-center justify-center group-hover:bg-slate-950 group-hover:text-white transition-all">
-                                <span className="text-xs group-hover:translate-x-0.5 transition-transform">→</span>
-                            </div>
+                        <div className="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center shrink-0 group-hover:bg-slate-900 group-hover:text-white transition-all duration-300">
+                            <span className="text-xs text-slate-400 group-hover:text-white group-hover:translate-x-0.5 transition-all">→</span>
                         </div>
                     </div>
                   </Link>

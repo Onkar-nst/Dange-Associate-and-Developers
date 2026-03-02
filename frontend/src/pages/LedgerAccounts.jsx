@@ -26,6 +26,7 @@ const LedgerAccounts = () => {
 
     const initialFormState = {
         accountName: '',
+        accountNumber: '',
         branch: 'MAIN BRANCH',
         address: '',
         openingBalance: 0,
@@ -147,6 +148,7 @@ const LedgerAccounts = () => {
         setEditingAccount(account);
         setEditForm({
             accountName: account.accountName || '',
+            accountNumber: account.accountNumber || '',
             group: account.group || 'INDIRECT EXPENSES',
             openingBalance: account.openingBalance || 0,
             balanceType: account.balanceType || 'Dr',
@@ -220,6 +222,17 @@ const LedgerAccounts = () => {
                                         onChange={handleChange}
                                         required
                                         placeholder="e.g. Office Rent, Petrol Exp"
+                                        className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1">Account Number</label>
+                                    <input
+                                        type="text"
+                                        name="accountNumber"
+                                        value={formData.accountNumber}
+                                        onChange={handleChange}
+                                        placeholder="Enter Bank A/c No (optional)"
                                         className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:border-blue-500 focus:bg-white outline-none transition-all"
                                     />
                                 </div>
@@ -321,6 +334,9 @@ const LedgerAccounts = () => {
                                                 </td>
                                                 <td className="px-4 py-3">
                                                     <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-600 rounded uppercase tracking-wider">{account.group}</span>
+                                                    {account.accountNumber && (
+                                                        <div className="text-[9px] font-black text-emerald-600 mt-1">A/c: {account.accountNumber}</div>
+                                                    )}
                                                 </td>
                                                 <td className="px-4 py-3 font-mono text-xs font-bold text-gray-700">
                                                     ₹{account.openingBalance.toLocaleString('en-IN')}
@@ -508,6 +524,17 @@ const LedgerAccounts = () => {
                                     type="text"
                                     name="accountName"
                                     value={editForm.accountName}
+                                    onChange={handleEditChange}
+                                    className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:border-amber-400 focus:bg-white outline-none transition-all"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-1">Account Number</label>
+                                <input
+                                    type="text"
+                                    name="accountNumber"
+                                    value={editForm.accountNumber}
                                     onChange={handleEditChange}
                                     className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:border-amber-400 focus:bg-white outline-none transition-all"
                                 />

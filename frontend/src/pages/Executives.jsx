@@ -1,7 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { executiveAPI } from '../api/services';
 import Layout from '../components/Layout';
 import './Customers.css';
+
+// Generate a random 6-char password
+const generatePassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let pwd = '';
+    for (let i = 0; i < 6; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    return pwd;
+};
+
+// Get today's date as YYYY-MM-DD
+const getTodayDate = () => new Date().toISOString().split('T')[0];
 
 const Executives = () => {
     const [executives, setExecutives] = useState([]);
@@ -11,8 +22,46 @@ const Executives = () => {
     const [mode, setMode] = useState('add');
     const [selectedId, setSelectedId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('All');
+    const [sortConfig, setSortConfig] = useState({ key: 'code', direction: 'asc' });
 
-    const initialFormState = {
+    // Helper to calculate next DAD code
+    const calculateNextCode = (list) => {
+        const dadCodes = list
+            .map(e => e.code)
+            .filter(c => /^DAD\d+$/.test(c))
+            .map(c => parseInt(c.replace('DAD', ''), 10));
+        const maxNum = dadCodes.length > 0 ? Math.max(...dadCodes) : 100;
+        return `DAD${maxNum + 1}`;
+    };
+
+    const nextCode = useMemo(() => calculateNextCode(executives), [executives]);
+
+    const getInitialFormState = () => ({
+        senior: '',
+        code: nextCode,
+        role: 'Executive',
+        rexPerSqFt: 0,
+        name: '',
+        branch: 'MAIN BRANCH',
+        address: '',
+        phone: '',
+        percentage: 0,
+        rsPerSqFt: 0,
+        joiningDate: getTodayDate(),
+        birthDate: '',
+        panCard: '',
+        designation: '',
+        password: generatePassword(),
+        bankDetails: {
+            accountHolderName: '',
+            bankName: '',
+            accountNo: '',
+            ifscCode: '',
+            status: 'YES'
+        }
+    });
+
+    const [formData, setFormData] = useState({
         senior: '',
         code: '',
         role: 'Executive',
@@ -23,7 +72,7 @@ const Executives = () => {
         phone: '',
         percentage: 0,
         rsPerSqFt: 0,
-        joiningDate: '',
+        joiningDate: getTodayDate(),
         birthDate: '',
         panCard: '',
         designation: '',
@@ -35,44 +84,54 @@ const Executives = () => {
             ifscCode: '',
             status: 'YES'
         }
-    };
-
-    const [formData, setFormData] = useState(initialFormState);
+    });
 
     useEffect(() => {
         fetchExecutives();
     }, []);
 
+    // Sync code and password when data is loaded or nextCode changes
+    useEffect(() => {
+        if (mode === 'add' && !loading) {
+            setFormData(prev => ({
+                ...prev,
+                code: nextCode,
+                password: prev.password || generatePassword(),
+            }));
+        }
+    }, [nextCode, mode, loading]);
+
     const fetchExecutives = async () => {
         try {
+            // Fetch all (including inactive) to ensure E-Code remains unique and sequential
             const response = await executiveAPI.getAll();
-            setExecutives(response.data.data || []);
+            const data = response.data.data || [];
+            setExecutives(data);
             setLoading(false);
+            return data;
         } catch (err) {
             setError('Failed to fetch executives');
             setLoading(false);
+            return [];
         }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name === 'senior') {
-            // Auto-fill Code, Percentage, Rs Per Sq.Ft from selected senior
             if (value) {
                 const seniorExec = executives.find(ex => ex._id === value);
                 if (seniorExec) {
                     setFormData(prev => ({
                         ...prev,
                         senior: value,
-                        code: seniorExec.code || prev.code,
                         percentage: seniorExec.percentage || prev.percentage,
                         rsPerSqFt: seniorExec.rsPerSqFt || prev.rsPerSqFt,
                     }));
                     return;
                 }
             } else {
-                // Clear auto-filled fields if senior deselected
-                setFormData(prev => ({ ...prev, senior: '', code: '', percentage: 0, rsPerSqFt: 0 }));
+                setFormData(prev => ({ ...prev, senior: '', percentage: 0, rsPerSqFt: 0 }));
                 return;
             }
         }
@@ -100,10 +159,20 @@ const Executives = () => {
                 await executiveAPI.update(selectedId, formData);
                 setSuccess('Executive updated successfully');
             }
-            setFormData(initialFormState);
-            setMode('add');
-            setSelectedId(null);
-            fetchExecutives();
+            
+            const latestExecutives = await fetchExecutives();
+            
+            // If we just added a new executive, reset the form with next code & password
+            if (mode === 'add') {
+                const updatedCode = calculateNextCode(latestExecutives);
+                setFormData({
+                    ...getInitialFormState(),
+                    code: updatedCode,
+                    password: generatePassword(),
+                });
+            } else {
+                handleCancel();
+            }
         } catch (err) {
             setError(err.response?.data?.error || 'Operation failed');
         }
@@ -117,267 +186,366 @@ const Executives = () => {
             senior: exec.senior?._id || '',
             joiningDate: exec.joiningDate ? exec.joiningDate.split('T')[0] : '',
             birthDate: exec.birthDate ? exec.birthDate.split('T')[0] : '',
-            bankDetails: exec.bankDetails || initialFormState.bankDetails
+            bankDetails: exec.bankDetails || getInitialFormState().bankDetails
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
+    const handleCancel = () => {
+        setMode('add');
+        setSelectedId(null);
+        setFormData(getInitialFormState());
+        setError('');
+        setSuccess('');
+    };
+
     const handleDelete = async (id) => {
-        if (window.confirm('Are you sure you want to deactivate this executive?')) {
+        if (window.confirm('Are you sure you want to PERMANENTLY delete this executive? This will also delete their login account.')) {
             try {
                 await executiveAPI.delete(id);
                 fetchExecutives();
             } catch (err) {
-                setError('Failed to deactivate executive');
+                setError('Failed to delete executive');
             }
         }
     };
 
+    const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') {
+            direction = 'desc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    // For display in table: only show active ones
+    const activeExecutives = executives.filter(e => e.active !== false);
+
+    const sortedExecutives = useMemo(() => {
+        let sortableItems = [...activeExecutives];
+        if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                let aValue, bValue;
+
+                // Handle nested objects or special cases
+                if (sortConfig.key === 'senior') {
+                    aValue = a.senior?.name || '';
+                    bValue = b.senior?.name || '';
+                } else {
+                    aValue = a[sortConfig.key];
+                    bValue = b[sortConfig.key];
+                }
+
+                if (typeof aValue === 'string') {
+                    aValue = aValue.toLowerCase();
+                    bValue = bValue.toLowerCase();
+                    
+                    // Special handling for DAD codes (DAD101, DAD102) to sort numerically
+                    if (sortConfig.key === 'code' && aValue.startsWith('dad') && bValue.startsWith('dad')) {
+                        const aNum = parseInt(aValue.replace('dad', ''), 10);
+                        const bNum = parseInt(bValue.replace('dad', ''), 10);
+                        return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
+                    }
+                }
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'asc' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [activeExecutives, sortConfig]);
+
     const filteredExecutives = searchTerm === 'All' 
-        ? executives 
-        : executives.filter(e => e._id === searchTerm || e.name.toLowerCase().includes(searchTerm.toLowerCase()));
+        ? sortedExecutives 
+        : sortedExecutives.filter(e => e._id === searchTerm || e.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     if (loading) return <div className="p-8 text-center font-bold">Loading Executives...</div>;
 
+    // Shared input styles
+    const inputCls = "w-full border border-gray-200 rounded px-2.5 py-1.5 text-[11px] text-gray-700 bg-white focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-100 transition-all";
+    const labelCls = "text-[11px] font-bold text-gray-600 text-right pr-4";
+    const rowCls = "grid grid-cols-[110px_1fr] items-center py-1.5 border-b border-gray-50 last:border-b-0";
+
     return (
-        <div className="flex flex-col lg:flex-row gap-6 p-4 bg-gray-50 min-h-screen font-sans">
+        <div className="flex flex-col lg:flex-row gap-5 p-4 bg-gray-50 min-h-screen font-sans">
                 {/* Left Side: Forms */}
-                <div className="lg:w-1/3 space-y-4">
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="lg:w-[340px] shrink-0 space-y-3">
+                    <form onSubmit={handleSubmit} className="space-y-3">
                         {/* Executive/Advisor Entry Section */}
-                        <div className="bg-white border border-blue-300 rounded shadow-sm overflow-hidden">
-                            <div className="bg-sky-500 text-white px-4 py-1 text-xs font-bold">
+                        <div className="bg-white border border-sky-200 rounded-lg shadow-sm overflow-hidden">
+                            <div className="bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-4 py-2 text-[11px] font-bold tracking-wide">
                                 Executive/Advisor Entry
                             </div>
-                            <div className="p-4 space-y-3">
-                                <div className="grid grid-cols-2 gap-2 items-center text-[11px]">
-                                    <label className="font-bold text-gray-700">
-                                        Senior
-                                        <span className="text-gray-400 font-normal text-[9px] ml-1">(Optional)</span>
-                                    </label>
+                            <div className="px-4 py-2">
+                                {/* Senior */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Senior</label>
                                     <select 
                                         name="senior" 
                                         value={formData.senior} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded focus:outline-none focus:border-blue-500"
+                                        className={inputCls}
                                     >
-                                        <option value="">-- No Senior --</option>
+                                        <option value="">Select an Option</option>
                                         {executives
-                                            .filter(e => e._id !== selectedId) // don't show self in edit mode
+                                            .filter(e => e._id !== selectedId)
                                             .map(e => (
-                                                <option key={e._id} value={e._id}>{e.name} - {e.code}</option>
+                                                <option key={e._id} value={e._id}>{e.name} ({e.code})</option>
                                             ))
                                         }
                                     </select>
+                                </div>
 
-                                    {/* Auto-filled fields from Senior */}
-                                    {formData.senior && (() => {
-                                        const s = executives.find(e => e._id === formData.senior);
-                                        return s ? (
-                                            <>
-                                                <label className="font-bold text-gray-500 text-[10px]">Code (from Senior)</label>
-                                                <div className="text-red-600 font-black text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1">{s.code || '-'}</div>
+                                {/* Senior info mini-table */}
+                                {formData.senior && (() => {
+                                    const s = executives.find(e => e._id === formData.senior);
+                                    return s ? (
+                                        <div className="my-1.5 border border-gray-200 rounded overflow-hidden">
+                                            <div className="flex text-[10px] bg-gray-50 border-b border-gray-200">
+                                                <span className="flex-1 px-2 py-1 font-semibold text-gray-600 border-r border-gray-200">Code</span>
+                                                <span className="w-16 px-2 py-1 text-center font-bold text-gray-800">{s.code || '#'}</span>
+                                            </div>
+                                            <div className="flex text-[10px] bg-gray-50">
+                                                <span className="flex-1 px-2 py-1 font-semibold text-gray-600 border-r border-gray-200">Per.</span>
+                                                <span className="w-16 px-2 py-1 text-center font-bold text-gray-800">{s.percentage || 0}%</span>
+                                            </div>
+                                        </div>
+                                    ) : null;
+                                })()}
 
-                                                <label className="font-bold text-gray-500 text-[10px]">Per. (from Senior)</label>
-                                                <div className="text-red-600 font-black text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1">{s.percentage || 0}%</div>
-
-                                                <label className="font-bold text-gray-500 text-[10px]">Rs. (Per Sq.Ft from Senior)</label>
-                                                <div className="text-red-600 font-black text-[11px] bg-red-50 border border-red-200 rounded px-2 py-1">{s.rsPerSqFt || 0}</div>
-                                            </>
-                                        ) : null;
-                                    })()}
-
-                                    <label className="font-bold text-gray-700">Code</label>
+                                {/* Code (auto-generated, read-only) */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Code</label>
                                     <input 
                                         type="text" 
                                         name="code" 
                                         value={formData.code} 
-                                        onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded text-red-600 font-bold"
-                                        required
+                                        readOnly
+                                        className={`${inputCls} bg-gray-50 font-bold border-gray-100 cursor-not-allowed`}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Role</label>
-                                    <select 
-                                        name="role" 
-                                        value={formData.role || 'Executive'} 
-                                        onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded focus:outline-none focus:border-blue-500 font-bold text-blue-600"
-                                    >
-                                        <option value="Executive">Executive</option>
-                                        <option value="Head Executive">Head Executive</option>
-                                        <option value="The Boss">The Boss</option>
-                                    </select>
-
-                                    <label className="font-bold text-gray-700">Rs. (Per Sq. Ft)</label>
-                                    <input 
-                                        type="number" 
-                                        name="rexPerSqFt" 
-                                        value={formData.rexPerSqFt} 
-                                        onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded text-red-600 font-bold"
-                                    />
-
-                                    <label className="font-bold text-gray-700">Executive Name</label>
+                                {/* Executive Name */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Executive Name</label>
                                     <input 
                                         type="text" 
                                         name="name" 
                                         value={formData.name} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                         required
+                                        placeholder="Enter name"
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Branch</label>
+                                {/* Branch */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Branch</label>
                                     <select 
                                         name="branch" 
                                         value={formData.branch} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     >
                                         <option value="MAIN BRANCH">MAIN BRANCH</option>
                                         <option value="SUB BRANCH">SUB BRANCH</option>
                                     </select>
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Address</label>
+                                {/* Address */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Address</label>
                                     <textarea 
                                         name="address" 
                                         value={formData.address} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded h-16 resize-none"
+                                        className={`${inputCls} h-12 resize-none`}
+                                        placeholder="Enter address"
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Contact No.</label>
+                                {/* Contact No */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Contact No.</label>
                                     <input 
                                         type="text" 
                                         name="phone" 
                                         value={formData.phone} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
-                                        required
+                                        className={inputCls}
+                                        placeholder="Mobile Number"
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Percentage</label>
-                                    <div className="flex items-center gap-1">
+                                {/* Role */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Role</label>
+                                    <select 
+                                        name="role" 
+                                        value={formData.role || 'Executive'} 
+                                        onChange={handleChange}
+                                        className={inputCls}
+                                    >
+                                        <option value="Executive">Executive</option>
+                                        <option value="Head Executive">Head Executive</option>
+                                        <option value="The Boss">The Boss</option>
+                                    </select>
+                                </div>
+
+                                {/* Percentage + Rs Per Sq.Ft in one row */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Percentage</label>
+                                    <div className="flex items-center gap-1 flex-1">
                                         <input 
                                             type="number" 
                                             name="percentage" 
                                             value={formData.percentage} 
                                             onChange={handleChange}
-                                            className="border border-blue-200 p-1 rounded w-full"
+                                            className={inputCls}
                                         />
-                                        <span className="text-red-600 font-bold">%</span>
+                                        <span className="text-[10px] font-bold text-red-500">%</span>
                                     </div>
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Rs.(Sq. Ft)</label>
-                                    <div className="flex items-center gap-1">
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Rs.(Sq.Ft.)</label>
+                                    <div className="flex items-center gap-1 flex-1">
                                         <input 
                                             type="number" 
                                             name="rsPerSqFt" 
                                             value={formData.rsPerSqFt} 
                                             onChange={handleChange}
-                                            className="border border-blue-200 p-1 rounded w-full"
+                                            className={inputCls}
                                         />
-                                        <span className="text-red-600 font-bold">(Sq.ft)</span>
+                                        <span className="text-[10px] font-bold text-red-500">(Sq.ft)</span>
                                     </div>
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Joining Date</label>
+                                {/* Joining Date (auto today) */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Joining Date</label>
                                     <input 
                                         type="date" 
                                         name="joiningDate" 
                                         value={formData.joiningDate} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Birth Date</label>
+                                {/* Birth Date */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Birth Date</label>
                                     <input 
                                         type="date" 
                                         name="birthDate" 
                                         value={formData.birthDate} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">PAN Card</label>
+                                {/* PAN Card */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>PAN Card</label>
                                     <input 
                                         type="text" 
                                         name="panCard" 
                                         value={formData.panCard} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Designation</label>
+                                {/* Designation */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Designation</label>
                                     <input 
                                         type="text" 
                                         name="designation" 
                                         value={formData.designation} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Password</label>
+                                {/* Password (auto-generated, read-only) */}
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Password</label>
                                     <input 
-                                        type="password" 
+                                        type="text" 
                                         name="password" 
                                         value={formData.password} 
-                                        onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        readOnly
+                                        className={`${inputCls} bg-gray-50 font-bold border-gray-100 cursor-not-allowed`}
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* Bank Detail Section */}
-                        <div className="bg-white border border-blue-300 rounded shadow-sm overflow-hidden">
-                            <div className="bg-sky-500 text-white px-4 py-1 text-xs font-bold">
+                        <div className="bg-white border border-sky-200 rounded-lg shadow-sm overflow-hidden">
+                            <div className="bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-4 py-2 text-[11px] font-bold tracking-wide text-center">
                                 Bank Detail
                             </div>
-                            <div className="p-4 space-y-3">
-                                <div className="grid grid-cols-2 gap-2 items-center text-[11px]">
-                                    <label className="font-bold text-gray-700">A/c Holder Name</label>
+                            <div className="px-4 py-2">
+                                <div className={rowCls}>
+                                    <label className={labelCls}>A/c Holder Name</label>
                                     <input 
                                         type="text" 
                                         name="bankDetails.accountHolderName" 
                                         value={formData.bankDetails.accountHolderName} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Bank Name</label>
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Bank Name</label>
                                     <input 
                                         type="text" 
                                         name="bankDetails.bankName" 
                                         value={formData.bankDetails.bankName} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">A/c No.</label>
+                                <div className={rowCls}>
+                                    <label className={labelCls}>A/c No.</label>
                                     <input 
                                         type="text" 
                                         name="bankDetails.accountNo" 
                                         value={formData.bankDetails.accountNo} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">IFSC Code</label>
+                                <div className={rowCls}>
+                                    <label className={labelCls}>IFSC Code</label>
                                     <input 
                                         type="text" 
                                         name="bankDetails.ifscCode" 
                                         value={formData.bankDetails.ifscCode} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     />
+                                </div>
 
-                                    <label className="font-bold text-gray-700">Status</label>
+                                <div className={rowCls}>
+                                    <label className={labelCls}>Status</label>
                                     <select 
                                         name="bankDetails.status" 
                                         value={formData.bankDetails.status} 
                                         onChange={handleChange}
-                                        className="border border-blue-200 p-1 rounded"
+                                        className={inputCls}
                                     >
                                         <option value="YES">YES</option>
                                         <option value="NO">NO</option>
@@ -390,87 +558,122 @@ const Executives = () => {
                         <div className="flex gap-2">
                             <button 
                                 type="submit" 
-                                className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-1.5 rounded text-xs font-bold shadow-sm flex-1 transition-colors"
+                                className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-lg text-[11px] font-bold shadow-sm flex-1 transition-colors"
                             >
                                 {mode === 'add' ? 'Save' : 'Update'}
                             </button>
                             <button 
                                 type="button" 
-                                onClick={() => { setFormData(initialFormState); setMode('add'); setSelectedId(null); }}
-                                className="bg-sky-500 hover:bg-sky-600 text-white px-4 py-1.5 rounded text-xs font-bold shadow-sm flex-1 transition-colors"
+                                onClick={handleCancel}
+                                className="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg text-[11px] font-bold shadow-sm flex-1 transition-colors"
                             >
                                 Cancel
                             </button>
                         </div>
 
-                        {error && <div className="text-red-500 text-[10px] font-bold text-center">{error}</div>}
-                        {success && <div className="text-green-500 text-[10px] font-bold text-center">{success}</div>}
+                        {error && <div className="text-red-500 text-[10px] font-bold text-center bg-red-50 border border-red-200 rounded p-1.5">{error}</div>}
+                        {success && <div className="text-green-600 text-[10px] font-bold text-center bg-green-50 border border-green-200 rounded p-1.5">{success}</div>}
                     </form>
                 </div>
 
                 {/* Right Side: Table */}
-                <div className="lg:w-2/3 space-y-4">
-                    <div className="flex justify-between bg-white p-2 border border-blue-200 rounded shadow-sm">
+                <div className="flex-1 space-y-3">
+                    <div className="flex justify-between bg-white p-2 border border-gray-200 rounded-lg shadow-sm">
                         <select 
                             value={searchTerm} 
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="border border-blue-200 p-1 rounded text-xs focus:outline-none w-64"
+                            className="border border-gray-200 p-1.5 rounded text-[11px] focus:outline-none w-64"
                         >
-                            <option value="All">All</option>
+                            <option value="All">All Executives</option>
                             {executives.map(e => (
                                 <option key={e._id} value={e._id}>{e.name} ({e.code})</option>
                             ))}
                         </select>
                     </div>
 
-                    <div className="bg-white border border-blue-200 rounded shadow-sm overflow-hidden overflow-x-auto">
+                    <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden overflow-x-auto">
                         <table className="w-full text-[10px]">
                             <thead>
-                                <tr className="bg-sky-100 text-gray-700 border-b border-blue-200">
-                                    <th className="p-1 border-r border-blue-200">E-Code</th>
-                                    <th className="p-1 border-r border-blue-200">E-Name</th>
-                                    <th className="p-1 border-r border-blue-200">PAN No.</th>
-                                    <th className="p-1 border-r border-blue-200">Senior</th>
-                                    <th className="p-1 border-r border-blue-200">Per</th>
-                                    <th className="p-1 border-r border-blue-200">Branch</th>
-                                    <th className="p-1 border-r border-blue-200">Send Msg</th>
-                                    <th className="p-1 border-r border-blue-200">Show PWD</th>
-                                    <th className="p-1 border-r border-blue-200">Edit</th>
-                                    <th className="p-1">Delete</th>
+                                <tr className="bg-gradient-to-r from-sky-50 to-cyan-50 text-gray-600 border-b border-gray-200">
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => requestSort('code')}>
+                                        <div className="flex items-center justify-between">
+                                            E-Code {sortConfig.key === 'code' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                        </div>
+                                    </th>
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => requestSort('name')}>
+                                        <div className="flex items-center justify-between">
+                                            E-Name {sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                        </div>
+                                    </th>
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => requestSort('panCard')}>
+                                        <div className="flex items-center justify-between">
+                                            PAN No. {sortConfig.key === 'panCard' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                        </div>
+                                    </th>
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => requestSort('senior')}>
+                                        <div className="flex items-center justify-between">
+                                            Senior {sortConfig.key === 'senior' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                        </div>
+                                    </th>
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => requestSort('percentage')}>
+                                        <div className="flex items-center justify-between">
+                                            Per {sortConfig.key === 'percentage' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                        </div>
+                                    </th>
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => requestSort('branch')}>
+                                        <div className="flex items-center justify-between">
+                                            Branch {sortConfig.key === 'branch' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                        </div>
+                                    </th>
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold text-center">Send Msg</th>
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold text-center">Show PWD</th>
+                                    <th className="p-1.5 border-r border-gray-100 font-semibold text-center">Edit</th>
+                                    <th className="p-1.5 font-semibold text-center">Delete</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredExecutives.map((exec) => (
-                                    <tr key={exec._id} className="border-b border-blue-50 hover:bg-sky-50 transition-colors">
-                                        <td className="p-1 border-r border-blue-100 font-bold">{exec.code}</td>
-                                        <td className="p-1 border-r border-blue-100 uppercase">{exec.name}</td>
-                                        <td className="p-1 border-r border-blue-100 uppercase">{exec.panCard || '-'}</td>
-                                        <td className="p-1 border-r border-blue-100 uppercase">{exec.senior?.code || '-'}</td>
-                                        <td className="p-1 border-r border-blue-100 text-center">{exec.percentage}%</td>
-                                        <td className="p-1 border-r border-blue-100 text-[8px]">{exec.branch}</td>
-                                        <td className="p-1 border-r border-blue-100 text-center">
-                                            <span className="bg-orange-400 text-white px-1 rounded cursor-pointer text-[8px]">Msg</span>
+                                    <tr key={exec._id} className="border-b border-gray-50 hover:bg-sky-50/50 transition-colors">
+                                        <td className="p-1.5 border-r border-gray-50 font-bold text-sky-700">{exec.code}</td>
+                                        <td className="p-1.5 border-r border-gray-50">{exec.name}</td>
+                                        <td className="p-1.5 border-r border-gray-50 uppercase">{exec.panCard || '-'}</td>
+                                        <td className="p-1.5 border-r border-gray-50 font-medium">{exec.senior?.name || '-'}</td>
+                                        <td className="p-1.5 border-r border-gray-50 text-center">{exec.percentage}%</td>
+                                        <td className="p-1.5 border-r border-gray-50 text-[8px] font-semibold text-gray-600">{exec.branch}</td>
+                                        <td className="p-1.5 border-r border-gray-50 text-center">
+                                            {exec.phone ? (
+                                                <a 
+                                                    href={`https://wa.me/${exec.phone.replace(/\D/g, '')}`} 
+                                                    target="_blank" 
+                                                    rel="noopener noreferrer"
+                                                    className="bg-green-500 hover:bg-green-600 text-white px-2 py-0.5 rounded text-[8px] font-bold transition-colors inline-block"
+                                                >
+                                                    WhatsApp
+                                                </a>
+                                            ) : (
+                                                <span className="text-gray-300 text-[8px]">No No.</span>
+                                            )}
                                         </td>
-                                        <td className="p-1 border-r border-blue-100 text-center">
+                                        <td className="p-1.5 border-r border-gray-50 text-center">
                                             <button 
-                                                onClick={() => alert(`Password: ${exec.password || 'Not Set'}`)}
-                                                className="bg-orange-400 text-white px-2 py-0.5 rounded text-[8px] font-bold"
+                                                onClick={() => alert(`Code: ${exec.code}\nPassword: ${exec.password || 'Not Set'}`)}
+                                                className="bg-orange-400 hover:bg-orange-500 text-white px-2 py-0.5 rounded text-[8px] font-bold transition-colors"
                                             >
-                                                Password
+                                                Show
                                             </button>
                                         </td>
-                                        <td className="p-1 border-r border-blue-100 text-center">
+                                        <td className="p-1.5 border-r border-gray-50 text-center">
                                             <button 
                                                 onClick={() => handleEdit(exec)}
-                                                className="bg-sky-400 text-white px-2 py-0.5 rounded text-[8px] font-bold"
+                                                className="bg-sky-400 hover:bg-sky-500 text-white px-2 py-0.5 rounded text-[8px] font-bold transition-colors"
                                             >
                                                 Edit
                                             </button>
                                         </td>
-                                        <td className="p-1 text-center">
+                                        <td className="p-1.5 text-center">
                                             <button 
                                                 onClick={() => handleDelete(exec._id)}
-                                                className="bg-red-500 text-white px-2 py-0.5 rounded text-[8px] font-bold"
+                                                className="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-[8px] font-bold transition-colors"
                                             >
                                                 Delete
                                             </button>
