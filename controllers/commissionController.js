@@ -1,6 +1,6 @@
 const CommissionRule = require('../models/CommissionRule');
 const CommissionLedger = require('../models/CommissionLedger');
-const User = require('../models/User');
+const Executive = require('../models/Executive');
 const Customer = require('../models/Customer');
 const Transaction = require('../models/Transaction');
 const Plot = require('../models/Plot');
@@ -311,12 +311,10 @@ exports.processCommission = async (triggerEvent, data) => {
         }
 
         if (!executiveId) return;
-
-        const user = await User.findById(executiveId);
-        if (!user) return;
-
-        // 1. Find Rules for Executive/User role
-        const execRules = await CommissionRule.findApplicableRules(user.role, projectId);
+        const execRecord = await Executive.findById(executiveId);
+        if (!execRecord) return;
+        // 1. Find Rules for Executive role
+        const execRules = await CommissionRule.findApplicableRules(execRecord.role, projectId);
 
         // 2. Filter by Trigger Event
         const applicableRules = execRules.filter(r => r.triggerEvent === triggerEvent);

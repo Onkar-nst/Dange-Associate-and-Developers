@@ -92,7 +92,7 @@ exports.createCustomer = asyncHandler(async (req, res, next) => {
     const populatedCustomer = await Customer.findById(customer._id)
         .populate('projectId', 'projectName location')
         .populate('plotId', 'plotNumber size rate')
-        .populate('assignedExecutive', 'name phone')
+        .populate('assignedExecutive', 'name phone code')
         .populate('createdBy', 'name');
 
     // Send notification
@@ -138,8 +138,8 @@ exports.getCustomers = asyncHandler(async (req, res, next) => {
     const customers = await Customer.find(query)
         .populate('projectId', 'projectName location')
         .populate('plotId', 'plotNumber size rate status')
-        .populate('assignedExecutive', 'name phone')
-        .populate('assignedExecutives.executiveId', 'name phone role userId')
+        .populate('assignedExecutive', 'name phone code')
+        .populate('assignedExecutives.executiveId', 'name phone role code')
         .populate('createdBy', 'name')
         .sort({ createdAt: -1 });
 
@@ -159,8 +159,8 @@ exports.getCustomer = asyncHandler(async (req, res, next) => {
     const customer = await Customer.findById(req.params.id)
         .populate('projectId', 'projectName location')
         .populate('plotId', 'plotNumber size rate status totalValue')
-        .populate('assignedExecutive', 'name phone')
-        .populate('assignedExecutives.executiveId', 'name phone role userId')
+        .populate('assignedExecutive', 'name phone code')
+        .populate('assignedExecutives.executiveId', 'name phone role code')
         .populate('createdBy', 'name');
 
     if (!customer) {
@@ -240,7 +240,8 @@ exports.updateCustomer = asyncHandler(async (req, res, next) => {
     )
         .populate('projectId', 'projectName location')
         .populate('plotId', 'plotNumber size rate status')
-        .populate('assignedExecutive', 'name phone');
+        .populate('assignedExecutive', 'name phone code')
+        .populate('assignedExecutives.executiveId', 'name phone role code');
 
     res.status(200).json({
         success: true,

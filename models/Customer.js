@@ -190,10 +190,10 @@ const CustomerSchema = new mongoose.Schema({
     },
     assignedExecutive: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        ref: 'Executive'
     },
     assignedExecutives: [{
-        executiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        executiveId: { type: mongoose.Schema.Types.ObjectId, ref: 'Executive' },
         percentage: { type: Number, default: 0 }
     }],
     active: {

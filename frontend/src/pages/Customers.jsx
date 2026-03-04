@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { customerAPI, projectAPI, plotAPI, userAPI } from '../api/services';
+import { customerAPI, projectAPI, plotAPI, userAPI, executiveAPI } from '../api/services';
 import Layout from '../components/Layout';
 import './Customers.css';
 
@@ -151,16 +151,15 @@ const Customers = () => {
 
   const fetchInitialData = async () => {
     try {
-      const [customersRes, projectsRes, usersRes] = await Promise.all([
+      const [customersRes, projectsRes, execRes] = await Promise.all([
         customerAPI.getAll(),
         projectAPI.getAll({ active: true }),
-        userAPI.getList(),
+        executiveAPI.getAll()
       ]);
       
       setCustomers(customersRes.data.data || []);
       setProjects(projectsRes.data.data || []);
-      const execRoles = ['Executive', 'Head Executive', 'Admin', 'Boss'];
-      setExecutives((usersRes.data.data || []).filter(u => execRoles.includes(u.role)));
+      setExecutives(execRes.data.data || []);
     } catch (err) {
       setError('Failed to fetch data');
     } finally {
@@ -623,7 +622,7 @@ const Customers = () => {
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-orange-400 flex items-center gap-2"><span>👥</span> Executive Deployment</h3>
                     <select name="assignedExecutive" value={formData.assignedExecutive} onChange={handleChange} className="modern-input !bg-white/5 !border-white/10 !text-white !py-3 font-black text-[10px] uppercase">
                       <option value="" className="text-slate-800">-- ASSIGN PERSONNEL --</option>
-                      {executives.map(e => <option key={e._id} value={e._id} className="text-slate-800">{e.name}</option>)}
+                      {executives.map(e => <option key={e._id} value={e._id} className="text-slate-800">{e.name} ({e.code})</option>)}
                     </select>
                   </div>
                 </div>

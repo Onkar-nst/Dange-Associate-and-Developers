@@ -193,7 +193,7 @@ exports.resetPassword = asyncHandler(async (req, res, next) => {
  */
 exports.getUsersList = asyncHandler(async (req, res, next) => {
     const users = await User.find({ active: true })
-        .select('firstName middleName surname role userId')
+        .select('name firstName middleName surname role userId')
         .sort({ firstName: 1 });
 
     res.status(200).json({

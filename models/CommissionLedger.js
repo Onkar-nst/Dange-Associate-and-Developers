@@ -8,7 +8,7 @@ const { COMMISSION_STATUS } = require('../utils/constants');
 const CommissionLedgerSchema = new mongoose.Schema({
     executiveId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Executive',
         required: [true, 'Please add executive reference']
     },
     commissionRuleId: {

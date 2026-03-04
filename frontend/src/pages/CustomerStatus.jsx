@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { customerAPI, projectAPI, userAPI, uploadAPI } from '../api/services';
+import { customerAPI, projectAPI, plotAPI, userAPI, executiveAPI } from '../api/services';
 import Layout from '../components/Layout';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:3000';
@@ -33,7 +33,8 @@ const CustomerStatus = () => {
         name: '',
         phone: '',
         occupation: '',
-        address: ''
+        address: '',
+        assignedExecutive: ''
     });
 
     useEffect(() => {
@@ -45,11 +46,11 @@ const CustomerStatus = () => {
             const [custRes, projRes, execRes] = await Promise.all([
                 customerAPI.getAll(),
                 projectAPI.getAll({ active: true }),
-                userAPI.getList()
+                executiveAPI.getAll()
             ]);
             setCustomers(custRes.data.data || []);
             setProjects(projRes.data.data || []);
-            setExecutives((execRes.data.data || []).filter(u => ['Executive', 'Head Executive', 'The Boss'].includes(u.role)));
+            setExecutives(execRes.data.data || []);
             setLoading(false);
         } catch (err) {
             setError('Failed to fetch data matrix');
@@ -137,7 +138,8 @@ const CustomerStatus = () => {
             name: customer.name || '',
             phone: customer.phone || '',
             occupation: customer.occupation || '',
-            address: customer.address || ''
+            address: customer.address || '',
+            assignedExecutive: customer.assignedExecutive?._id || customer.assignedExecutive || ''
         });
         setShowModifyModal(true);
     };
@@ -315,6 +317,20 @@ const CustomerStatus = () => {
             </button>
           </div>
         </div>
+        
+        {/* Alerts & Notifications */}
+        <div className="max-w-7xl mx-auto px-4 mb-4">
+            {error && (
+                <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center gap-3 animate-in slide-in-from-top-2 duration-300">
+                    <span className="text-xl">⚠️</span>
+                    <div className="flex-1">
+                        <div className="text-[10px] font-black text-rose-400 uppercase tracking-widest leading-none mb-1">System Exception</div>
+                        <div className="text-sm font-bold text-rose-700">{error}</div>
+                    </div>
+                    <button onClick={() => setError('')} className="text-rose-400 hover:text-rose-600 font-black">✕</button>
+                </div>
+            )}
+        </div>
 
         <div className="max-w-7xl mx-auto space-y-12 pb-20 animate-fade-in px-4">
             
@@ -425,9 +441,15 @@ const CustomerStatus = () => {
                                     <td className="py-4">
                                         <div className="flex flex-col gap-2">
                                             <div className="flex flex-wrap gap-1 max-w-[160px]">
-                                                {c.assignedExecutives && c.assignedExecutives.length > 0 ? c.assignedExecutives.map((e, idx) => (
-                                                    <span key={idx} className="bg-slate-900 text-white px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight shadow-sm">{e.executiveId?.name}</span>
-                                                )) : <span className="text-[9px] font-black text-slate-300 uppercase italic tracking-widest">Unassigned Personnel</span>}
+                                                {c.assignedExecutives && c.assignedExecutives.length > 0 ? (
+                                                    c.assignedExecutives.map((e, idx) => (
+                                                        <span key={idx} className="bg-slate-900 text-white px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight shadow-sm">{e.executiveId?.name}</span>
+                                                    ))
+                                                ) : c.assignedExecutive ? (
+                                                    <span className="bg-slate-900 text-white px-2 py-0.5 rounded-lg text-[8px] font-black uppercase tracking-tight shadow-sm">{c.assignedExecutive?.name}</span>
+                                                ) : (
+                                                    <span className="text-[9px] font-black text-slate-300 uppercase italic tracking-widest">Unassigned Personnel</span>
+                                                )}
                                             </div>
                                             <button onClick={() => openEditModal(c)} className="text-[8px] font-black text-blue-600 uppercase tracking-[0.2em] flex items-center gap-2 hover:translate-x-1 transition-transform bg-blue-50/50 w-fit px-2 py-1 rounded-lg border border-blue-100 shadow-sm">
                                                 <span>⚙️</span> Sync Executives
@@ -463,11 +485,14 @@ const CustomerStatus = () => {
                                                     <input 
                                                         autoFocus
                                                         type="text" 
-                                                        placeholder="DOC NAME (e.g. Agreement)" 
-                                                        className="text-[9px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg border border-slate-200 outline-none w-full"
+                                                        placeholder="DOC NAME (REQUIRED)" 
+                                                        className={`text-[9px] font-black uppercase tracking-widest px-2 py-1.5 rounded-lg border outline-none w-full transition-all ${!activeDocNaming.name ? 'border-rose-300 bg-rose-50/50' : 'border-slate-200 focus:border-blue-500'}`}
                                                         value={activeDocNaming.name}
                                                         onChange={(e) => setActiveDocNaming({...activeDocNaming, name: e.target.value})}
                                                     />
+                                                    {!activeDocNaming.name && (
+                                                        <p className="text-[7px] font-black text-rose-500 uppercase tracking-widest text-center">Please enter name first</p>
+                                                    )}
                                                     <div className="flex gap-1">
                                                         <button 
                                                             onClick={() => setActiveDocNaming({ customerId: null, name: '' })}
@@ -606,7 +631,7 @@ const CustomerStatus = () => {
                                                 className="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-3.5 font-bold uppercase outline-none"
                                             >
                                                 <option value="">Select Executive...</option>
-                                                {executives.map(e => <option key={e._id} value={e._id}>{e.name} ({e.userId})</option>)}
+                                                {executives.map(e => <option key={e._id} value={e._id}>{e.name} ({e.code})</option>)}
                                             </select>
                                         </div>
                                         <button 
@@ -748,6 +773,19 @@ const CustomerStatus = () => {
                                         onChange={(e) => setModifyForm({...modifyForm, address: e.target.value})}
                                         className="w-full h-24 bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm font-bold outline-none focus:border-blue-500 transition-all resize-none"
                                     />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Assigned Executive</label>
+                                    <select 
+                                        value={modifyForm.assignedExecutive}
+                                        onChange={(e) => setModifyForm({...modifyForm, assignedExecutive: e.target.value})}
+                                        className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold outline-none focus:border-blue-500 transition-all"
+                                    >
+                                        <option value="">-- SELECT EXECUTIVE --</option>
+                                        {executives.map(e => (
+                                            <option key={e._id} value={e._id}>{e.name} ({e.code})</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="flex gap-3 pt-4">
                                     <button onClick={() => setShowModifyModal(false)} className="flex-1 h-12 border border-slate-200 text-slate-500 font-black uppercase text-[10px] tracking-widest rounded-xl hover:bg-slate-50 transition-all">Cancel</button>

@@ -58,6 +58,10 @@ const UserSchema = new mongoose.Schema({
         },
         default: ROLES.EXECUTIVE
     },
+    name: {
+        type: String,
+        trim: true
+    },
     active: {
         type: Boolean,
         default: true
@@ -73,17 +77,22 @@ const UserSchema = new mongoose.Schema({
 });
 
 /**
- * Hash password before saving
- * Uses bcrypt with salt rounds of 12
+ * Hash password and generate full name before saving
  */
-UserSchema.pre('save', async function () {
+UserSchema.pre('save', async function (next) {
+    // Generate name
+    if (this.isModified('firstName') || this.isModified('middleName') || this.isModified('surname')) {
+        this.name = `${this.firstName} ${this.middleName ? this.middleName + ' ' : ''}${this.surname}`.trim();
+    }
+
     // Only hash if password is modified
     if (!this.isModified('password')) {
-        return;
+        return next();
     }
 
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
+    next();
 });
 
 /**
